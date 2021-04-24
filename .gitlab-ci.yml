@@ -1,0 +1,29 @@
+# We have 1 Deploy
+stages:
+  - deploy
+
+# Config cache
+cache:
+  paths:
+    - node_modules/
+
+# Deploy job
+deploy:
+  type: deploy
+  # Attach Deploy job to Deploy stage
+  stage: deploy
+  # Config to use our Runner with Executor Shell
+  tags:
+    - malanghub
+  script:
+    # Only copy changed files to project folder
+    - cp -r -u .env.production * $PROJECT_DIR
+    - cd $PROJECT_DIR
+    - yarn install --production=true && yarn cache clean --force
+    - yarn build
+    # sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3000
+    # Restart NodeJS service
+    - yarn run stop
+    - yarn run start
+  only:
+    - main

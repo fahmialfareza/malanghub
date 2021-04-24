@@ -1,0 +1,37 @@
+import Link from "next/link";
+import Moment from "react-moment";
+import "moment/locale/id";
+
+const RelatedNews = ({ news, index }) => {
+  return (
+    <div className="grids5-info">
+      <h4>{index + 1}.</h4>
+      <div className="blog-info">
+        <Link href={`/news/${news.slug}`}>
+          <a className="blog-desc1">{news.title}</a>
+        </Link>
+        <div className="author align-items-center mt-2 mb-1">
+          <Link href={`/users/${news.user._id}`}>{news.user.name}</Link> in{" "}
+          <Link href={`/newsCategories/${news.category.slug}`}>
+            {news.category.name}
+          </Link>
+        </div>
+        <ul className="blog-meta">
+          <li className="meta-item blog-lesson">
+            <span className="meta-value">
+              <Moment format="dddd, Do MMMM YYYY">{news.created_at}</Moment>
+            </span>
+          </li>
+          <li className="meta-item blog-students">
+            <span className="meta-value">
+              {" "}
+              {Math.ceil(news.time_read)} menit
+            </span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default RelatedNews;
