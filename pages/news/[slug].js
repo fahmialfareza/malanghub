@@ -260,7 +260,7 @@ const SingleNews = ({
                           <a
                             target="_blank"
                             rel="noreferrer"
-                            href={`https://www.facebook.com/share.php?u=https://malanghub.com/${slug}`}
+                            href={`https://www.facebook.com/share.php?u=https://www.malanghub.com/news/${slug}`}
                           >
                             <span
                               className="fa fa-facebook"
@@ -270,7 +270,7 @@ const SingleNews = ({
                           <a
                             target="_blank"
                             rel="noreferrer"
-                            href={`https://twitter.com/intent/tweet?text=https://malanghub.com/${slug}`}
+                            href={`https://twitter.com/intent/tweet?text=https://www.malanghub.com/news/${slug}`}
                           >
                             <span
                               className="fa fa-twitter"
