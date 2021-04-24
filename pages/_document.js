@@ -14,10 +14,6 @@ class MyDocument extends Document {
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta name="keywords" content="Malanghub" />
           <meta name="theme-color" content="#000000" />
-          <meta
-            name="description"
-            content="Situs yang menyediakan informasi sekitar Malang Raya!"
-          />
           <meta name="theme-color" content="#0085ad" />
           <meta name="mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-title" content="Malanghub" />
