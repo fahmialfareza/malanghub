@@ -2,7 +2,7 @@ export default function Custom404() {
   return (
     <div
       className="container"
-      style={{ width: "100%", height: "100vh", display: "flex" }}
+      style={{ width: "100%", height: "80vh", display: "flex" }}
     >
       <div className="m-auto">
         <h1>404 - Halaman Tidak Ditemukan</h1>
