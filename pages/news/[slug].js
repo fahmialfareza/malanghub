@@ -74,7 +74,7 @@ const SingleNews = ({
           name="description"
           content={currentNews?.content
             ?.replace(/<(.|\n)*?>/g, "")
-            .slice(0, 50)}
+            .slice(0, 255)}
         />
 
         <meta property="og:type" content="website" />
@@ -90,7 +90,7 @@ const SingleNews = ({
           property="og:description"
           content={currentNews?.content
             ?.replace(/<(.|\n)*?>/g, "")
-            .slice(0, 50)}
+            .slice(0, 255)}
         />
         <meta property="og:image" content={currentNews?.mainImage} />
 
@@ -107,7 +107,7 @@ const SingleNews = ({
           property="twitter:description"
           content={currentNews?.content
             ?.replace(/<(.|\n)*?>/g, "")
-            .slice(0, 50)}
+            .slice(0, 255)}
         />
         <meta property="twitter:image" content={currentNews?.mainImage} />
       </Head>

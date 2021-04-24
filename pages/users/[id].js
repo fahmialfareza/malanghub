@@ -45,7 +45,7 @@ const GetUserProfile = ({
         />
         <meta
           name="description"
-          content={userProfile?.bio?.replace(/<(.|\n)*?>/g, "").slice(0, 25)}
+          content={userProfile?.bio?.replace(/<(.|\n)*?>/g, "").slice(0, 255)}
         />
 
         <meta property="og:type" content="website" />
@@ -59,7 +59,7 @@ const GetUserProfile = ({
         />
         <meta
           property="og:description"
-          content={userProfile?.bio?.replace(/<(.|\n)*?>/g, "").slice(0, 25)}
+          content={userProfile?.bio?.replace(/<(.|\n)*?>/g, "").slice(0, 255)}
         />
         <meta property="og:image" content={userProfile?.photo} />
 
@@ -74,7 +74,7 @@ const GetUserProfile = ({
         />
         <meta
           property="twitter:description"
-          content={userProfile?.bio?.replace(/<(.|\n)*?>/g, "").slice(0, 25)}
+          content={userProfile?.bio?.replace(/<(.|\n)*?>/g, "").slice(0, 255)}
         />
         <meta property="twitter:image" content={userProfile?.photo} />
       </Head>

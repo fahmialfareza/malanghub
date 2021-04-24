@@ -48,7 +48,7 @@ const NewsDraft = ({
           content={
             currentNewsDraft &&
             currentNewsDraft.content &&
-            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, "").slice(0, 25)
+            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, "").slice(0, 255)
           }
         />
 
@@ -70,7 +70,7 @@ const NewsDraft = ({
           content={
             currentNewsDraft &&
             currentNewsDraft.content &&
-            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, "").slice(0, 25)
+            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, "").slice(0, 255)
           }
         />
         <meta property="og:image" content={currentNewsDraft?.mainImage} />
@@ -93,7 +93,7 @@ const NewsDraft = ({
           content={
             currentNewsDraft &&
             currentNewsDraft.content &&
-            currentNewsDraft.content?.replace(/<(.|\n)*?>/g, "").slice(0, 25)
+            currentNewsDraft.content?.replace(/<(.|\n)*?>/g, "").slice(0, 255)
           }
         />
         <meta property="twitter:image" content={currentNewsDraft?.mainImage} />
