@@ -93,12 +93,12 @@ const Home = ({
 export async function getServerSideProps() {
   let configTrending = {
     method: "get",
-    url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4`,
+    url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/news?page=1&sort=-views&limit=4`,
   };
 
   let configRecent = {
     method: "get",
-    url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4`,
+    url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4`,
   };
 
   let dataRecent = {};

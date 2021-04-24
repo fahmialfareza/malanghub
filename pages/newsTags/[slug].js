@@ -139,12 +139,12 @@ export async function getServerSideProps({ params }) {
 
   let configTrending = {
     method: "get",
-    url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4`,
+    url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/news?page=1&sort=-views&limit=4`,
   };
 
   let config = {
     method: "get",
-    url: `${process.env.API_ADDRESS}/api/newsTags/${slug}`,
+    url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/newsTags/${slug}`,
   };
 
   let dataTrending = {};
