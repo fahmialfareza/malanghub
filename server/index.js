@@ -11,6 +11,8 @@ const helmet = require("helmet");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
 const morgan = require("morgan");
+const { join } = require("path");
+const { parse } = require("url");
 
 const PORT = process.env.PORT || 3000;
 const app = next({ dev: process.env.NODE_ENV !== "production" });
