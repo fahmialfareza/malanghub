@@ -464,7 +464,7 @@ export async function getServerSideProps({ params }) {
 
   var config = {
     method: "get",
-    url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/newsDrafts/${slug}`,
+    url: `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`,
   };
 
   let data = {};
