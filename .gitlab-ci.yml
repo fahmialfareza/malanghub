@@ -23,7 +23,7 @@ deploy:
     - yarn build
     # sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 3000
     # Restart NodeJS service
-    - yarn run stop
+    - yarn run stop || true
     - yarn run start
   only:
     - main

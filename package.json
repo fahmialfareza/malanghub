@@ -6,7 +6,7 @@
     "dev": "NODE_ENV=development npx nodemon server/index.js",
     "build": "next build",
     "stop": "killall node",
-    "start": "NODE_ENV=production node server/index.js"
+    "start": "NODE_ENV=production node server/index.js > stdout.txt 2> stderr.txt &"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.12.0",

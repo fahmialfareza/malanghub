@@ -1,0 +1,4 @@
+info  - Loaded env from /Users/fahmialfareza/Code/My Code/FullStack/React/malanghub-new/.env.production
+info  - Using webpack 4. Reason: future.webpack5 option not enabled https://nextjs.org/docs/messages/webpack5
+Server started on port 3000
+queryTxt EREFUSED main.ngnyx.mongodb.net
