@@ -35,3 +35,5 @@ yarn-error.log*
 
 stderr.txt
 stdout.txt
+
+mongo-volume
