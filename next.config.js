@@ -11,8 +11,9 @@ module.exports = withPWA(
       withImages(
         withSass({
           pwa: {
-            dest: "public",
+            // dest: "public",
             register: true,
+            sw: "/sw.js",
           },
         })
       )
