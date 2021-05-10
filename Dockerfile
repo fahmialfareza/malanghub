@@ -5,7 +5,7 @@ LABEL org.opencontainers.image.licenses=MIT
 LABEL com.malanghub.nodeversion=$NODE_VERSION
 ENV NODE_ENV=production
 EXPOSE 3000
-WORKDIR /app/client
+WORKDIR /app
 COPY package.json yarn.lock ./
 RUN yarn install --production=true \
     && yarn cache clean --force

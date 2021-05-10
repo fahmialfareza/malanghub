@@ -1,0 +1,14 @@
+version: "2.4"
+
+services:
+  # MongoDB
+  mongo:
+    image: mongo:4
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-volume:/data/db
+
+# Volumes
+volumes:
+  mongo-volume:
