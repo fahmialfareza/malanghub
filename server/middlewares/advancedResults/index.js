@@ -105,7 +105,7 @@ const advancedResults = (model) => async (req, res, next) => {
 
     next();
   } catch (e) {
-    return res.status(500).json({ message: e.message });
+    return next(e);
   }
 };
 

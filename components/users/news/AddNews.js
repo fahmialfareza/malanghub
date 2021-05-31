@@ -4,7 +4,6 @@ import { Editor } from "@tinymce/tinymce-react";
 import { getNewsTags } from "../../../redux/actions/newsTagActions";
 import { createNewsDraft } from "../../../redux/actions/newsDraftActions";
 import { setAlert } from "../../../redux/actions/layoutActions";
-import Alert from "../../layouts/Alert";
 
 const AddNews = ({
   layout: { theme },
@@ -118,7 +117,6 @@ const AddNews = ({
               </button>
             </div>
             <div className="modal-body">
-              <Alert />
               <form onSubmit={onSubmit} id="form-addNewsModal">
                 <div className="form-group">
                   <label htmlFor="title">Judul *</label>

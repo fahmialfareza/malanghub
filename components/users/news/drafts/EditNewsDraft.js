@@ -7,7 +7,6 @@ import {
 } from "../../../../redux/actions/newsTagActions";
 import { updateNewsDraft } from "../../../../redux/actions/newsDraftActions";
 import { setAlert } from "../../../../redux/actions/layoutActions";
-import Alert from "../../../layouts/Alert";
 
 const EditNewsDraft = ({
   layout: { theme },
@@ -119,7 +118,6 @@ const EditNewsDraft = ({
               </button>
             </div>
             <div className="modal-body">
-              <Alert />
               <form onSubmit={onSubmit} id="form-editNewsDraftModal">
                 <div className="form-group">
                   <label htmlFor="title">Judul *</label>

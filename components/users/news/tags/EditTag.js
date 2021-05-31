@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { updateNewsTag } from "../../../../redux/actions/newsTagActions";
 import { setAlert } from "../../../../redux/actions/layoutActions";
-import Alert from "../../../layouts/Alert";
 
 const EditTag = ({
   newsTag: { currentNewsTag, error },
@@ -59,7 +58,6 @@ const EditTag = ({
               </button>
             </div>
             <div className="modal-body">
-              <Alert />
               <form onSubmit={onSubmit} id="form-editNewsTagModal">
                 <div className="form-group">
                   <label htmlFor="name">Nama *</label>

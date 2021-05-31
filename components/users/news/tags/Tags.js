@@ -5,7 +5,6 @@ import TagTableItem from "./TagTableItem";
 import AddTag from "./AddTag";
 import EditTag from "./EditTag";
 import DeleteTag from "./DeleteTag";
-import Alert from "../../../layouts/Alert";
 
 const Tags = ({ newsTag: { newsTags }, layout: { theme }, getNewsTags }) => {
   useEffect(() => {
@@ -32,7 +31,6 @@ const Tags = ({ newsTag: { newsTags }, layout: { theme }, getNewsTags }) => {
           </div>
         </section>
         <div className="container">
-          <Alert />
           <div className="row">
             <div className="col-md-9 mb-2">
               <div className={theme === "dark" ? "card bg-dark" : "card"}>

@@ -11,18 +11,14 @@ exports.create = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     req.body.slug = req.body.name;
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };
 
@@ -39,24 +35,14 @@ exports.update = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
-    }
-
-    if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     req.body.slug = req.body.name;
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };
 
@@ -69,15 +55,11 @@ exports.deleteTag = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };

@@ -36,9 +36,7 @@ exports.create = async (req, res, next) => {
     });
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     let findData = await Promise.all([
@@ -55,9 +53,7 @@ exports.create = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     // Check image
@@ -75,9 +71,7 @@ exports.create = async (req, res, next) => {
       }
 
       if (errors.length > 0) {
-        return res.status(400).json({
-          message: errors.join(", "),
-        });
+        return next({ message: errors.join(","), statusCode: 400 });
       }
 
       // Create custom filename
@@ -96,7 +90,7 @@ exports.create = async (req, res, next) => {
 
     next();
   } catch (e) {
-    return res.status(500).json({ message: e.message });
+    return next(e);
   }
 };
 
@@ -131,9 +125,7 @@ exports.update = async (req, res, next) => {
     });
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     let findData = await Promise.all([
@@ -150,9 +142,7 @@ exports.update = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     // Check image
@@ -170,9 +160,7 @@ exports.update = async (req, res, next) => {
       }
 
       if (errors.length > 0) {
-        return res.status(400).json({
-          message: errors.join(", "),
-        });
+        return next({ message: errors.join(","), statusCode: 400 });
       }
 
       // Create custom filename
@@ -191,7 +179,7 @@ exports.update = async (req, res, next) => {
 
     next();
   } catch (e) {
-    return res.status(500).json({ message: e.message });
+    return next(e);
   }
 };
 
@@ -204,15 +192,11 @@ exports.deleteNewsDraft = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };

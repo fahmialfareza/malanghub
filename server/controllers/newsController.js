@@ -1,31 +1,31 @@
 const { news, newsCategory, newsTag, user } = require("../models");
 
 class NewsController {
-  async getAll(req, res) {
+  async getAll(req, res, next) {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async searchNews(req, res) {
+  async searchNews(req, res, next) {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async myNews(req, res) {
+  async myNews(req, res, next) {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async getOne(req, res) {
+  async getOne(req, res, next) {
     try {
       let data = await news
         .findOne({ slug: req.params.slug, approved: true })
@@ -37,16 +37,16 @@ class NewsController {
         .populate("tags");
 
       if (!data) {
-        return res.status(404).json({ message: "News not found" });
+        return next({ message: "News not found", statusCode: 404 });
       }
 
       return res.status(200).json({ data });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async update(req, res) {
+  async update(req, res, next) {
     let newData = {};
 
     newData.approved = req.body.approved;
@@ -74,26 +74,26 @@ class NewsController {
           await awsNewsDelete(req.body.mainImage);
         }
 
-        return res.status(404).json({ message: "News  not found" });
+        return next({ message: "News not found", statusCode: 404 });
       }
 
       return res.status(201).json({ data });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       const data = await news.deleteById(req.params.id);
 
       if (data.n === 0) {
-        return res.status(404).json({ message: "News not found" });
+        return next({ message: "News not found", statusCode: 404 });
       }
 
       return res.status(200).json({ data: {} });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 }

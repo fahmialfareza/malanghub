@@ -10,13 +10,11 @@ const { user } = require("../../models");
 exports.signup = async (req, res, next) => {
   passport.authenticate("signup", { session: false }, (err, user, info) => {
     if (err) {
-      return res.status(500).json({
-        message: "Email has been used",
-      });
+      return next({ message: "Email has been used" });
     }
 
     if (err || !user) {
-      return res.status(401).json({ message: info.message });
+      return next({ message: info.message, statusCode: 401 });
     }
 
     req.user = user;
@@ -50,11 +48,11 @@ passport.use(
 exports.signin = async (req, res, next) => {
   passport.authenticate("signin", { session: false }, (err, user, info) => {
     if (err) {
-      return res.status(500).json({ message: err });
+      return next({ message: "Email has been used" });
     }
 
     if (!user) {
-      return res.status(401).json({ message: info.message });
+      return next({ message: info.message, statusCode: 401 });
     }
 
     req.user = user;
@@ -97,11 +95,11 @@ passport.use(
 exports.admin = async (req, res, next) => {
   passport.authorize("admin", (err, user, info) => {
     if (err) {
-      return res.status(500).json({ message: err });
+      return next(err);
     }
 
-    if (!user) {
-      return res.status(403).json({ message: info.message });
+    if (err || !user) {
+      return next({ message: info.message, statusCode: 403 });
     }
 
     req.user = user;
@@ -144,11 +142,11 @@ passport.use(
 exports.user = async (req, res, next) => {
   passport.authorize("user", (err, user, info) => {
     if (err) {
-      return res.status(500).json({ message: err });
+      return next(err);
     }
 
-    if (!user) {
-      return res.status(403).json({ message: info.message });
+    if (err || !user) {
+      return next({ message: info.message, statusCode: 403 });
     }
 
     req.user = user;

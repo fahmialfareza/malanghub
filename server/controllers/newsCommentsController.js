@@ -1,7 +1,7 @@
 const { newsComment, user } = require("../models");
 
 class NewsCommentsController {
-  async getCommentsByNews(req, res) {
+  async getCommentsByNews(req, res, next) {
     try {
       let data = await newsComment
         .find({ news: req.params.id })
@@ -17,11 +17,11 @@ class NewsCommentsController {
 
       return res.status(200).json({ data });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async createComment(req, res) {
+  async createComment(req, res, next) {
     try {
       let data = await newsComment.create({
         news: req.params.id,
@@ -35,11 +35,11 @@ class NewsCommentsController {
 
       res.status(201).json({ data });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async createCommentByComment(req, res) {
+  async createCommentByComment(req, res, next) {
     try {
       let dataComment = await newsComment.findOne({
         _id: req.params.id,
@@ -67,11 +67,9 @@ class NewsCommentsController {
           select: "-password -role",
         });
 
-      res.status(201).json({ data });
+      return res.status(201).json({ data });
     } catch (e) {
-      console.error(e);
-
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 }

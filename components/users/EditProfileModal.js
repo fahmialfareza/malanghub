@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { updateProfile } from "../../redux/actions/userActions";
 import { setAlert } from "../../redux/actions/layoutActions";
-import Alert from "../layouts/Alert";
 
 const EditProfileModal = ({
   user: { user, error, loading: userLoading },
@@ -128,7 +127,6 @@ const EditProfileModal = ({
               </button>
             </div>
             <div className="modal-body">
-              <Alert />
               <form onSubmit={onSubmit} id="form-update">
                 <div className="form-group">
                   <label htmlFor="name">Nama *</label>

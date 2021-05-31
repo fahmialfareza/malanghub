@@ -2,7 +2,6 @@ import { useState } from "react";
 import { connect } from "react-redux";
 import { setAlert } from "../../../redux/actions/layoutActions";
 import { createCommentByComment } from "../../../redux/actions/newsCommentActions";
-import Alert from "../../layouts/Alert";
 
 const AddComment = ({
   layout: { theme },
@@ -48,7 +47,6 @@ const AddComment = ({
             </button>
           </div>
           <div className="modal-body">
-            <Alert />
             <form id="form-addCommentModal" onSubmit={onSubmit}>
               <div className="form-group">
                 <textarea

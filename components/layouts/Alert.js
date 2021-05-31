@@ -1,15 +1,23 @@
-import React, { Fragment } from "react";
+import { useEffect } from "react";
 import { connect } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Alert = ({ layout: { alert } }) => {
+  useEffect(() => {
+    if (alert?.type === "success") {
+      toast.success(alert?.message);
+    } else if (alert?.type === "danger") {
+      toast.error(alert?.message);
+    } else {
+      toast(alert?.message);
+    }
+  }, [alert]);
+
   return (
-    <Fragment>
-      {alert?.message && (
-        <div className={`alert alert-${alert?.type}`} role="alert">
-          {alert?.message}
-        </div>
-      )}
-    </Fragment>
+    <>
+      <ToastContainer />
+    </>
   );
 };
 

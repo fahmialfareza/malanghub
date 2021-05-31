@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { createNewsTag } from "../../../../redux/actions/newsTagActions";
 import { setAlert } from "../../../../redux/actions/layoutActions";
-import Alert from "../../../layouts/Alert";
 
 const AddTag = ({
   layout: { theme },
@@ -54,7 +53,6 @@ const AddTag = ({
               </button>
             </div>
             <div className="modal-body">
-              <Alert />
               <form onSubmit={onSubmit} id="form-addNewsTagModal">
                 <div className="form-group">
                   <label htmlFor="name">Nama *</label>

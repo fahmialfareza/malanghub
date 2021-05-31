@@ -6,7 +6,6 @@ import AddCategory from "./AddCategory";
 import EditCategory from "./EditCategory";
 import DeleteCategory from "./DeleteCategory";
 import Spinner from "../../../layouts/Spinner";
-import Alert from "../../../layouts/Alert";
 
 const Categories = ({
   newsCategory: { newsCategories, loading: newsCategoryLoading },
@@ -38,7 +37,6 @@ const Categories = ({
           </div>
         </section>
         <div className="container">
-          <Alert />
           <div className="row">
             <div className="col-md-9 mb-2">
               <div className={theme === "dark" ? "card bg-dark" : "card"}>

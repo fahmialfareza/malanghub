@@ -8,7 +8,6 @@ import NewsDraftTableItem from "./drafts/NewsDraftTableItem";
 import NewsTableItem from "./NewsTableItem";
 import EditNews from "./EditNews";
 import Spinner from "../../layouts/Spinner";
-import Alert from "../../layouts/Alert";
 import {
   getAllNewsDrafts,
   getMyNewsDrafts,
@@ -102,7 +101,6 @@ const News = ({
         </div>
       </section>
       <div className="container">
-        <Alert />
         <div className="row">
           <div className="col-md-9 mb-2">
             <div className={theme === "dark" ? "card bg-dark" : "card"}>

@@ -3,7 +3,7 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { signUp, signIn } from "../redux/actions/userActions";
+import { signUp } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
@@ -12,7 +12,6 @@ import Alert from "../components/layouts/Alert";
 const SignUp = ({
   user: { isAuthenticated, error, token },
   signUp,
-  signIn,
   setActiveLink,
   setAlert,
 }) => {
@@ -61,41 +60,27 @@ const SignUp = ({
     }
   };
 
-  const responseGoogle = async (response) => {
+  const responseGoogle = (response) => {
     try {
-      await signUp({
+      signUp({
         name: response.profileObj.name,
         email: response.profileObj.email,
         password: "Google" + response.profileObj.googleId,
         passwordConfirmation: "Google" + response.profileObj.googleId,
         photo: response.profileObj.imageUrl,
       });
-
-      if (!token) {
-        signIn({
-          email: response.profileObj.email,
-          password: "Google" + response.profileObj.googleId,
-        });
-      }
     } catch (e) {}
   };
 
-  const responseFacebook = async (response) => {
+  const responseFacebook = (response) => {
     try {
-      await signUp({
+      signUp({
         name: response.name,
         email: response.email,
         password: "Facebook" + response.id,
         passwordConfirmation: "Facebook" + response.id,
         photo: response.picture.data.url,
       });
-
-      if (!token) {
-        signIn({
-          email: response.email,
-          password: "Facebook" + response.id,
-        });
-      }
     } catch (e) {}
   };
 
@@ -246,7 +231,6 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
   signUp,
-  signIn,
   setActiveLink,
   setAlert,
 })(SignUp);

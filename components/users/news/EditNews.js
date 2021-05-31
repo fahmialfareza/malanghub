@@ -2,7 +2,6 @@ import { useState } from "react";
 import { connect } from "react-redux";
 import { updateNewsDraftApproved } from "../../../redux/actions/newsDraftActions";
 import { setAlert } from "../../../redux/actions/layoutActions";
-import Alert from "../../layouts/Alert";
 
 const EditNews = ({
   layout: { theme },
@@ -67,7 +66,6 @@ const EditNews = ({
               </button>
             </div>
             <div className="modal-body">
-              <Alert />
               <form onSubmit={onSubmit} id="form-editNewsModal">
                 <div className="form-group">
                   <label htmlFor="message">Pesan *</label>

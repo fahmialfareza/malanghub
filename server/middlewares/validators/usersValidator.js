@@ -28,9 +28,7 @@ exports.updateProfile = async (req, res, next) => {
       }
 
       if (errors.length > 0) {
-        return res.status(400).json({
-          message: errors.join(", "),
-        });
+        return next({ message: errors.join(","), statusCode: 400 });
       }
 
       // Create custom filename
@@ -43,16 +41,12 @@ exports.updateProfile = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };
 
@@ -65,16 +59,12 @@ exports.getUser = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };
 
@@ -99,9 +89,7 @@ exports.signup = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     if (req.body.password.includes("Google")) {
@@ -114,9 +102,7 @@ exports.signup = (req, res, next) => {
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };
 
@@ -129,9 +115,7 @@ exports.signin = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     if (req.body.password.includes("Google")) {
@@ -144,8 +128,6 @@ exports.signin = (req, res, next) => {
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };

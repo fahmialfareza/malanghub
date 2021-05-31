@@ -2,23 +2,25 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 
 exports.update = async (req, res, next) => {
-  let errors = [];
+  try {
+    let errors = [];
 
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    errors.push("Please input a valid id");
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      errors.push("Please input a valid id");
+    }
+
+    if (!req.body.message) {
+      errors.push("Please enter the message");
+    }
+
+    if (errors.length > 0) {
+      return next({ message: errors.join(","), statusCode: 400 });
+    }
+
+    next();
+  } catch (e) {
+    return next(e);
   }
-
-  if (!req.body.message) {
-    errors.push("Please enter the message");
-  }
-
-  if (errors.length > 0) {
-    return res.status(400).json({
-      message: errors.join(", "),
-    });
-  }
-
-  next();
 };
 
 exports.deleteNews = (req, res, next) => {
@@ -30,15 +32,11 @@ exports.deleteNews = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return res.status(400).json({
-        message: errors.join(", "),
-      });
+      return next({ message: errors.join(","), statusCode: 400 });
     }
 
     next();
   } catch (e) {
-    return res.status(500).json({
-      message: e.message,
-    });
+    return next(e);
   }
 };

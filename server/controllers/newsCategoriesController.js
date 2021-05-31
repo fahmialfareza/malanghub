@@ -1,7 +1,7 @@
 const { newsCategory } = require("../models");
 
 class NewsCategoriesController {
-  async getAll(req, res) {
+  async getAll(req, res, next) {
     try {
       const data = await newsCategory.find().populate({
         path: "news",
@@ -14,16 +14,16 @@ class NewsCategoriesController {
       });
 
       if (data.length === 0) {
-        return res.status(404).json({ message: "News Category not found" });
+        return next({ message: "News Category not found", statusCode: 404 });
       }
 
       return res.status(200).json({ data });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async getOne(req, res) {
+  async getOne(req, res, next) {
     try {
       const data = await newsCategory
         .findOne({ slug: req.params.slug })
@@ -38,32 +38,33 @@ class NewsCategoriesController {
         });
 
       if (!data) {
-        return res.status(404).json({ message: "News Category not found" });
+        return next({ message: "News Category not found", statusCode: 404 });
       }
 
       return res.status(200).json({ data });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async create(req, res) {
+  async create(req, res, next) {
     try {
       const data = await newsCategory.create(req.body);
 
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
-        return res
-          .status(400)
-          .json({ message: "News Category Name has been exist" });
+        return next({
+          message: "News Category Name has been exist",
+          statusCode: 400,
+        });
       }
 
-      return res.status(500).json({ errors: e.message });
+      return next(e);
     }
   }
 
-  async update(req, res) {
+  async update(req, res, next) {
     try {
       const data = await newsCategory
         .findOneAndUpdate(
@@ -87,32 +88,33 @@ class NewsCategoriesController {
         });
 
       if (!data) {
-        return res.status(404).json({ message: "News Category not found" });
+        return next({ message: "News Category not found", statusCode: 404 });
       }
 
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
-        return res
-          .status(400)
-          .json({ message: "News Category Name has been exist" });
+        return next({
+          message: "News Category Name has been exist",
+          statusCode: 400,
+        });
       }
 
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 
-  async delete(req, res) {
+  async delete(req, res, next) {
     try {
       const data = await newsCategory.deleteById(req.params.id);
 
       if (data.n === 0) {
-        return res.status(404).json({ message: "News Category not found" });
+        return next({ message: "News Category not found", statusCode: 404 });
       }
 
       return res.status(200).json({ data: {} });
     } catch (e) {
-      return res.status(500).json({ message: e.message });
+      return next(e);
     }
   }
 }

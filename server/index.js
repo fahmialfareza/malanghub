@@ -19,6 +19,9 @@ const app = next({ dev: process.env.NODE_ENV !== "production" });
 const handle = app.getRequestHandler();
 
 app.prepare().then(() => {
+  // Import error handler
+  const errorHandler = require("./middlewares/errorHandler");
+
   // Import routes
   const usersRoute = require("./routes/usersRoute");
   const newsCategoriesRoute = require("./routes/newsCategoriesRoute");
@@ -98,6 +101,8 @@ app.prepare().then(() => {
   server.get("*", (req, res) => {
     return handle(req, res);
   });
+
+  server.use(errorHandler);
 
   server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 });

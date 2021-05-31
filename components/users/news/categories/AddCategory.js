@@ -2,7 +2,6 @@ import { useState } from "react";
 import { connect } from "react-redux";
 import { createNewsCategory } from "../../../../redux/actions/newsCategoryActions";
 import { setAlert } from "../../../../redux/actions/layoutActions";
-import Alert from "../../../layouts/Alert";
 
 const AddCategory = ({
   layout: { theme },
@@ -48,7 +47,6 @@ const AddCategory = ({
               </button>
             </div>
             <div className="modal-body">
-              <Alert />
               <form onSubmit={onSubmit} id="form-addNewsCategoryModal">
                 <div className="form-group">
                   <label htmlFor="name">Nama *</label>
