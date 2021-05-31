@@ -21,7 +21,17 @@ const advancedResults = (model) => async (req, res, next) => {
         reqQuery = {
           ...req.query,
           approved: true,
-          title: { $regex: ".*" + req.query.search + ".*", $options: "i" },
+          $or: [
+            {
+              title: { $regex: ".*" + req.query.search + ".*", $options: "i" },
+            },
+            {
+              content: {
+                $regex: ".*" + req.query.search + ".*",
+                $options: "i",
+              },
+            },
+          ],
         };
       }
     }

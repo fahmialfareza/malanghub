@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
 import axios from "axios";
+import moment from "moment";
 import ReactPaginate from "react-paginate";
 import { getNewsByUser } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
@@ -291,7 +292,7 @@ const GetUserProfile = ({
                             <li className="meta-item blog-students">
                               <span className="meta-value">
                                 {" "}
-                                {Math.ceil(news.time_read)} menit
+                                {Math.ceil(news.time_read / 10)} menit
                               </span>
                             </li>
                           </ul>
@@ -374,7 +375,7 @@ const GetUserProfile = ({
                             <li className="meta-item blog-students">
                               <span className="meta-value">
                                 {" "}
-                                {Math.ceil(news.time_read)} menit
+                                {Math.ceil(news.time_read / 10)} menit
                               </span>
                             </li>
                           </ul>
@@ -402,7 +403,12 @@ export async function getServerSideProps({ params }) {
 
   let configTrending = {
     method: "get",
-    url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&user=${id}`,
+    url: `${
+      process.env.API_ADDRESS
+    }/api/news?page=1&sort=-views&limit=4&user=${id}&created_at[gte]=${moment().subtract(
+      3,
+      "months"
+    )}`,
   };
 
   let configUser = {

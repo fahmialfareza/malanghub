@@ -55,7 +55,7 @@ const NewsByTagItem = ({ tagName, news, getNewsByTag, paramsId }) => {
               <li className="meta-item blog-students">
                 <span className="meta-value">
                   {" "}
-                  {Math.ceil(news.data[0].time_read)} menit
+                  {Math.ceil(news.data[0].time_read / 10)} menit
                 </span>
               </li>
             </ul>
@@ -110,7 +110,7 @@ const NewsByTagItem = ({ tagName, news, getNewsByTag, paramsId }) => {
                       <li className="meta-item blog-students">
                         <span className="meta-value">
                           {" "}
-                          {Math.ceil(item.time_read)} menit
+                          {Math.ceil(item.time_read / 10)} menit
                         </span>
                       </li>
                     </ul>

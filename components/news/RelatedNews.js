@@ -25,7 +25,7 @@ const RelatedNews = ({ news, index }) => {
           <li className="meta-item blog-students">
             <span className="meta-value">
               {" "}
-              {Math.ceil(news.time_read)} menit
+              {Math.ceil(news.time_read / 10)} menit
             </span>
           </li>
         </ul>

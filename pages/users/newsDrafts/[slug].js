@@ -205,7 +205,7 @@ const NewsDraft = ({
                             ) : (
                               currentNewsDraft &&
                               currentNewsDraft.time_read &&
-                              Math.ceil(currentNewsDraft.time_read)
+                              Math.ceil(currentNewsDraft.time_read / 10)
                             )}
                             menit
                           </span>

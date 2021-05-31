@@ -47,13 +47,15 @@ const SearchNewsItem = ({ news, getNewsBySearch, search }) => {
               <li className="meta-item blog-lesson">
                 <span className="meta-value">
                   {" "}
-                  <Moment format="dddd, Do MMMM YYYY">{news.created_at}</Moment>{" "}
+                  <Moment format="dddd, Do MMMM YYYY">
+                    {news.created_at}
+                  </Moment>{" "}
                 </span>
               </li>
               <li className="meta-item blog-students">
                 <span className="meta-value">
                   {" "}
-                  {Math.ceil(news.data[0].time_read)} menit
+                  {Math.ceil(news.data[0].time_read / 10)} menit
                 </span>
               </li>
             </ul>
@@ -108,7 +110,7 @@ const SearchNewsItem = ({ news, getNewsBySearch, search }) => {
                       <li className="meta-item blog-students">
                         <span className="meta-value">
                           {" "}
-                          {Math.ceil(item.time_read)} menit
+                          {Math.ceil(item.time_read / 10)} menit
                         </span>
                       </li>
                     </ul>

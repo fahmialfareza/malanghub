@@ -4,6 +4,7 @@ import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import axios from "axios";
+import moment from "moment";
 import { getNewsByTag } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import Spinner from "../../components/layouts/Spinner";
@@ -139,7 +140,12 @@ export async function getServerSideProps({ params }) {
 
   let configTrending = {
     method: "get",
-    url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4`,
+    url: `${
+      process.env.API_ADDRESS
+    }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
+      1,
+      "months"
+    )}`,
   };
 
   let config = {

@@ -202,7 +202,8 @@ const SingleNews = ({
                             {newsLoading ? (
                               <Spinner />
                             ) : (
-                              currentNews && Math.ceil(currentNews.time_read)
+                              currentNews &&
+                              Math.ceil(currentNews.time_read / 10)
                             )}
                             menit
                           </span>

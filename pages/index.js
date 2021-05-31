@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import Head from "next/head";
 import { connect } from "react-redux";
 import axios from "axios";
+import moment from "moment";
 import { setActiveLink } from "../redux/actions/layoutActions";
 import Spinner from "../components/layouts/Spinner";
 import TrendingNews from "../components/news/TrendingNews";
 import NewsItem from "../components/news/NewsItem";
-import assetsPath from "../components/layouts/Assets";
 
 const Home = ({
   recentNews,
@@ -93,7 +93,12 @@ const Home = ({
 export async function getServerSideProps() {
   let configTrending = {
     method: "get",
-    url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4`,
+    url: `${
+      process.env.API_ADDRESS
+    }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
+      1,
+      "months"
+    )}`,
   };
 
   let configRecent = {
