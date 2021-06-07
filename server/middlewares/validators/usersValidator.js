@@ -28,7 +28,7 @@ exports.updateProfile = async (req, res, next) => {
       }
 
       if (errors.length > 0) {
-        return next({ message: errors.join(","), statusCode: 400 });
+        return next({ message: errors.join(", "), statusCode: 400 });
       }
 
       // Create custom filename
@@ -41,7 +41,7 @@ exports.updateProfile = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     next();
@@ -59,7 +59,7 @@ exports.getUser = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     next();
@@ -89,7 +89,7 @@ exports.signup = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     if (req.body.password.includes("Google")) {
@@ -115,7 +115,7 @@ exports.signin = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     if (req.body.password.includes("Google")) {

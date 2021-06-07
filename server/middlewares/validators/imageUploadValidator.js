@@ -36,9 +36,7 @@ const aws_upload = async (file) => {
 
     return process.env.AWS_S3_FILE_URL + `news/${file.name}`;
   } catch (err) {
-    return res.status(500).json({
-      message: err.message,
-    });
+    throw new Error(err);
   }
 };
 
@@ -61,7 +59,7 @@ exports.upload = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     // Create custom filename

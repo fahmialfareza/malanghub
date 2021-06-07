@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { connect } from "react-redux";
+import { Editor } from "@tinymce/tinymce-react";
 import { updateNewsDraftApproved } from "../../../redux/actions/newsDraftActions";
 import { setAlert } from "../../../redux/actions/layoutActions";
 
@@ -9,8 +10,15 @@ const EditNews = ({
   updateNewsDraftApproved,
   setAlert,
 }) => {
+  const [title, setTitle] = useState(currentNewsDraft.title);
+  const [content, setContent] = useState(currentNewsDraft.content);
   const [message, setMessage] = useState("");
   const [approved, setApproved] = useState(false);
+
+  useEffect(() => {
+    setTitle(currentNewsDraft.title);
+    setContent(currentNewsDraft.content);
+  }, [currentNewsDraft]);
 
   const hideModal = () => {
     window.$("#editNewsModal").modal("toggle");
@@ -22,11 +30,17 @@ const EditNews = ({
     setApproved(trueFalse);
   };
 
+  const handleEditorChange = (content, editor) => {
+    setContent(content);
+  };
+
   const onSubmit = (event) => {
     event.preventDefault();
 
     updateNewsDraftApproved(
       {
+        title,
+        content,
         message,
         approved,
       },
@@ -67,6 +81,54 @@ const EditNews = ({
             </div>
             <div className="modal-body">
               <form onSubmit={onSubmit} id="form-editNewsModal">
+                <div className="form-group">
+                  <label htmlFor="title">Judul *</label>
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Judul"
+                    className="form-control"
+                    value={title}
+                    onChange={(event) => setTitle(event.target.value)}
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="content">Konten *</label>
+                  <Editor
+                    apiKey={process.env.NEXT_PUBLIC_TINY_API_KEY}
+                    value={content}
+                    init={{
+                      height: 500,
+                      menubar: true,
+                      plugins: [
+                        "advlist autolink lists link image charmap print preview anchor",
+                        "searchreplace visualblocks code fullscreen",
+                        "insertdatetime media table paste code help wordcount",
+                        "directionality",
+                      ],
+                      toolbar:
+                        "ltr rtl | undo redo | formatselect | bold italic backcolor | \
+             alignleft aligncenter alignright alignjustify | \
+             bullist numlist outdent indent | removeformat | help",
+                      file_picker_types: "file image media",
+                      image_caption: true,
+                      image_advtab: false,
+                      image_description: false,
+                      automatic_uploads: true,
+                      image_dimensions: false,
+                      image_title: false,
+                      image_class_list: [
+                        {
+                          title: "Responsive",
+                          value: "img-fluid rounded mx-auto my-2 d-block",
+                        },
+                      ],
+                      images_upload_url: "/api/upload",
+                    }}
+                    onEditorChange={(text) => setContent(text)}
+                    required
+                  />
+                </div>
                 <div className="form-group">
                   <label htmlFor="message">Pesan *</label>
                   <textarea

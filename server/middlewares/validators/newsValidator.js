@@ -13,8 +13,16 @@ exports.update = async (req, res, next) => {
       errors.push("Silahkan masukkan pesan");
     }
 
+    if (!req.body.title) {
+      errors.push("Judul tidak boleh kosong");
+    }
+
+    if (!req.body.content) {
+      errors.push("Konten tidak boleh kosong");
+    }
+
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     next();
@@ -32,7 +40,7 @@ exports.deleteNews = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     next();

@@ -13,7 +13,7 @@ exports.create = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     req.body.slug = req.body.name;
@@ -37,11 +37,11 @@ exports.update = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     req.body.slug = req.body.name;
@@ -61,7 +61,7 @@ exports.deleteCategory = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     next();

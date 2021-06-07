@@ -176,7 +176,6 @@ const EditNewsDraft = ({
                   <label htmlFor="content">Konten *</label>
                   <Editor
                     apiKey={process.env.NEXT_PUBLIC_TINY_API_KEY}
-                    initialValue={content}
                     value={content}
                     init={{
                       height: 500,
@@ -185,9 +184,10 @@ const EditNewsDraft = ({
                         "advlist autolink lists link image charmap print preview anchor",
                         "searchreplace visualblocks code fullscreen",
                         "insertdatetime media table paste code help wordcount",
+                        "directionality",
                       ],
                       toolbar:
-                        "undo redo | formatselect | bold italic backcolor | \
+                        "ltr rtl | undo redo | formatselect | bold italic backcolor | \
              alignleft aligncenter alignright alignjustify | \
              bullist numlist outdent indent | removeformat | help",
                       file_picker_types: "file image media",
@@ -205,7 +205,8 @@ const EditNewsDraft = ({
                       ],
                       images_upload_url: "/api/upload",
                     }}
-                    onEditorChange={handleEditorChange}
+                    onEditorChange={(text) => setContent(text)}
+                    required
                   />
                 </div>
                 <div className="form-group">

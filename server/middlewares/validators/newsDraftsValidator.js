@@ -36,7 +36,7 @@ exports.create = async (req, res, next) => {
     });
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     let findData = await Promise.all([
@@ -53,7 +53,7 @@ exports.create = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     // Check image
@@ -71,7 +71,7 @@ exports.create = async (req, res, next) => {
       }
 
       if (errors.length > 0) {
-        return next({ message: errors.join(","), statusCode: 400 });
+        return next({ message: errors.join(", "), statusCode: 400 });
       }
 
       // Create custom filename
@@ -125,7 +125,7 @@ exports.update = async (req, res, next) => {
     });
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     let findData = await Promise.all([
@@ -142,7 +142,7 @@ exports.update = async (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     // Check image
@@ -160,7 +160,7 @@ exports.update = async (req, res, next) => {
       }
 
       if (errors.length > 0) {
-        return next({ message: errors.join(","), statusCode: 400 });
+        return next({ message: errors.join(", "), statusCode: 400 });
       }
 
       // Create custom filename
@@ -192,7 +192,7 @@ exports.deleteNewsDraft = (req, res, next) => {
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(","), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     next();

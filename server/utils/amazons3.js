@@ -33,9 +33,7 @@ exports.awsUserUpload = async (file) => {
 
     return process.env.AWS_S3_FILE_URL + `user/${file.name}`;
   } catch (err) {
-    return res.status(500).json({
-      message: err.message,
-    });
+    throw new Error(err);
   }
 };
 
@@ -51,9 +49,7 @@ exports.awsNewsUpload = async (file) => {
 
     return process.env.AWS_S3_FILE_URL + `news/${file.name}`;
   } catch (err) {
-    return res.status(500).json({
-      message: err.message,
-    });
+    throw new Error(err);
   }
 };
 

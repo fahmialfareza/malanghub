@@ -47,10 +47,9 @@ class NewsController {
   }
 
   async update(req, res, next) {
-    let newData = {};
+    let newData = req.body;
 
-    newData.approved = req.body.approved;
-    newData.message = req.body.message;
+    newData.content = newData.content.replace(/&lt;/g, "<");
     req.body.approved
       ? (newData.status = "publish")
       : (newData.status = "decline");
