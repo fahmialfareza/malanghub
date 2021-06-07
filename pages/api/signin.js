@@ -5,7 +5,7 @@ export default async (req, res) => {
   if (req.method === "POST") {
     const config = {
       method: "post",
-      url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/users/signin`,
+      url: `${process.env.API_ADDRESS}/api/users/signin`,
       data: req.body,
     };
 

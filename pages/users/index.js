@@ -26,7 +26,7 @@ const UserProfile = ({
 
   useEffect(() => {
     if (!user && !localStorage.token) {
-      // return router.push("/signin");
+      return router.push("/signin");
     }
 
     setActiveLink("");
