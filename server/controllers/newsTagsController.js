@@ -14,7 +14,7 @@ class NewsCategoriesController {
       });
 
       if (data.length === 0) {
-        return next({ message: "News Tag not found", statusCode: 404 });
+        return next({ message: "Tag Berita tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(200).json({ data });
@@ -36,7 +36,7 @@ class NewsCategoriesController {
       });
 
       if (!data) {
-        return next({ message: "News Tag not found", statusCode: 404 });
+        return next({ message: "Tag Berita tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(200).json({ data });
@@ -53,7 +53,7 @@ class NewsCategoriesController {
     } catch (e) {
       if (e.code === 11000) {
         return next({
-          message: "News Tag Name has been exist",
+          message: "Nama Tag Berita sudah ada",
           statusCode: 400,
         });
       }
@@ -80,14 +80,14 @@ class NewsCategoriesController {
         });
 
       if (!data) {
-        return next({ message: "News Tag not found", statusCode: 404 });
+        return next({ message: "Tag Berita tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
         return next({
-          message: "News Tag Name has been exist",
+          message: "Nama Tag Berita sudah ada",
           statusCode: 400,
         });
       }
@@ -101,7 +101,7 @@ class NewsCategoriesController {
       const data = await newsTag.deleteById(req.params.id);
 
       if (data.n === 0) {
-        return next({ message: "News Tag not found", statusCode: 404 });
+        return next({ message: "Tag Berita tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(200).json({ data: {} });

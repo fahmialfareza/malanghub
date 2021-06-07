@@ -33,7 +33,10 @@ class NewsController {
         .populate("tags");
 
       if (!data) {
-        return next({ message: "News Draft not found", statusCode: 404 });
+        return next({
+          message: "Draft Berita tidak ditemukan",
+          statusCode: 404,
+        });
       }
 
       return res.status(200).json({ data });
@@ -60,7 +63,7 @@ class NewsController {
       if (e.code === 11000) {
         await awsNewsDelete(req.body.mainImage);
 
-        return next({ message: "Title has been exist", statusCode: 400 });
+        return next({ message: "Judul yang sama sudah ada", statusCode: 400 });
       }
 
       return next(e);
@@ -80,7 +83,10 @@ class NewsController {
           await awsNewsDelete(req.body.mainImage);
         }
 
-        return next({ message: "News Draft not found", statusCode: 404 });
+        return next({
+          message: "Draft Berita tidak ditemukan",
+          statusCode: 404,
+        });
       }
 
       data = await news
@@ -99,7 +105,7 @@ class NewsController {
           await awsNewsDelete(req.body.mainImage);
         }
 
-        return next({ message: "Title has been exist", statusCode: 400 });
+        return next({ message: "Judul yang sama sudah ada", statusCode: 400 });
       }
 
       return next(e);
@@ -111,7 +117,10 @@ class NewsController {
       const data = await news.remove({ _id: req.params.id, user: req.user.id });
 
       if (data.n === 0) {
-        return next({ message: "News Draft not found", statusCode: 404 });
+        return next({
+          message: "Draft Berita tidak ditemukan",
+          statusCode: 404,
+        });
       }
 
       return res.status(200).json({ data: {} });

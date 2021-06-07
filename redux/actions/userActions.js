@@ -45,6 +45,13 @@ export const loadUser = () => async (dispatch) => {
   }
 };
 
+export const getUserProfile = (data) => async (dispatch) => {
+  dispatch({
+    type: USER_GET_PROFILE,
+    payload: data,
+  });
+};
+
 export const getUser = (id) => async (dispatch) => {
   setLoading();
 
@@ -126,7 +133,7 @@ export const signUp = (formData) => async (dispatch) => {
 
   const config = {
     method: "post",
-    url: "/api/users/signup",
+    url: "/api/signup",
     data: formData,
   };
 
@@ -162,7 +169,7 @@ export const signIn = (formData) => async (dispatch) => {
 
   const config = {
     method: "post",
-    url: "/api/users/signin",
+    url: "/api/signin",
     data: formData,
   };
 
@@ -196,6 +203,14 @@ export const signIn = (formData) => async (dispatch) => {
 export const logout = () => async (dispatch) => {
   try {
     localStorage.removeItem("token");
+
+    var config = {
+      method: "post",
+      url: "/api/signout",
+      headers: {},
+    };
+
+    await request(config);
 
     dispatch({ type: USER_LOGOUT });
   } catch (e) {

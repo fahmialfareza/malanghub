@@ -14,7 +14,10 @@ class NewsCategoriesController {
       });
 
       if (data.length === 0) {
-        return next({ message: "News Category not found", statusCode: 404 });
+        return next({
+          message: "Kategori Berita tidak ditemukan",
+          statusCode: 404,
+        });
       }
 
       return res.status(200).json({ data });
@@ -38,7 +41,10 @@ class NewsCategoriesController {
         });
 
       if (!data) {
-        return next({ message: "News Category not found", statusCode: 404 });
+        return next({
+          message: "Kategori Berita tidak ditemukan",
+          statusCode: 404,
+        });
       }
 
       return res.status(200).json({ data });
@@ -55,7 +61,7 @@ class NewsCategoriesController {
     } catch (e) {
       if (e.code === 11000) {
         return next({
-          message: "News Category Name has been exist",
+          message: "Kategori Berita tidak ditemukan",
           statusCode: 400,
         });
       }
@@ -88,14 +94,17 @@ class NewsCategoriesController {
         });
 
       if (!data) {
-        return next({ message: "News Category not found", statusCode: 404 });
+        return next({
+          message: "Kategori Berita tidak ditemukan",
+          statusCode: 404,
+        });
       }
 
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
         return next({
-          message: "News Category Name has been exist",
+          message: "Nama Kategori Berita sudah ada",
           statusCode: 400,
         });
       }
@@ -109,7 +118,10 @@ class NewsCategoriesController {
       const data = await newsCategory.deleteById(req.params.id);
 
       if (data.n === 0) {
-        return next({ message: "News Category not found", statusCode: 404 });
+        return next({
+          message: "Kategori Berita tidak ditemukan",
+          statusCode: 404,
+        });
       }
 
       return res.status(200).json({ data: {} });

@@ -3,13 +3,12 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { loadUser } from "../redux/actions/userActions";
-import { setActiveLink } from "../redux/actions/layoutActions";
-import assetsPath from "../components/layouts/Assets";
-import Dashboard from "../components/users/Dashboard";
-import EditProfileModal from "../components/users/EditProfileModal";
-import Spinner from "../components/layouts/Spinner";
-import Alert from "../components/layouts/Alert";
+import axios from "axios";
+import { loadUser } from "../../redux/actions/userActions";
+import { setActiveLink } from "../../redux/actions/layoutActions";
+import assetsPath from "../../components/layouts/Assets";
+import Dashboard from "../../components/users/Dashboard";
+import EditProfileModal from "../../components/users/EditProfileModal";
 import parse from "html-react-parser";
 
 const UserProfile = ({
@@ -27,7 +26,7 @@ const UserProfile = ({
 
   useEffect(() => {
     if (!user && !localStorage.token) {
-      return router.push("/signin");
+      // return router.push("/signin");
     }
 
     setActiveLink("");
@@ -81,7 +80,6 @@ const UserProfile = ({
       </nav>
       <section id="author" className="w3l-author py-5">
         <div className="container py-md-3">
-          <Alert />
           <div className="row align-items-center">
             <div className="col-md-3 col-sm-4 col-7 order-first">
               <div className="embed-responsive embed-responsive-1by1">
@@ -236,6 +234,29 @@ const UserProfile = ({
     </>
   );
 };
+
+export async function getServerSideProps({ req }) {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/user`,
+      {
+        headers: {
+          Cookie: req.headers.cookie,
+        },
+      }
+    );
+
+    return { props: {} };
+  } catch (e) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/signin",
+      },
+      props: {},
+    };
+  }
+}
 
 const mapStateToProps = (state) => ({
   user: state.user,

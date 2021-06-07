@@ -6,7 +6,6 @@ import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
 import axios from "axios";
-import { getRelatedNewsByCategory } from "../../redux/actions/newsActions";
 import {
   getCommentByNews,
   createComment,
@@ -16,19 +15,12 @@ import { setAlert, setActiveLink } from "../../redux/actions/layoutActions";
 import RelatedNews from "../../components/news/RelatedNews";
 import Spinner from "../../components/layouts/Spinner";
 import AddComment from "../../components/news/comments/AddComment";
-import Alert from "../../components/layouts/Alert";
 
 const SingleNews = ({
   currentNews,
-  news: { relatedNews, loading: newsLoading },
-  newsComment: {
-    newsComments,
-    currentComment,
-    loading: newsCommentLoading,
-    error,
-  },
+  relatedNews,
+  newsComment: { newsComments, error },
   user: { isAuthenticated, token, user },
-  getRelatedNewsByCategory,
   getCommentByNews,
   createComment,
   selectNewsComment,
@@ -45,7 +37,6 @@ const SingleNews = ({
 
   useEffect(() => {
     if (currentNews) {
-      getRelatedNewsByCategory(currentNews.category._id, currentNews._id);
       getCommentByNews(currentNews._id);
     }
   }, [currentNews]);
@@ -116,7 +107,7 @@ const SingleNews = ({
         <div className="container page-wrapper">
           <Link href="/">Beranda</Link> / Berita /{" "}
           <span className="breadcrumb_last" aria-current="page">
-            {newsLoading ? <Spinner /> : currentNews && currentNews.title}
+            {currentNews && currentNews.title}
           </span>
         </div>
       </nav>
@@ -128,59 +119,39 @@ const SingleNews = ({
               <div className="pb-5 w3l-homeblock1 text-center">
                 <div className="container mt-md-3">
                   <h3 className="blog-desc-big text-center mb-4">
-                    {newsLoading ? <Spinner /> : currentNews?.title}
+                    {currentNews?.title}
                   </h3>
                   <div className="blog-post-align">
                     <div className="blog-post-img embed-responsive embed-responsive-1by1">
-                      {newsLoading ? (
-                        <Spinner />
-                      ) : (
-                        currentNews?.user && (
-                          <Link href={`/users/${currentNews.user._id}`}>
-                            <img
-                              src={
-                                currentNews &&
-                                currentNews.user &&
-                                currentNews.user.photo
-                              }
-                              alt=""
-                              className="rounded-circle img-fluid embed-responsive-item"
-                              style={{ objectFit: "cover" }}
-                            />
-                          </Link>
-                        )
+                      {currentNews?.user && (
+                        <Link href={`/users/${currentNews.user._id}`}>
+                          <img
+                            src={
+                              currentNews &&
+                              currentNews.user &&
+                              currentNews.user.photo
+                            }
+                            alt=""
+                            className="rounded-circle img-fluid embed-responsive-item"
+                            style={{ objectFit: "cover" }}
+                          />
+                        </Link>
                       )}
                     </div>
                     <div className="blog-post-info">
                       <div className="author align-items-center mb-1">
-                        {newsLoading ? (
-                          <Spinner />
-                        ) : (
-                          currentNews?.user && (
-                            <Link href={`/users/${currentNews.user._id}`}>
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.name
-                              )}
-                            </Link>
-                          )
+                        {currentNews?.user && (
+                          <Link href={`/users/${currentNews.user._id}`}>
+                            {currentNews?.user?.name}
+                          </Link>
                         )}{" "}
                         in{" "}
-                        {newsLoading ? (
-                          <Spinner />
-                        ) : (
-                          currentNews?.category && (
-                            <Link
-                              href={`/newsCategories/${currentNews?.category?.slug}`}
-                            >
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.category?.name
-                              )}
-                            </Link>
-                          )
+                        {currentNews?.category && (
+                          <Link
+                            href={`/newsCategories/${currentNews?.category?.slug}`}
+                          >
+                            {currentNews?.category?.name}
+                          </Link>
                         )}
                       </div>
                       <ul className="blog-meta">
@@ -188,23 +159,15 @@ const SingleNews = ({
                           <span className="meta-value">
                             {" "}
                             <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.created_at
-                              )}
+                              {currentNews?.created_at}
                             </Moment>{" "}
                           </span>
                         </li>
                         <li className="meta-item blog-students">
                           <span className="meta-value">
                             {" "}
-                            {newsLoading ? (
-                              <Spinner />
-                            ) : (
-                              currentNews &&
-                              Math.ceil(currentNews.time_read / 10)
-                            )}
+                            {currentNews &&
+                              Math.ceil(currentNews.time_read / 10)}
                             menit
                           </span>
                         </li>
@@ -220,9 +183,7 @@ const SingleNews = ({
                     <div className="single-post-image">
                       <div className="post-content embed-responsive embed-responsive-4by3">
                         <img
-                          src={
-                            newsLoading ? <Spinner /> : currentNews?.mainImage
-                          }
+                          src={currentNews?.mainImage}
                           className="radius-image img-fluid pb-5 embed-responsive-item"
                           style={{ objectFit: "cover" }}
                           alt=""
@@ -231,21 +192,14 @@ const SingleNews = ({
                     </div>
 
                     <div className="single-post-content text-justify">
-                      {newsLoading ? (
-                        <Spinner />
-                      ) : (
-                        currentNews &&
+                      {currentNews &&
                         currentNews.content &&
-                        parse(currentNews.content)
-                      )}
+                        parse(currentNews.content)}
 
                       <div className="d-grid left-right mt-5 pb-md-5">
                         <div className="buttons-singles tags">
                           <h4>Tag :</h4>
-                          {newsLoading ? (
-                            <Spinner />
-                          ) : (
-                            currentNews?.tags &&
+                          {currentNews?.tags &&
                             currentNews.tags.map((tag) => (
                               <Link
                                 key={tag._id}
@@ -253,8 +207,7 @@ const SingleNews = ({
                               >
                                 {tag.name}
                               </Link>
-                            ))
-                          )}
+                            ))}
                         </div>
                         <div className="buttons-singles">
                           <h4>Bagikan :</h4>
@@ -295,144 +248,84 @@ const SingleNews = ({
                           </div>
                           <div className="col-sm-9 mt-sm-0 mt-3">
                             <h3 className="mb-3 title">
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.name
-                              )}
+                              {currentNews?.user?.name}
                             </h3>
-                            <p>
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.bio
-                              )}
-                            </p>
+                            <p>{currentNews?.user?.bio}</p>
                             <ul className="author-icons mt-4">
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.facebook && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="facebook"
-                                      href={
-                                        newsLoading ? (
-                                          <Spinner />
-                                        ) : (
-                                          currentNews?.user?.facebook
-                                        )
-                                      }
-                                    >
-                                      <span
-                                        className="fab fa-facebook"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
+                              {currentNews?.user?.facebook && (
+                                <li>
+                                  <a
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="facebook"
+                                    href={currentNews?.user?.facebook}
+                                  >
+                                    <span
+                                      className="fab fa-facebook"
+                                      aria-hidden="true"
+                                    ></span>
+                                  </a>
+                                </li>
                               )}
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.twitter && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="twitter"
-                                      href={`https://twitter.com/${
-                                        newsLoading ? (
-                                          <Spinner />
-                                        ) : (
-                                          currentNews?.user?.twitter
-                                        )
-                                      }`}
-                                    >
-                                      <span
-                                        className="fab fa-twitter"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
+                              {currentNews?.user?.twitter && (
+                                <li>
+                                  <a
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="twitter"
+                                    href={`https://twitter.com/${currentNews?.user?.twitter}`}
+                                  >
+                                    <span
+                                      className="fab fa-twitter"
+                                      aria-hidden="true"
+                                    ></span>
+                                  </a>
+                                </li>
                               )}
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.instagram && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="instagram"
-                                      href={`https://instagram.com/${
-                                        newsLoading ? (
-                                          <Spinner />
-                                        ) : (
-                                          currentNews?.user?.instagram
-                                        )
-                                      }`}
-                                    >
-                                      <span
-                                        className="fab fa-instagram"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
+                              {currentNews?.user?.instagram && (
+                                <li>
+                                  <a
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="instagram"
+                                    href={`https://instagram.com/${currentNews?.user?.instagram}`}
+                                  >
+                                    <span
+                                      className="fab fa-instagram"
+                                      aria-hidden="true"
+                                    ></span>
+                                  </a>
+                                </li>
                               )}
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.linkedin && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="linkedin"
-                                      href={
-                                        newsLoading ? (
-                                          <Spinner />
-                                        ) : (
-                                          currentNews?.user?.linkedin
-                                        )
-                                      }
-                                    >
-                                      <span
-                                        className="fab fa-linkedin"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
+                              {currentNews?.user?.linkedin && (
+                                <li>
+                                  <a
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="linkedin"
+                                    href={currentNews?.user?.linkedin}
+                                  >
+                                    <span
+                                      className="fab fa-linkedin"
+                                      aria-hidden="true"
+                                    ></span>
+                                  </a>
+                                </li>
                               )}
-                              {newsLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNews?.user?.tiktok && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="tiktok"
-                                      href={`https://www.tiktok.com/@${
-                                        newsLoading ? (
-                                          <Spinner />
-                                        ) : (
-                                          currentNews?.user?.tiktok
-                                        )
-                                      }`}
-                                    >
-                                      <span
-                                        className="fab fa-tiktok"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
+                              {currentNews?.user?.tiktok && (
+                                <li>
+                                  <a
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="tiktok"
+                                    href={`https://www.tiktok.com/@${currentNews?.user?.tiktok}`}
+                                  >
+                                    <span
+                                      className="fab fa-tiktok"
+                                      aria-hidden="true"
+                                    ></span>
+                                  </a>
+                                </li>
                               )}
                             </ul>
                           </div>
@@ -440,16 +333,11 @@ const SingleNews = ({
                       </div>
 
                       <div className="comments mt-5">
-                        <Alert />
                         <h4 className="side-title mb-4">
                           Komentar (
-                          {newsLoading ? (
-                            <Spinner />
-                          ) : newsComments?.length > 0 ? (
-                            newsComments?.length
-                          ) : (
-                            "0"
-                          )}
+                          {newsComments?.length > 0
+                            ? newsComments?.length
+                            : "0"}
                           )
                         </h4>
 
@@ -480,10 +368,7 @@ const SingleNews = ({
                           </div>
                         )}
 
-                        {newsLoading ? (
-                          <Spinner />
-                        ) : (
-                          newsComments?.length > 0 &&
+                        {newsComments?.length > 0 &&
                           newsComments.map((newsComment) => (
                             <div key={newsComment._id} className="media">
                               <div className="img-circle">
@@ -600,8 +485,7 @@ const SingleNews = ({
                                   )}
                               </div>
                             </div>
-                          ))
-                        )}
+                          ))}
                       </div>
 
                       <AddComment />
@@ -614,9 +498,7 @@ const SingleNews = ({
               <div className="pos-sticky">
                 <h3 className="section-title-left">Mungkin Anda Tertarik </h3>
 
-                {newsLoading || relatedNews === null ? (
-                  <Spinner />
-                ) : !newsLoading && relatedNews?.length > 0 ? (
+                {relatedNews?.length > 0 ? (
                   relatedNews.map((news, index) => {
                     return (
                       <RelatedNews key={news._id} index={index} news={news} />
@@ -647,18 +529,31 @@ export async function getServerSideProps({ params }) {
     url: `${process.env.API_ADDRESS}/api/news/${slug}`,
   };
 
-  let data = {};
+  let data = [];
   try {
-    const res = await axios(config);
+    let res = await axios(config);
 
-    data = res.data.data;
+    data.push(res.data.data);
+
+    config = {
+      method: "get",
+      url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&category=${data[0].category._id}&_id[ne]=${data[0]._id}`,
+    };
+
+    try {
+      res = await axios(config);
+
+      data.push(res.data.data);
+    } catch (e) {
+      return { props: { currentNews: data[0], relatedNews: null } };
+    }
   } catch (e) {
     return {
       notFound: true,
     };
   }
 
-  return { props: { currentNews: data } };
+  return { props: { currentNews: data[0], relatedNews: data[1] } };
 }
 
 const mapStateToProps = (state) => ({
@@ -668,7 +563,6 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, {
-  getRelatedNewsByCategory,
   getCommentByNews,
   createComment,
   selectNewsComment,

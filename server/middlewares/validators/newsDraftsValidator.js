@@ -10,26 +10,26 @@ exports.create = async (req, res, next) => {
     let errors = [];
 
     if (!req.body.title) {
-      errors.push("Please enter title");
+      errors.push("Silahkan masukkan judul");
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.body.category)) {
-      errors.push("Please input a valid category id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (!req.body.content) {
-      errors.push("Content is required");
+      errors.push("Konten tidak boleh kosong");
     }
 
     if (!req.files) {
-      errors.push("Main Image is required");
+      errors.push("Foto Utama tidak boleh kosong");
     }
 
     tags = [];
 
     req.body.tags.split(",").map((id) => {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        errors.push("Please input a valid tag id");
+        errors.push("Silahkan masukkan id yang benar");
       }
 
       tags.push({ _id: id });
@@ -45,11 +45,11 @@ exports.create = async (req, res, next) => {
     ]);
 
     if (!findData[0]) {
-      errors.push("News Category not found");
+      errors.push("Kategori Berita tidak ditemukan");
     }
 
     if (findData[1].length < tags.length) {
-      errors.push("News Tags not found");
+      errors.push("Tag Berita tidak ditemukan");
     }
 
     if (errors.length > 0) {
@@ -62,12 +62,12 @@ exports.create = async (req, res, next) => {
 
       // Make sure image is photo
       if (!file.mimetype.startsWith("image")) {
-        errors.push("File must be an image");
+        errors.push("File haruslah sebuah gambar");
       }
 
       // Check file size (max 1MB)
       if (file.size > 1000000) {
-        errors.push("Image must be less than 1MB");
+        errors.push("Gambar harus kurang dari 1 MB");
       }
 
       if (errors.length > 0) {
@@ -99,26 +99,26 @@ exports.update = async (req, res, next) => {
     let errors = [];
 
     if (!req.body.title) {
-      errors.push("Please enter title");
+      errors.push("Silahkan masukkan judul");
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      errors.push("Please input a valid id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (!mongoose.Types.ObjectId.isValid(req.body.category)) {
-      errors.push("Please input a valid category id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (!req.body.content) {
-      errors.push("Content is required");
+      errors.push("Konten tidak boleh kosong");
     }
 
     tags = [];
 
     req.body.tags.split(",").map((id) => {
       if (!mongoose.Types.ObjectId.isValid(id)) {
-        errors.push("Please input a valid tag id");
+        errors.push("Silahkan masukkan id yang benar");
       }
 
       tags.push({ _id: id });
@@ -134,11 +134,11 @@ exports.update = async (req, res, next) => {
     ]);
 
     if (!findData[0]) {
-      errors.push("News Category not found");
+      errors.push("Kategori Berita tidak ditemukan");
     }
 
     if (findData[1].length < tags.length) {
-      errors.push("News Tags not found");
+      errors.push("Tag Berita tidak ditemukan");
     }
 
     if (errors.length > 0) {
@@ -151,12 +151,12 @@ exports.update = async (req, res, next) => {
 
       // Make sure image is photo
       if (!file.mimetype.startsWith("image")) {
-        errors.push("File must be an image");
+        errors.push("File haruslah sebuah gambar");
       }
 
       // Check file size (max 1MB)
       if (file.size > 1000000) {
-        errors.push("Image must be less than 1MB");
+        errors.push("Gambar harus kurang dari 1 MB");
       }
 
       if (errors.length > 0) {
@@ -188,7 +188,7 @@ exports.deleteNewsDraft = (req, res, next) => {
     let errors = [];
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      errors.push("Please input a valid id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (errors.length > 0) {

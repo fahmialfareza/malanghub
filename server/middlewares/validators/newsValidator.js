@@ -6,11 +6,11 @@ exports.update = async (req, res, next) => {
     let errors = [];
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      errors.push("Please input a valid id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (!req.body.message) {
-      errors.push("Please enter the message");
+      errors.push("Silahkan masukkan pesan");
     }
 
     if (errors.length > 0) {
@@ -28,7 +28,7 @@ exports.deleteNews = (req, res, next) => {
     let errors = [];
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      errors.push("Please input a valid id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (errors.length > 0) {

@@ -98,7 +98,7 @@ app.prepare().then(() => {
   server.use("/api/newsComments", newsCommentsRoute);
   server.use("/api/upload", imageUploadRoute);
 
-  server.get("*", (req, res) => {
+  server.all("*", (req, res) => {
     return handle(req, res);
   });
 

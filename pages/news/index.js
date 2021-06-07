@@ -4,11 +4,11 @@ import { connect } from "react-redux";
 import Link from "next/link";
 import axios from "axios";
 import moment from "moment";
-import { getAllNews } from "../redux/actions/newsActions";
-import { setActiveLink } from "../redux/actions/layoutActions";
-import Spinner from "../components/layouts/Spinner";
-import AllNewsItem from "../components/news/AllNewsItem";
-import TrendingNews from "../components/news/TrendingNews";
+import { getAllNews } from "../../redux/actions/newsActions";
+import { setActiveLink } from "../../redux/actions/layoutActions";
+import Spinner from "../../components/layouts/Spinner";
+import AllNewsItem from "../../components/news/AllNewsItem";
+import TrendingNews from "../../components/news/TrendingNews";
 
 const News = ({
   trendingNews,

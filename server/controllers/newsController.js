@@ -37,7 +37,7 @@ class NewsController {
         .populate("tags");
 
       if (!data) {
-        return next({ message: "News not found", statusCode: 404 });
+        return next({ message: "Berita tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(200).json({ data });
@@ -74,7 +74,7 @@ class NewsController {
           await awsNewsDelete(req.body.mainImage);
         }
 
-        return next({ message: "News not found", statusCode: 404 });
+        return next({ message: "Berita tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(201).json({ data });
@@ -88,7 +88,7 @@ class NewsController {
       const data = await news.deleteById(req.params.id);
 
       if (data.n === 0) {
-        return next({ message: "News not found", statusCode: 404 });
+        return next({ message: "Berita tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(200).json({ data: {} });

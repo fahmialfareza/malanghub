@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
 import axios from "axios";
+import cookie from "cookie";
 import { loadUser } from "../../../redux/actions/userActions";
 import { setActiveLink } from "../../../redux/actions/layoutActions";
 import Spinner from "../../../components/layouts/Spinner";
@@ -459,26 +460,58 @@ const NewsDraft = ({
   );
 };
 
-export async function getServerSideProps({ params }) {
-  const { slug } = params;
-
-  var config = {
-    method: "get",
-    url: `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`,
-  };
-
-  let data = {};
-  try {
-    const res = await axios(config);
-
-    data = res.data.data;
-  } catch (e) {
+export async function getServerSideProps({ req, params }) {
+  if (!req.headers.cookie) {
     return {
-      notFound: true,
+      redirect: {
+        permanent: false,
+        destination: "/signin",
+      },
+      props: {},
     };
   }
 
-  return { props: { currentNewsDraft: data } };
+  const { token } = cookie.parse(req.headers.cookie);
+
+  let config = {
+    method: "get",
+    url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/users`,
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+
+  try {
+    const response = await axios(config);
+
+    const { slug } = params;
+
+    config = {
+      method: "get",
+      url: `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`,
+    };
+
+    let data = {};
+    try {
+      const res = await axios(config);
+
+      data = res.data.data;
+    } catch (e) {
+      return {
+        notFound: true,
+      };
+    }
+
+    return { props: { currentNewsDraft: data } };
+  } catch (e) {
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/signin",
+      },
+      props: {},
+    };
+  }
 }
 
 const mapStateToProps = (state) => ({

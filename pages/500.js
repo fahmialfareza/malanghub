@@ -5,7 +5,7 @@ export default function Custom500() {
       style={{ width: "100%", height: "50vh", display: "flex" }}
     >
       <div className="m-auto">
-        <h1>404 - Kesalahan Server</h1>
+        <h1>500 - Kesalahan Server</h1>
       </div>
     </div>
   );

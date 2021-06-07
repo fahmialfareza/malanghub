@@ -10,7 +10,7 @@ exports.updateProfile = async (req, res, next) => {
     let errors = [];
 
     if (!validator.isAlpha(validator.blacklist(req.body.name, " "))) {
-      errors.push("Please enter your name");
+      errors.push("Silahkan masukkan nama Anda");
     }
 
     // Check image
@@ -19,12 +19,12 @@ exports.updateProfile = async (req, res, next) => {
 
       // Make sure image is photo
       if (!file.mimetype.startsWith("image")) {
-        errors.push("File must be an image");
+        errors.push("File haruslah sebuah gambar");
       }
 
       // Check file size (max 1MB)
       if (file.size > 1000000) {
-        errors.push("Image must be less than 1MB");
+        errors.push("Gambar harus kurang dari 1 MB");
       }
 
       if (errors.length > 0) {
@@ -55,7 +55,7 @@ exports.getUser = (req, res, next) => {
     let errors = [];
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      errors.push("Please input a valid id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (errors.length > 0) {
@@ -73,19 +73,19 @@ exports.signup = (req, res, next) => {
     let errors = [];
 
     if (!validator.isAlpha(validator.blacklist(req.body.name, " "))) {
-      errors.push("Please enter your name");
+      errors.push("Silahkan masukkan nama Anda");
     }
 
     if (!validator.isEmail(req.body.email)) {
-      errors.push("Please enter valid email address");
+      errors.push("Silahkan masukkan email yang valid");
     }
 
     if (!validator.isStrongPassword(req.body.password, { minSymbols: 0 })) {
-      errors.push("Password must be stronger");
+      errors.push("Password kurang kuat");
     }
 
     if (req.body.passwordConfirmation !== req.body.password) {
-      errors.push("Password Confirmation field must be same to Password field");
+      errors.push("Password harus sama dengan Password Konfirmasi");
     }
 
     if (errors.length > 0) {
@@ -111,7 +111,7 @@ exports.signin = (req, res, next) => {
     let errors = [];
 
     if (!validator.isEmail(req.body.email)) {
-      errors.push("Please enter valid email address");
+      errors.push("Silahkan masukkan email yang valid");
     }
 
     if (errors.length > 0) {

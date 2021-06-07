@@ -52,12 +52,12 @@ exports.upload = async (req, res, next) => {
 
     // Make sure image is photo
     if (!file.mimetype.startsWith("image")) {
-      errors.push("File must be an image");
+      errors.push("File haruslah sebuah gambar");
     }
 
     // Check file size (max 1MB)
     if (file.size > 1000000) {
-      errors.push("Image must be less than 1MB");
+      errors.push("Gambar harus kurang dari 1 MB");
     }
 
     if (errors.length > 0) {

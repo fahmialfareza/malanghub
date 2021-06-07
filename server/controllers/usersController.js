@@ -19,7 +19,7 @@ class UsersController {
         });
 
       if (!data) {
-        return next({ message: "User not found", statusCode: 404 });
+        return next({ message: "Pengguna tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(200).json({ data });
@@ -79,7 +79,7 @@ class UsersController {
         });
 
       if (!data) {
-        return next({ message: "User not found", statusCode: 404 });
+        return next({ message: "Pengguna tidak ditemukan", statusCode: 404 });
       }
 
       return res.status(200).json({ data });

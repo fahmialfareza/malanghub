@@ -10,7 +10,7 @@ const { user } = require("../../models");
 exports.signup = async (req, res, next) => {
   passport.authenticate("signup", { session: false }, (err, user, info) => {
     if (err) {
-      return next({ message: "Email has been used" });
+      return next({ message: "Email sudah dipakai pengguna lain" });
     }
 
     if (err || !user) {
@@ -38,7 +38,7 @@ passport.use(
         return done(null, newUser);
       } catch (e) {
         return done(e.message, false, {
-          message: "Email has been used",
+          message: "Email sudah dipakai pengguna lain",
         });
       }
     }
@@ -48,7 +48,7 @@ passport.use(
 exports.signin = async (req, res, next) => {
   passport.authenticate("signin", { session: false }, (err, user, info) => {
     if (err) {
-      return next({ message: "Email has been used" });
+      return next({ message: "Email sudah dipakai pengguna lain" });
     }
 
     if (!user) {
@@ -73,20 +73,20 @@ passport.use(
         const userLogin = await user.findOne({ email });
 
         if (!userLogin) {
-          return done(null, false, { message: "User not found" });
+          return done(null, false, { message: "Pengguna tidak ditemukan" });
         }
 
         const validate = await bcrypt.compare(password, userLogin.password);
 
         if (!validate) {
-          return done(null, false, { message: "Wrong password" });
+          return done(null, false, { message: "Password Anda salah" });
         }
 
         return done(null, userLogin, {
-          message: "Signin success",
+          message: "Berhasil masuk",
         });
       } catch (e) {
-        return done(e.message, false, { message: "Signin failed" });
+        return done(e.message, false, { message: "Gagal masuk" });
       }
     }
   )
@@ -122,7 +122,7 @@ passport.use(
         });
 
         if (!userLogin) {
-          return done(null, false, { message: "You're not authorized" });
+          return done(null, false, { message: "Anda tidak diizinkan" });
         }
 
         // if user.role includes transaksi it will next
@@ -131,9 +131,9 @@ passport.use(
         }
 
         // if user.role not includes transaksi it will not authorization
-        return done(null, false, { message: "You're not authorized" });
+        return done(null, false, { message: "Anda tidak diizinkan" });
       } catch (e) {
-        return done(e.message, false, { message: "You're not authorized" });
+        return done(e.message, false, { message: "Anda tidak diizinkan" });
       }
     }
   )
@@ -169,7 +169,7 @@ passport.use(
         });
 
         if (!userLogin) {
-          return done(null, false, { message: "You're not authorized" });
+          return done(null, false, { message: "Anda tidak diizinkan" });
         }
 
         // if user.role includes transaksi it will next
@@ -179,11 +179,11 @@ passport.use(
 
         // if user.role not includes transaksi it will not authorization
         return done(null, false, {
-          message: "You're not authorized",
+          message: "Anda tidak diizinkan",
         });
       } catch (e) {
         return done(e.message, false, {
-          message: "You're not authorized",
+          message: "Anda tidak diizinkan",
         });
       }
     }

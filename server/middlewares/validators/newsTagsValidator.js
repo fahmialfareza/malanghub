@@ -7,7 +7,7 @@ exports.create = (req, res, next) => {
     let errors = [];
 
     if (!validator.isAlpha(validator.blacklist(req.body.name, " "))) {
-      errors.push("Please enter name");
+      errors.push("Silahkan masukkan nama");
     }
 
     if (errors.length > 0) {
@@ -27,11 +27,11 @@ exports.update = async (req, res, next) => {
     let errors = [];
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      errors.push("Please input a valid id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (!validator.isAlpha(validator.blacklist(req.body.name, " "))) {
-      errors.push("Please enter name");
+      errors.push("Silahkan masukkan nama");
     }
 
     if (errors.length > 0) {
@@ -51,7 +51,7 @@ exports.deleteTag = (req, res, next) => {
     let errors = [];
 
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      errors.push("Please input a valid id");
+      errors.push("Silahkan masukkan id yang benar");
     }
 
     if (errors.length > 0) {

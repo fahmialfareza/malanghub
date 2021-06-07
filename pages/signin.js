@@ -3,11 +3,11 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import axios from "axios";
 import { signIn } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
-import Alert from "../components/layouts/Alert";
 
 const SignIn = ({
   user: { isAuthenticated, error, token },
@@ -121,7 +121,6 @@ const SignIn = ({
 
       <section className="w3l-contact-2 py-5">
         <div className="container py-lg-5 py-md-4">
-          <Alert />
           <h3 className="section-title-left">Masuk </h3>
           <div className="contact-grids d-grid">
             <div className="contact-left m-auto">
@@ -191,6 +190,29 @@ const SignIn = ({
     </>
   );
 };
+
+export async function getServerSideProps({ req }) {
+  try {
+    const response = await axios.get(
+      `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/user`,
+      {
+        headers: {
+          Cookie: req.headers.cookie,
+        },
+      }
+    );
+
+    return {
+      redirect: {
+        permanent: false,
+        destination: "/users",
+      },
+      props: {},
+    };
+  } catch (e) {
+    return { props: {} };
+  }
+}
 
 const mapStateToProps = (state) => ({
   user: state.user,

@@ -179,36 +179,6 @@ export const getNewsByUser = (userQuery, page) => async (dispatch) => {
   }
 };
 
-// Get News by Category
-export const getRelatedNewsByCategory = (id, newsId) => async (dispatch) => {
-  setLoading();
-
-  let config = {
-    method: "get",
-    url: `/api/news?page=1&sort=-views&limit=4&category=${id}&_id[ne]=${newsId}`,
-  };
-
-  try {
-    let response = await request(config);
-
-    dispatch({
-      type: GET_RELATED_NEWS,
-      payload: response.data.data,
-    });
-  } catch (e) {
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e.response.data.message,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: NEWS_CLEAR_ERROR,
-      });
-    }, 5000);
-  }
-};
-
 export const getMyNews = () => async (dispatch) => {
   setLoading();
 

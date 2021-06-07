@@ -2,6 +2,7 @@ import Head from "next/head";
 import { wrapper } from "../redux/store";
 import Header from "../components/layouts/Header";
 import Footer from "../components/layouts/Footer";
+import Alert from "../components/layouts/Alert";
 
 function MyApp({ Component, pageProps }) {
   return (
@@ -15,6 +16,8 @@ function MyApp({ Component, pageProps }) {
       </Head>
 
       <Header />
+
+      <Alert />
 
       <Component {...pageProps} />
 
