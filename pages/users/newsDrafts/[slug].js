@@ -475,7 +475,7 @@ export async function getServerSideProps({ req, params }) {
 
   let config = {
     method: "get",
-    url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/users`,
+    url: `${process.env.API_ADDRESS}/api/users`,
     headers: {
       Authorization: `Bearer ${token}`,
     },

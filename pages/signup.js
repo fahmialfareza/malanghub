@@ -226,14 +226,11 @@ const SignUp = ({
 
 export async function getServerSideProps({ req }) {
   try {
-    const response = await axios.get(
-      `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/user`,
-      {
-        headers: {
-          Cookie: req.headers.cookie,
-        },
-      }
-    );
+    const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
+      headers: {
+        Cookie: req.headers.cookie,
+      },
+    });
 
     return {
       redirect: {
