@@ -1,0 +1,81 @@
+name: deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: echo "API_ADDRESS"=$API_ADDRESS > .env.production
+        env:
+          API_ADDRESS: ${{ secrets.API_ADDRESS }}
+      - run: echo "NEXT_PUBLIC_API_ADDRESS"=$NEXT_PUBLIC_API_ADDRESS >> .env.production
+        env:
+          NEXT_PUBLIC_API_ADDRESS: ${{ secrets.NEXT_PUBLIC_API_ADDRESS }}
+      - run: echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID"=$NEXT_PUBLIC_GOOGLE_CLIENT_ID >> .env.production
+        env:
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+      - run: echo "NEXT_PUBLIC_FACEBOOK_APP_ID"=$NEXT_PUBLIC_FACEBOOK_APP_ID >> .env.production
+        env:
+          NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets.NEXT_PUBLIC_FACEBOOK_APP_ID }}
+      - run: echo "NEXT_PUBLIC_TINY_API_KEY"=$NEXT_PUBLIC_TINY_API_KEY >> .env.production
+        env:
+          NEXT_PUBLIC_TINY_API_KEY: ${{ secrets.NEXT_PUBLIC_TINY_API_KEY }}
+      - run: echo "MONGO_URI"=$MONGO_URI >> .env.production
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+      - run: echo "JWT_SECRET"=$JWT_SECRET >> .env.production
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      - run: echo "AWS_S3_BUCKET"=$AWS_S3_BUCKET >> .env.production
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+      - run: echo "AWS_S3_ACCESS_KEY"=$AWS_S3_ACCESS_KEY >> .env.production
+        env:
+          AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
+      - run: echo "AWS_S3_SECRET_KEY"=$AWS_S3_SECRET_KEY >> .env.production
+        env:
+          AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
+      - run: echo "AWS_S3_FILE_URL"=$AWS_S3_FILE_URL >> .env.production
+        env:
+          AWS_S3_FILE_URL: ${{ secrets.AWS_S3_FILE_URL }}
+      - run: echo "GOOGLE_CLIENT_ID"=$GOOGLE_CLIENT_ID >> .env.production
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      - run: echo "PORT"=$PORT >> .env.production
+        env:
+          PORT: ${{ secrets.PORT }}
+      - run: docker build --tag $ECR_URI --target prod .
+        env:
+          ECR_URI: ${{ secrets.ECR_URI }}
+      - name: Push to ECR
+        id: ecr
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: ap-southeast-1
+          image: ${{ secrets.ECR_URI }}
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v2
+      - name: Pull from ECR
+        id: ecr
+        uses: jwalton/gh-ecr-push@v1
+        with:
+          access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          region: us-east-1
+          image: ${{ secrets.ECR_URI }}
+          local-image: ${{ secrets.ECR_URI }}
+          direction: pull
+      - run: sudo bash ./killdocker.sh
+      - run: sudo docker run -p 80:3000 -d $ECR_URI
+        env:
+          ECR_URI: ${{ secrets.ECR_URI }}

@@ -1,4 +1,4 @@
-version: "2.4"
+version: '2.4'
 
 services:
   # MongoDB
@@ -9,6 +9,20 @@ services:
     volumes:
       - ./mongo-volume:/data/db
 
+  malanghub:
+    build:
+      context: .
+      target: dev
+    ports:
+      - 3000:3000
+    depends_on:
+      - mongo
+    volumes:
+      - .:/app
+
 # Volumes
 volumes:
   mongo-volume:
+
+networks:
+  malanghub_network:
