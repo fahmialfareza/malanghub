@@ -76,6 +76,6 @@ jobs:
           local-image: ${{ secrets.ECR_URI }}
           direction: pull
       - run: sudo bash ./killdocker.sh
-      - run: sudo docker run -p 80:3000 -d $ECR_URI
+      - run: docker run -p 80:3000 -d $ECR_URI
         env:
           ECR_URI: ${{ secrets.ECR_URI }}
