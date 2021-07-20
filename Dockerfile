@@ -21,6 +21,7 @@ CMD ["yarn", "run", "dev"]
 
 
 FROM base as prod
+COPY . .
 RUN yarn run build
 USER node
 CMD ["yarn", "run", "start"]
