@@ -10,17 +10,17 @@ COPY package.json ./
 RUN yarn install --production=true && yarn cache clean --force
 RUN apk add --no-cache tini
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["npm", "run", "start"]
+CMD ["yarn", "run", "start"]
 
 
 FROM base as dev
 ENV NODE_ENV=development
-RUN yarn install && npm cache clean --force
+RUN yarn install && yarn cache clean --force
 USER node
-CMD ["npm", "run", "dev"]
+CMD ["yarn", "run", "dev"]
 
 
 FROM base as prod
-RUN npm run build
+RUN yarn run build
 USER node
-CMD ["npm", "run", "start"]
+CMD ["yarn", "run", "start"]
