@@ -1,18 +1,18 @@
-import { useState, useEffect } from "react";
-import { connect } from "react-redux";
-import AddNews from "./AddNews";
-import EditNewsDraft from "./drafts/EditNewsDraft";
-import DeleteNewsDraft from "./drafts/DeleteNewsDraft";
-import AllNewsDraftTableItem from "./drafts/AllNewsDraftTableItem";
-import NewsDraftTableItem from "./drafts/NewsDraftTableItem";
-import NewsTableItem from "./NewsTableItem";
-import EditNews from "./EditNews";
-import Spinner from "../../layouts/Spinner";
+import { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import AddNews from './AddNews';
+import EditNewsDraft from './drafts/EditNewsDraft';
+import DeleteNewsDraft from './drafts/DeleteNewsDraft';
+import AllNewsDraftTableItem from './drafts/AllNewsDraftTableItem';
+import NewsDraftTableItem from './drafts/NewsDraftTableItem';
+import NewsTableItem from './NewsTableItem';
+import EditNews from './EditNews';
+import Spinner from '../../layouts/Spinner';
 import {
   getAllNewsDrafts,
   getMyNewsDrafts,
-} from "../../../redux/actions/newsDraftActions";
-import { getMyNews } from "../../../redux/actions/newsActions";
+} from '../../../redux/actions/newsDraftActions';
+import { getMyNews } from '../../../redux/actions/newsActions';
 
 const News = ({
   layout: { theme },
@@ -23,7 +23,7 @@ const News = ({
   getMyNewsDrafts,
   getMyNews,
 }) => {
-  const [tableName, setTableName] = useState("Berita");
+  const [tableName, setTableName] = useState('Berita');
 
   useEffect(() => {
     getMyNews();
@@ -33,12 +33,14 @@ const News = ({
 
   useEffect(() => {
     getMyNews();
+    getAllNewsDrafts();
+    getMyNewsDrafts();
   }, [myNewsDrafts, allNewsDrafts]);
 
   return (
     <section
       id="news"
-      className={"collapse mb-5 " + (!user.role.includes("admin") && "show")}
+      className={'collapse mb-5 ' + (!user.role.includes('admin') && 'show')}
     >
       <section id="actions" className="py-4 mb-1">
         <div className="container">
@@ -62,7 +64,7 @@ const News = ({
                   <a
                     href="#"
                     className="dropdown-item"
-                    onClick={() => setTableName("Berita")}
+                    onClick={() => setTableName('Berita')}
                   >
                     Lihat Berita
                   </a>
@@ -81,17 +83,17 @@ const News = ({
               <a
                 href="#"
                 className="btn btn-primary btn-block"
-                onClick={() => setTableName("Antrian Berita")}
+                onClick={() => setTableName('Antrian Berita')}
               >
                 Antrian Berita
               </a>
             </div>
-            {user.role.includes("admin") && (
+            {user.role.includes('admin') && (
               <div className="col-md-3">
                 <a
                   href="#"
                   className="btn btn-primary btn-block"
-                  onClick={() => setTableName("Persetujuan Berita")}
+                  onClick={() => setTableName('Persetujuan Berita')}
                 >
                   Persetujuan Berita
                 </a>
@@ -103,10 +105,10 @@ const News = ({
       <div className="container">
         <div className="row">
           <div className="col-md-9 mb-2">
-            <div className={theme === "dark" ? "card bg-dark" : "card"}>
+            <div className={theme === 'dark' ? 'card bg-dark' : 'card'}>
               <div
                 className={
-                  theme === "dark" ? "card-header text-light" : "card-header"
+                  theme === 'dark' ? 'card-header text-light' : 'card-header'
                 }
               >
                 <h4>{tableName}</h4>
@@ -114,33 +116,33 @@ const News = ({
               <div className="table-responsive">
                 <table
                   className={
-                    theme === "dark"
-                      ? "table table-striped table-dark"
-                      : "table table-striped"
+                    theme === 'dark'
+                      ? 'table table-striped table-dark'
+                      : 'table table-striped'
                   }
                 >
                   <thead
-                    className={theme === "dark" ? "thead-dark" : "thead-light"}
+                    className={theme === 'dark' ? 'thead-dark' : 'thead-light'}
                   >
                     <tr>
                       <th>ID</th>
                       <th>Judul</th>
-                      {(tableName === "Antrian Berita" ||
-                        tableName === "Persetujuan Berita") && (
+                      {(tableName === 'Antrian Berita' ||
+                        tableName === 'Persetujuan Berita') && (
                         <th>Pesan Dari Admin</th>
                       )}
-                      {(tableName === "Antrian Berita" ||
-                        tableName === "Persetujuan Berita") && <th>Status</th>}
+                      {(tableName === 'Antrian Berita' ||
+                        tableName === 'Persetujuan Berita') && <th>Status</th>}
                       <th>Dibuat</th>
                       <th>Diperbaharui</th>
                       <th></th>
                     </tr>
                   </thead>
                   <tbody>
-                    {tableName === "Berita" && newsLoading ? (
+                    {tableName === 'Berita' && newsLoading ? (
                       <Spinner />
                     ) : (
-                      tableName === "Berita" &&
+                      tableName === 'Berita' &&
                       myNews &&
                       myNews.map((news, index) => (
                         <NewsTableItem
@@ -150,10 +152,10 @@ const News = ({
                         />
                       ))
                     )}
-                    {tableName === "Antrian Berita" && newsDraftLoading ? (
+                    {tableName === 'Antrian Berita' && newsDraftLoading ? (
                       <Spinner />
                     ) : (
-                      tableName === "Antrian Berita" &&
+                      tableName === 'Antrian Berita' &&
                       myNewsDrafts &&
                       myNewsDrafts.map((draft, index) => (
                         <NewsDraftTableItem
@@ -163,10 +165,10 @@ const News = ({
                         />
                       ))
                     )}
-                    {tableName === "Persetujuan Berita" && newsDraftLoading ? (
+                    {tableName === 'Persetujuan Berita' && newsDraftLoading ? (
                       <Spinner />
                     ) : (
-                      tableName === "Persetujuan Berita" &&
+                      tableName === 'Persetujuan Berita' &&
                       allNewsDrafts &&
                       allNewsDrafts.map((draft, index) => (
                         <AllNewsDraftTableItem
@@ -184,15 +186,15 @@ const News = ({
           <div className="col-md-3">
             <div className="card text-center bg-primary text-light mb-3">
               <div className="card-body">
-                <h3 style={{ color: "#f8f9fa" }}>Berita</h3>
-                <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                  <i className="fa fa-pencil-alt" aria-hidden="true"></i>{" "}
+                <h3 style={{ color: '#f8f9fa' }}>Berita</h3>
+                <h4 className="display-4 mb-2" style={{ color: '#f8f9fa' }}>
+                  <i className="fa fa-pencil-alt" aria-hidden="true"></i>{' '}
                   {newsLoading ? <Spinner /> : myNews ? myNews.length : 0}
                 </h4>
                 <a
                   href="#"
                   className="btn btn-outline-light btn-sm"
-                  onClick={() => setTableName("Berita")}
+                  onClick={() => setTableName('Berita')}
                 >
                   Lihat
                 </a>
@@ -200,9 +202,9 @@ const News = ({
             </div>
             <div className="card text-center bg-primary text-light mb-3">
               <div className="card-body">
-                <h3 style={{ color: "#f8f9fa" }}>Antrian Berita</h3>
-                <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                  <i className="fa fa-pencil-alt" aria-hidden="true"></i>{" "}
+                <h3 style={{ color: '#f8f9fa' }}>Antrian Berita</h3>
+                <h4 className="display-4 mb-2" style={{ color: '#f8f9fa' }}>
+                  <i className="fa fa-pencil-alt" aria-hidden="true"></i>{' '}
                   {newsDraftLoading ? (
                     <Spinner />
                   ) : myNewsDrafts ? (
@@ -214,18 +216,18 @@ const News = ({
                 <a
                   href="#"
                   className="btn btn-outline-light btn-sm"
-                  onClick={() => setTableName("Antrian Berita")}
+                  onClick={() => setTableName('Antrian Berita')}
                 >
                   Lihat
                 </a>
               </div>
             </div>
-            {user.role.includes("admin") && (
+            {user.role.includes('admin') && (
               <div className="card text-center bg-primary text-light mb-3">
                 <div className="card-body">
-                  <h3 style={{ color: "#f8f9fa" }}>Persetujuan Berita</h3>
-                  <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                    <i className="fa fa-pencil-alt" aria-hidden="true"></i>{" "}
+                  <h3 style={{ color: '#f8f9fa' }}>Persetujuan Berita</h3>
+                  <h4 className="display-4 mb-2" style={{ color: '#f8f9fa' }}>
+                    <i className="fa fa-pencil-alt" aria-hidden="true"></i>{' '}
                     {newsDraftLoading ? (
                       <Spinner />
                     ) : allNewsDrafts ? (
@@ -237,7 +239,7 @@ const News = ({
                   <a
                     href="#"
                     className="btn btn-outline-light btn-sm"
-                    onClick={() => setTableName("Persetujuan Berita")}
+                    onClick={() => setTableName('Persetujuan Berita')}
                   >
                     Lihat
                   </a>

@@ -1,8 +1,8 @@
-import { useEffect } from "react";
-import Link from "next/link";
-import { connect } from "react-redux";
-import Moment from "react-moment";
-import { selectNewsDraft } from "../../../../redux/actions/newsDraftActions";
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { connect } from 'react-redux';
+import Moment from 'react-moment';
+import { selectNewsDraft } from '../../../../redux/actions/newsDraftActions';
 
 const AllNewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
   const onClickEdit = (event) => {
@@ -10,7 +10,15 @@ const AllNewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
 
     selectNewsDraft(draft);
 
-    window.$("#editNewsModal").modal("toggle");
+    window.$('#editNewsModal').modal('toggle');
+  };
+
+  const onClickDelete = (event) => {
+    event.preventDefault();
+
+    selectNewsDraft(draft);
+
+    window.$('#deleteNewsDraftModal').modal('toggle');
   };
 
   return (
@@ -20,10 +28,10 @@ const AllNewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
       <td>
         {draft.message
           ? draft.message
-          : "Silahkan Tunggu Konfirmasi dari Admin"}
+          : 'Silahkan Tunggu Konfirmasi dari Admin'}
       </td>
       <td>
-        {draft.status === "process" ? (
+        {draft.status === 'process' ? (
           <button className="btn btn-success btn-block">
             Sedang Diproses Admin
           </button>
@@ -52,6 +60,14 @@ const AllNewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
           onClick={onClickEdit}
         >
           <i className="fa fa-edit" aria-hidden="true"></i> Persetujuan
+        </button>
+        <button
+          className="btn btn-danger m-1"
+          data-toggle="modal"
+          data-target="#deleteNewsDraftModal"
+          onClick={onClickDelete}
+        >
+          <i className="fa fa-trash" aria-hidden="true"></i> Hapus
         </button>
       </td>
     </tr>

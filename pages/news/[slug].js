@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react";
-import Head from "next/head";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { connect } from "react-redux";
-import Moment from "react-moment";
-import parse from "html-react-parser";
-import axios from "axios";
+import { useEffect, useState } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { connect } from 'react-redux';
+import Moment from 'react-moment';
+import parse from 'html-react-parser';
+import axios from 'axios';
 import {
   getCommentByNews,
   createComment,
   selectNewsComment,
-} from "../../redux/actions/newsCommentActions";
-import { setAlert, setActiveLink } from "../../redux/actions/layoutActions";
-import RelatedNews from "../../components/news/RelatedNews";
-import Spinner from "../../components/layouts/Spinner";
-import AddComment from "../../components/news/comments/AddComment";
+} from '../../redux/actions/newsCommentActions';
+import { setAlert, setActiveLink } from '../../redux/actions/layoutActions';
+import RelatedNews from '../../components/news/RelatedNews';
+import Spinner from '../../components/layouts/Spinner';
+import AddComment from '../../components/news/comments/AddComment';
 
 const SingleNews = ({
   currentNews,
@@ -29,10 +29,10 @@ const SingleNews = ({
   const router = useRouter();
   const { slug } = router.query;
 
-  const [comment, setComment] = useState("");
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
-    setActiveLink("news");
+    setActiveLink('news');
   }, []);
 
   useEffect(() => {
@@ -47,10 +47,10 @@ const SingleNews = ({
     createComment(currentNews?._id, comment);
 
     if (error) {
-      setAlert(error, "danger");
+      setAlert(error, 'danger');
     }
 
-    setComment("");
+    setComment('');
   };
 
   return (
@@ -64,7 +64,7 @@ const SingleNews = ({
         <meta
           name="description"
           content={currentNews?.content
-            ?.replace(/<(.|\n)*?>/g, "")
+            ?.replace(/<(.|\n)*?>/g, '')
             .slice(0, 255)}
         />
 
@@ -80,7 +80,7 @@ const SingleNews = ({
         <meta
           property="og:description"
           content={currentNews?.content
-            ?.replace(/<(.|\n)*?>/g, "")
+            ?.replace(/<(.|\n)*?>/g, '')
             .slice(0, 255)}
         />
         <meta property="og:image" content={currentNews?.mainImage} />
@@ -97,7 +97,7 @@ const SingleNews = ({
         <meta
           property="twitter:description"
           content={currentNews?.content
-            ?.replace(/<(.|\n)*?>/g, "")
+            ?.replace(/<(.|\n)*?>/g, '')
             .slice(0, 255)}
         />
         <meta property="twitter:image" content={currentNews?.mainImage} />
@@ -105,7 +105,7 @@ const SingleNews = ({
 
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> / Berita /{" "}
+          <Link href="/">Beranda</Link> / Berita /{' '}
           <span className="breadcrumb_last" aria-current="page">
             {currentNews && currentNews.title}
           </span>
@@ -133,7 +133,7 @@ const SingleNews = ({
                             }
                             alt=""
                             className="rounded-circle img-fluid embed-responsive-item"
-                            style={{ objectFit: "cover" }}
+                            style={{ objectFit: 'cover' }}
                           />
                         </Link>
                       )}
@@ -144,8 +144,8 @@ const SingleNews = ({
                           <Link href={`/users/${currentNews.user._id}`}>
                             {currentNews?.user?.name}
                           </Link>
-                        )}{" "}
-                        in{" "}
+                        )}{' '}
+                        in{' '}
                         {currentNews?.category && (
                           <Link
                             href={`/newsCategories/${currentNews?.category?.slug}`}
@@ -157,15 +157,15 @@ const SingleNews = ({
                       <ul className="blog-meta">
                         <li className="meta-item blog-lesson">
                           <span className="meta-value">
-                            {" "}
+                            {' '}
                             <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
                               {currentNews?.created_at}
-                            </Moment>{" "}
+                            </Moment>{' '}
                           </span>
                         </li>
                         <li className="meta-item blog-students">
                           <span className="meta-value">
-                            {" "}
+                            {' '}
                             {currentNews &&
                               Math.ceil(currentNews.time_read / 10)}
                             menit
@@ -185,7 +185,7 @@ const SingleNews = ({
                         <img
                           src={currentNews?.mainImage}
                           className="radius-image img-fluid pb-5 embed-responsive-item"
-                          style={{ objectFit: "cover" }}
+                          style={{ objectFit: 'cover' }}
                           alt=""
                         />
                       </div>
@@ -242,7 +242,7 @@ const SingleNews = ({
                                 src={currentNews?.user?.photo}
                                 alt=""
                                 className="rounded-circle img-fluid embed-responsive-item"
-                                style={{ objectFit: "cover" }}
+                                style={{ objectFit: 'cover' }}
                               />
                             </div>
                           </div>
@@ -332,7 +332,7 @@ const SingleNews = ({
                         </div>
                       </div>
 
-                      <div className="comments mt-5">
+                      {/* <div className="comments mt-5">
                         <h4 className="side-title mb-4">
                           Komentar (
                           {newsComments?.length > 0
@@ -488,7 +488,7 @@ const SingleNews = ({
                           ))}
                       </div>
 
-                      <AddComment />
+                      <AddComment /> */}
                     </div>
                   </div>
                 </div>
@@ -515,7 +515,7 @@ const SingleNews = ({
 
       <div
         className="display-ad"
-        style={{ margin: "8px auto", display: "block", textAlign: "center" }}
+        style={{ margin: '8px auto', display: 'block', textAlign: 'center' }}
       ></div>
     </>
   );
@@ -525,7 +525,7 @@ export async function getServerSideProps({ params }) {
   const { slug } = params;
 
   let config = {
-    method: "get",
+    method: 'get',
     url: `${process.env.API_ADDRESS}/api/news/${slug}`,
   };
 
@@ -536,7 +536,7 @@ export async function getServerSideProps({ params }) {
     data.push(res.data.data);
 
     config = {
-      method: "get",
+      method: 'get',
       url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&category=${data[0].category._id}&_id[ne]=${data[0]._id}`,
     };
 
