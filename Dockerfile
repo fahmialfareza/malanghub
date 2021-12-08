@@ -1,4 +1,4 @@
-FROM node:14-alpine as base
+FROM node:16-alpine as base
 LABEL org.opencontainers.image.authors=fahmialfareza@icloud.com
 LABEL org.opencontainers.image.title="Malanghub"
 LABEL org.opencontainers.image.licenses=MIT
@@ -16,12 +16,12 @@ CMD ["yarn", "run", "start"]
 FROM base as dev
 ENV NODE_ENV=development
 RUN yarn install && yarn cache clean --force
-USER node
+# USER node
 CMD ["yarn", "run", "dev"]
 
 
 FROM base as prod
 COPY . .
 RUN yarn run build
-USER node
+# USER node
 CMD ["yarn", "run", "start"]
