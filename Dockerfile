@@ -16,10 +16,12 @@ CMD ["yarn", "run", "start"]
 FROM base as dev
 ENV NODE_ENV=development
 RUN yarn install && yarn cache clean --force
+USER node
 CMD ["yarn", "run", "dev"]
 
 
 FROM base as prod
 COPY . .
 RUN yarn run build
+USER node
 CMD ["yarn", "run", "start"]
