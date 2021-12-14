@@ -3,11 +3,16 @@ import Link from 'next/link';
 
 function Offline() {
   return (
-    <div>
-      <h1>Kamu sedang offline!</h1>
-      <Link href="/">
-        <a className="btn btn-style btn-outline">Kembali ke Beranda</a>
-      </Link>
+    <div
+      className="container"
+      style={{ width: '100%', height: '50vh', display: 'flex' }}
+    >
+      <div className="m-auto">
+        <h1>Kamu sedang offline!</h1>
+        <Link href="/">
+          <a className="btn btn-style btn-outline">Kembali ke Beranda</a>
+        </Link>
+      </div>
     </div>
   );
 }
