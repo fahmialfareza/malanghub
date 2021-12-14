@@ -1,8 +1,14 @@
-import Link from "next/link";
-import { connect } from "react-redux";
-import Moment from "react-moment";
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { connect } from 'react-redux';
+import Moment from 'react-moment';
+import { getMyNews } from '../../../redux/actions/newsActions';
 
-const NewsTableItem = ({ news, index }) => {
+const NewsTableItem = ({ news, index, getMyNews }) => {
+  useEffect(() => {
+    getMyNews();
+  }, []);
+
   return (
     <tr>
       <td>{index + 1}</td>
@@ -24,4 +30,4 @@ const NewsTableItem = ({ news, index }) => {
   );
 };
 
-export default connect(null, {})(NewsTableItem);
+export default connect(null, { getMyNews })(NewsTableItem);

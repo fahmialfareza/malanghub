@@ -1,15 +1,28 @@
-import Link from "next/link";
-import { connect } from "react-redux";
-import Moment from "react-moment";
-import { selectNewsDraft } from "../../../../redux/actions/newsDraftActions";
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { connect } from 'react-redux';
+import Moment from 'react-moment';
+import {
+  selectNewsDraft,
+  getMyNewsDrafts,
+} from '../../../../redux/actions/newsDraftActions';
 
-const NewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
+const NewsDraftTableItem = ({
+  draft,
+  index,
+  selectNewsDraft,
+  getMyNewsDrafts,
+}) => {
+  useEffect(() => {
+    getMyNewsDrafts();
+  }, []);
+
   const onClickEdit = (event) => {
     event.preventDefault();
 
     selectNewsDraft(draft);
 
-    window.$("#editNewsDraftModal").modal("toggle");
+    window.$('#editNewsDraftModal').modal('toggle');
   };
 
   const onClickDelete = (event) => {
@@ -17,7 +30,7 @@ const NewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
 
     selectNewsDraft(draft);
 
-    window.$("#deleteNewsDraftModal").modal("toggle");
+    window.$('#deleteNewsDraftModal').modal('toggle');
   };
 
   return (
@@ -27,10 +40,10 @@ const NewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
       <td>
         {draft.message
           ? draft.message
-          : "Silahkan Tunggu Konfirmasi dari Admin"}
+          : 'Silahkan Tunggu Konfirmasi dari Admin'}
       </td>
       <td>
-        {draft.status === "process" ? (
+        {draft.status === 'process' ? (
           <button className="btn btn-success btn-block">
             Sedang Diproses Admin
           </button>
@@ -73,4 +86,6 @@ const NewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
   );
 };
 
-export default connect(null, { selectNewsDraft })(NewsDraftTableItem);
+export default connect(null, { selectNewsDraft, getMyNewsDrafts })(
+  NewsDraftTableItem
+);

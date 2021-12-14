@@ -31,12 +31,6 @@ const News = ({
     getMyNewsDrafts();
   }, []);
 
-  useEffect(() => {
-    getMyNews();
-    getAllNewsDrafts();
-    getMyNewsDrafts();
-  }, [myNewsDrafts, allNewsDrafts]);
-
   return (
     <section
       id="news"

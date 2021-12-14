@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
-import Head from "next/head";
-import { connect } from "react-redux";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import axios from "axios";
-import { signUp } from "../redux/actions/userActions";
-import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
-import GoogleLogin from "react-google-login";
-import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
+import { connect } from 'react-redux';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import axios from 'axios';
+import { signUp } from '../redux/actions/userActions';
+import { setActiveLink, setAlert } from '../redux/actions/layoutActions';
+import GoogleLogin from 'react-google-login';
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
 
 const SignUp = ({
   user: { isAuthenticated, error, token },
@@ -18,24 +18,24 @@ const SignUp = ({
   const router = useRouter();
 
   useEffect(() => {
-    setActiveLink("signup");
+    setActiveLink('signup');
   }, []);
 
   useEffect(() => {
     if (isAuthenticated && localStorage.token) {
-      router.push("/users");
+      router.push('/users');
     }
 
     if (error) {
-      setAlert(error, "danger");
+      setAlert(error, 'danger');
     }
   }, [error, isAuthenticated]);
 
   const [user, setUser] = useState({
-    name: "",
-    email: "",
-    password: "",
-    passwordConfirmation: "",
+    name: '',
+    email: '',
+    password: '',
+    passwordConfirmation: '',
   });
 
   const { name, email, password, passwordConfirmation } = user;
@@ -46,10 +46,10 @@ const SignUp = ({
 
   const onSubmit = (event) => {
     event.preventDefault();
-    if (name === "" || email === "" || password === "") {
-      setAlert("Please fill in all fields", "danger");
+    if (name === '' || email === '' || password === '') {
+      setAlert('Please fill in all fields', 'danger');
     } else if (password !== passwordConfirmation) {
-      setAlert("Password does not match", "danger");
+      setAlert('Password does not match', 'danger');
     } else {
       signUp({
         name,
@@ -65,8 +65,8 @@ const SignUp = ({
       signUp({
         name: response.profileObj.name,
         email: response.profileObj.email,
-        password: "Google" + response.profileObj.googleId,
-        passwordConfirmation: "Google" + response.profileObj.googleId,
+        password: 'Google' + response.profileObj.googleId,
+        passwordConfirmation: 'Google' + response.profileObj.googleId,
         photo: response.profileObj.imageUrl,
       });
     } catch (e) {}
@@ -77,8 +77,8 @@ const SignUp = ({
       signUp({
         name: response.name,
         email: response.email,
-        password: "Facebook" + response.id,
-        passwordConfirmation: "Facebook" + response.id,
+        password: 'Facebook' + response.id,
+        passwordConfirmation: 'Facebook' + response.id,
         photo: response.picture.data.url,
       });
     } catch (e) {}
@@ -124,7 +124,7 @@ const SignUp = ({
 
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> /{" "}
+          <Link href="/">Beranda</Link> /{' '}
           <span className="breadcrumb_last" aria-current="page">
             Daftar
           </span>
@@ -137,11 +137,11 @@ const SignUp = ({
             <div className="contact-left m-auto">
               <GoogleLogin
                 clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-                buttonText={"Daftar dengan Google"}
+                buttonText={'Daftar dengan Google'}
                 onSuccess={responseGoogle}
                 onFailure={responseGoogle}
-                cookiePolicy={"single_host_origin"}
-                className={"mr-3"}
+                cookiePolicy={'single_host_origin'}
+                className={'mr-3'}
                 render={(renderProps) => (
                   <a
                     onClick={renderProps.onClick}
@@ -162,7 +162,7 @@ const SignUp = ({
                     onClick={renderProps.onClick}
                     className="btn btn-primary btn-block btn-lg text-light"
                   >
-                    <i className="fa fa-facebook"></i> Daftar dengan{" "}
+                    <i className="fa fa-facebook"></i> Daftar dengan{' '}
                     <b>Facebook</b>
                   </a>
                 )}
@@ -235,7 +235,7 @@ export async function getServerSideProps({ req }) {
     return {
       redirect: {
         permanent: false,
-        destination: "/users",
+        destination: '/users',
       },
       props: {},
     };

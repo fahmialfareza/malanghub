@@ -2,9 +2,21 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { connect } from 'react-redux';
 import Moment from 'react-moment';
-import { selectNewsDraft } from '../../../../redux/actions/newsDraftActions';
+import {
+  selectNewsDraft,
+  getAllNewsDrafts,
+} from '../../../../redux/actions/newsDraftActions';
 
-const AllNewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
+const AllNewsDraftTableItem = ({
+  draft,
+  index,
+  selectNewsDraft,
+  getAllNewsDrafts,
+}) => {
+  useEffect(() => {
+    getAllNewsDrafts();
+  }, []);
+
   const onClickEdit = (event) => {
     event.preventDefault();
 
@@ -74,4 +86,6 @@ const AllNewsDraftTableItem = ({ draft, index, selectNewsDraft }) => {
   );
 };
 
-export default connect(null, { selectNewsDraft })(AllNewsDraftTableItem);
+export default connect(null, { selectNewsDraft, getAllNewsDrafts })(
+  AllNewsDraftTableItem
+);
