@@ -1,31 +1,15 @@
-import Head from 'next/head';
-import { wrapper } from '../redux/store';
-import Header from '../components/layouts/Header';
-import Footer from '../components/layouts/Footer';
-import Alert from '../components/layouts/Alert';
+import { connect } from 'react-redux';
+import Link from 'next/link';
 
-function MyApp({ Component, pageProps }) {
+function Offline() {
   return (
-    <>
-      <Head>
-        <title>Malanghub</title>
-        <meta
-          name="viewport"
-          content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
-        />
-      </Head>
-
-      <Header />
-
-      <Alert />
-
-      <div>
-        <h1>Kamu sedang offline</h1>
-      </div>
-
-      <Footer />
-    </>
+    <div>
+      <h1>Kamu sedang offline!</h1>
+      <Link href="/">
+        <a className="btn btn-style btn-outline">Kembali ke Beranda</a>
+      </Link>
+    </div>
   );
 }
 
-export default wrapper.withRedux(MyApp);
+export default connect(null, {})(Offline);
