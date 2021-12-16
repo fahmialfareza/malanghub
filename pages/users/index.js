@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { loadUser } from '../../redux/actions/userActions';
+import { loadUser, logout } from '../../redux/actions/userActions';
 import { setActiveLink } from '../../redux/actions/layoutActions';
 import assetsPath from '../../components/layouts/Assets';
 import Dashboard from '../../components/users/Dashboard';
@@ -13,6 +13,7 @@ import parse from 'html-react-parser';
 
 const UserProfile = ({
   user: { user, loading: userLoading },
+  logout,
   loadUser,
   setActiveLink,
 }) => {
@@ -21,6 +22,8 @@ const UserProfile = ({
   useEffect(() => {
     if (localStorage.token) {
       loadUser();
+    } else {
+      logout();
     }
   }, []);
 
@@ -259,6 +262,6 @@ const mapStateToProps = (state) => ({
   user: state.user,
 });
 
-export default connect(mapStateToProps, { loadUser, setActiveLink })(
+export default connect(mapStateToProps, { loadUser, setActiveLink, logout })(
   UserProfile
 );
