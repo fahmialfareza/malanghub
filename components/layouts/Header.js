@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
-import { connect } from "react-redux";
-import Link from "next/link";
-import Router, { useRouter } from "next/router";
-import { getNewsCategories } from "../../redux/actions/newsCategoryActions";
-import { loadUser, logout } from "../../redux/actions/userActions";
-import assetsPath from "./Assets";
-import { setTheme, setThemeLocal } from "../../redux/actions/layoutActions";
-import Spinner from "./Spinner";
-import logo from "./logo.png";
-import NProgress from "nprogress";
+import { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import Link from 'next/link';
+import Router, { useRouter } from 'next/router';
+import { getNewsCategories } from '../../redux/actions/newsCategoryActions';
+import { loadUser, logout } from '../../redux/actions/userActions';
+import assetsPath from './Assets';
+import { setTheme, setThemeLocal } from '../../redux/actions/layoutActions';
+import Spinner from './Spinner';
+import logo from './logo.png';
+import NProgress from 'nprogress';
 
 Router.onRouteChangeStart = (url) => {
   NProgress.start();
@@ -27,13 +27,13 @@ const Header = ({
   setTheme,
   setThemeLocal,
 }) => {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     getNewsCategories();
 
     if (localStorage.theme) {
-      setThemeLocal(localStorage.getItem("theme"));
+      setThemeLocal(localStorage.getItem('theme'));
     }
 
     if (localStorage.token) {
@@ -56,25 +56,25 @@ const Header = ({
   const router = new useRouter();
 
   const onClickSearch = (event) => {
-    window.$(".pop-overlay").show();
+    window.$('.pop-overlay').show();
   };
 
   const onSearch = (event) => {
     event.preventDefault();
 
-    window.$(".pop-overlay").hide();
+    window.$('.pop-overlay').hide();
     // router.push("#close");
     router.push(`/search/${search}`);
   };
 
   const guestHeader = (
     <>
-      <li className={activeLink === "signup" ? "nav-item active" : "nav-item"}>
+      <li className={activeLink === 'signup' ? 'nav-item active' : 'nav-item'}>
         <Link href="/signup">
           <a className="nav-link">Daftar</a>
         </Link>
       </li>
-      <li className={activeLink === "signin" ? "nav-item active" : "nav-item"}>
+      <li className={activeLink === 'signin' ? 'nav-item active' : 'nav-item'}>
         <Link href="/signin">
           <a className="nav-link">Masuk</a>
         </Link>
@@ -88,7 +88,7 @@ const Header = ({
         <a className="img-circle img-circle-sm">
           <img
             src={
-              user && user.photo ? user.photo : assetsPath("images/author.jpg")
+              user && user.photo ? user.photo : assetsPath('images/author.jpg')
             }
             className="img-fluid"
             alt="..."
@@ -100,7 +100,7 @@ const Header = ({
           <h5>{user && user.name}</h5>
         </Link>
         <span>
-          {user && user.role.includes("admin") ? "Admin" : "Pengguna"}
+          {user && user.role.includes('admin') ? 'Admin' : 'Pengguna'}
         </span>
       </div>
     </div>
@@ -142,7 +142,7 @@ const Header = ({
             <ul className="navbar-nav ml-auto">
               <li
                 className={
-                  activeLink === "home" ? "nav-item active" : "nav-item"
+                  activeLink === 'home' ? 'nav-item active' : 'nav-item'
                 }
               >
                 <Link href="/">
@@ -151,9 +151,9 @@ const Header = ({
               </li>
               <li
                 className={
-                  activeLink === "news"
-                    ? "nav-item dropdown @@category__active active"
-                    : "nav-item nav-item dropdown @@category__active"
+                  activeLink === 'news'
+                    ? 'nav-item dropdown @@category__active active'
+                    : 'nav-item nav-item dropdown @@category__active'
                 }
               >
                 <a
@@ -192,9 +192,9 @@ const Header = ({
               </li>
               <li
                 className={
-                  activeLink === "contact"
-                    ? "nav-item @@contact__active active"
-                    : "nav-item @@contact__active"
+                  activeLink === 'contact'
+                    ? 'nav-item @@contact__active active'
+                    : 'nav-item @@contact__active'
                 }
               >
                 <Link href="/contact">
