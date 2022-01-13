@@ -47,7 +47,6 @@ jobs:
         env:
           PORT: ${{ secrets.CLOUDINARY_API_SECRET }}
       - run: docker build --tag $REPO --target prod .
-      - run: docker build --tag $REPO --target prod .
         env:
           REPO: ${{ secrets.REPO }}
       - name: Push to ECR
