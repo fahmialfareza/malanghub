@@ -11,8 +11,6 @@ const helmet = require('helmet');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const morgan = require('morgan');
-const { join } = require('path');
-const { parse } = require('url');
 
 const PORT = process.env.PORT || 3000;
 process.env.API_ADDRESS = 'http://localhost:' + process.env.PORT;
@@ -86,7 +84,11 @@ app.prepare().then(() => {
   }
 
   // Use fileUpload
-  server.use(fileUpload());
+  server.use(
+    fileUpload({
+      useTempFiles: true,
+    })
+  );
 
   // Use static files
   server.use(express.static('public'));

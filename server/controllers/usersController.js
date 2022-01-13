@@ -1,25 +1,24 @@
-const jwt = require("jsonwebtoken");
-const { user } = require("../models");
-const { awsUserDelete } = require("../utils/amazons3");
+const jwt = require('jsonwebtoken');
+const { user } = require('../models');
 
 class UsersController {
   async getProfile(req, res, next) {
     try {
       const data = await user
         .findById(req.user.id)
-        .select("-password")
+        .select('-password')
         .populate({
-          path: "news",
+          path: 'news',
           match: { approved: true },
           populate: [
-            { path: "user", select: "-password" },
-            { path: "tags" },
-            { path: "category" },
+            { path: 'user', select: '-password' },
+            { path: 'tags' },
+            { path: 'category' },
           ],
         });
 
       if (!data) {
-        return next({ message: "Pengguna tidak ditemukan", statusCode: 404 });
+        return next({ message: 'Pengguna tidak ditemukan', statusCode: 404 });
       }
 
       return res.status(200).json({ data });
@@ -34,10 +33,6 @@ class UsersController {
 
       if (req.body.photo) {
         data = await user.findById(req.user.id);
-
-        if (data.photo && data.photo.includes("amazonaws.com")) {
-          await awsUserDelete(data.photo);
-        }
       }
 
       data = await user
@@ -46,14 +41,14 @@ class UsersController {
           { $set: req.body },
           { new: true }
         )
-        .select("-password")
+        .select('-password')
         .populate({
-          path: "news",
+          path: 'news',
           match: { approved: true },
           populate: [
-            { path: "user", select: "-password" },
-            { path: "tags" },
-            { path: "category" },
+            { path: 'user', select: '-password' },
+            { path: 'tags' },
+            { path: 'category' },
           ],
         });
 
@@ -67,19 +62,19 @@ class UsersController {
     try {
       const data = await user
         .findById(req.params.id)
-        .select("-role -password")
+        .select('-role -password')
         .populate({
-          path: "news",
+          path: 'news',
           match: { approved: true },
           populate: [
-            { path: "user", select: "-password -role" },
-            { path: "tags" },
-            { path: "category" },
+            { path: 'user', select: '-password -role' },
+            { path: 'tags' },
+            { path: 'category' },
           ],
         });
 
       if (!data) {
-        return next({ message: "Pengguna tidak ditemukan", statusCode: 404 });
+        return next({ message: 'Pengguna tidak ditemukan', statusCode: 404 });
       }
 
       return res.status(200).json({ data });
@@ -97,7 +92,7 @@ class UsersController {
       };
 
       const token = await jwt.sign(body, process.env.JWT_SECRET, {
-        expiresIn: "30d",
+        expiresIn: '30d',
       });
 
       return res.status(200).json({ token });

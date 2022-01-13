@@ -1,5 +1,4 @@
-const { news, newsCategory, newsTag, user } = require('../models');
-const { awsNewsUpload, awsNewsDelete } = require('../utils/amazons3');
+const { news, user } = require('../models');
 
 class NewsController {
   async getAll(req, res, next) {
@@ -61,8 +60,6 @@ class NewsController {
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
-        await awsNewsDelete(req.body.mainImage);
-
         return next({ message: 'Judul yang sama sudah ada', statusCode: 400 });
       }
 
@@ -79,10 +76,6 @@ class NewsController {
       );
 
       if (!data) {
-        if (req.body.mainImage) {
-          await awsNewsDelete(req.body.mainImage);
-        }
-
         return next({
           message: 'Draft Berita tidak ditemukan',
           statusCode: 404,
@@ -101,10 +94,6 @@ class NewsController {
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
-        if (req.body.mainImage) {
-          await awsNewsDelete(req.body.mainImage);
-        }
-
         return next({ message: 'Judul yang sama sudah ada', statusCode: 400 });
       }
 

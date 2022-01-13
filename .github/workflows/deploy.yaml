@@ -31,24 +31,22 @@ jobs:
       - run: echo "JWT_SECRET"=$JWT_SECRET >> .env.production
         env:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      - run: echo "AWS_S3_BUCKET"=$AWS_S3_BUCKET >> .env.production
-        env:
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-      - run: echo "AWS_S3_ACCESS_KEY"=$AWS_S3_ACCESS_KEY >> .env.production
-        env:
-          AWS_S3_ACCESS_KEY: ${{ secrets.AWS_S3_ACCESS_KEY }}
-      - run: echo "AWS_S3_SECRET_KEY"=$AWS_S3_SECRET_KEY >> .env.production
-        env:
-          AWS_S3_SECRET_KEY: ${{ secrets.AWS_S3_SECRET_KEY }}
-      - run: echo "AWS_S3_FILE_URL"=$AWS_S3_FILE_URL >> .env.production
-        env:
-          AWS_S3_FILE_URL: ${{ secrets.AWS_S3_FILE_URL }}
       - run: echo "GOOGLE_CLIENT_ID"=$GOOGLE_CLIENT_ID >> .env.production
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
       - run: echo "PORT"=$PORT >> .env.production
         env:
           PORT: ${{ secrets.PORT }}
+      - run: echo "CLOUDINARY_CLOUD_NAME"=$CLOUDINARY_CLOUD_NAME >> .env.production
+        env:
+          PORT: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      - run: echo "CLOUDINARY_API_KEY"=$CLOUDINARY_API_KEY >> .env.production
+        env:
+          PORT: ${{ secrets.CLOUDINARY_API_KEY }}
+      - run: echo "CLOUDINARY_API_SECRET"=$CLOUDINARY_API_SECRET >> .env.production
+        env:
+          PORT: ${{ secrets.CLOUDINARY_API_SECRET }}
+      - run: docker build --tag $REPO --target prod .
       - run: docker build --tag $REPO --target prod .
         env:
           REPO: ${{ secrets.REPO }}
