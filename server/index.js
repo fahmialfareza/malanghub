@@ -7,7 +7,6 @@ const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const rateLimit = require('express-rate-limit');
 const hpp = require('hpp');
-const helmet = require('helmet');
 const cors = require('cors');
 const fileUpload = require('express-fileupload');
 const morgan = require('morgan');
@@ -60,13 +59,6 @@ app.prepare().then(() => {
 
   // Prevent http param pollution
   server.use(hpp());
-
-  // Use helmet
-  server.use(
-    helmet({
-      contentSecurityPolicy: false,
-    })
-  );
 
   if (process.env.NODE_ENV === 'development') {
     server.use(morgan('dev'));
