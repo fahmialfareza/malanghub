@@ -101,3 +101,27 @@ jobs:
           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           usedocker: true
+          docker_build_args: |
+            NODE_ENV
+            API_ADDRESS
+            NEXT_PUBLIC_API_ADDRESS
+            NEXT_PUBLIC_GOOGLE_CLIENT_ID
+            NEXT_PUBLIC_FACEBOOK_APP_ID
+            NEXT_PUBLIC_TINY_API_KEY
+            MONGO_URI
+            JWT_SECRET
+            GOOGLE_CLIENT_ID
+            CLOUDINARY_CLOUD_NAME
+            CLOUDINARY_API_SECRET
+        env:
+          NODE_ENV: production
+          API_ADDRESS: ${{ secrets.MY_API_ADDRESS }}
+          NEXT_PUBLIC_API_ADDRESS: ${{ secrets.MY_NEXT_PUBLIC_API_ADDRESS }}
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.MY_NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+          NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets.MY_NEXT_PUBLIC_FACEBOOK_APP_ID }}
+          NEXT_PUBLIC_TINY_API_KEY: ${{ secrets.MY_NEXT_PUBLIC_TINY_API_KEY }}
+          MONGO_URI: ${{ secrets.MY_MONGO_URI }}
+          JWT_SECRET: ${{ secrets.MY_JWT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.MY_GOOGLE_CLIENT_ID }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.MY_CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_SECRET: ${{ secrets.MY_CLOUDINARY_API_SECRET }}
