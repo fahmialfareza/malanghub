@@ -1,4 +1,4 @@
-# name: deploy
+# name: deploy to ecs
 
 # on:
 #   push:
@@ -82,3 +82,22 @@
 #       - run: sudo docker run -p 80:3000 -d $ECR_URI
 #         env:
 #           ECR_URI: ${{ secrets.ECR_URI }}
+
+name: Deploy to Heroku
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+          usedocker: true
