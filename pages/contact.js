@@ -1,12 +1,12 @@
-import { useEffect } from "react";
-import Head from "next/head";
-import { connect } from "react-redux";
-import Link from "next/link";
-import { setActiveLink } from "../redux/actions/layoutActions";
+import { useEffect } from 'react';
+import Head from 'next/head';
+import { connect } from 'react-redux';
+import Link from 'next/link';
+import { setActiveLink } from '../redux/actions/layoutActions';
 
 function Contact({ setActiveLink }) {
   useEffect(() => {
-    setActiveLink("contact");
+    setActiveLink('contact');
   }, []);
 
   return (
@@ -49,7 +49,7 @@ function Contact({ setActiveLink }) {
 
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> /{" "}
+          <Link href="/">Beranda</Link> /{' '}
           <span className="breadcrumb_last" aria-current="page">
             Kontak
           </span>
@@ -91,7 +91,7 @@ function Contact({ setActiveLink }) {
                   <div className="cont-right">
                     <h6>Whatsapp Kami</h6>
                     <p>
-                      <i className="fa fa-whatsapp"></i>{" "}
+                      <i className="fa fa-whatsapp"></i>{' '}
                       <a
                         target="_blank"
                         rel="noreferrer"
@@ -109,11 +109,8 @@ function Contact({ setActiveLink }) {
                   <div className="cont-right">
                     <h6>Email Kami</h6>
                     <p>
-                      <a
-                        href="mailto:editor.malanghub@gmail.com"
-                        className="mail"
-                      >
-                        editor.malanghub@gmail.com
+                      <a href="mailto:admin@malanghub.com" className="mail">
+                        admin@malanghub.com
                       </a>
                     </p>
                   </div>
