@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }} cloud.canister.io:5000
+      - run: echo "API_ADDRESS"=$API_ADDRESS > .env.production
+        env:
+          API_ADDRESS: ${{ secrets.API_ADDRESS }}
+      - run: echo "NEXT_PUBLIC_API_ADDRESS"=$NEXT_PUBLIC_API_ADDRESS >> .env.production
+        env:
+          NEXT_PUBLIC_API_ADDRESS: ${{ secrets.NEXT_PUBLIC_API_ADDRESS }}
+      - run: echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID"=$NEXT_PUBLIC_GOOGLE_CLIENT_ID >> .env.production
+        env:
+          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+      - run: echo "NEXT_PUBLIC_FACEBOOK_APP_ID"=$NEXT_PUBLIC_FACEBOOK_APP_ID >> .env.production
+        env:
+          NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets.NEXT_PUBLIC_FACEBOOK_APP_ID }}
+      - run: echo "NEXT_PUBLIC_TINY_API_KEY"=$NEXT_PUBLIC_TINY_API_KEY >> .env.production
+        env:
+          NEXT_PUBLIC_TINY_API_KEY: ${{ secrets.NEXT_PUBLIC_TINY_API_KEY }}
+      - run: echo "MONGO_URI"=$MONGO_URI >> .env.production
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+      - run: echo "JWT_SECRET"=$JWT_SECRET >> .env.production
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      - run: echo "GOOGLE_CLIENT_ID"=$GOOGLE_CLIENT_ID >> .env.production
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      - run: echo "CLOUDINARY_CLOUD_NAME"=$CLOUDINARY_CLOUD_NAME >> .env.production
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      - run: echo "CLOUDINARY_API_KEY"=$CLOUDINARY_API_KEY >> .env.production
+        env:
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      - run: echo "CLOUDINARY_API_SECRET"=$CLOUDINARY_API_SECRET >> .env.production
+        env:
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      - name: Build
+        run: docker build --build-arg port=80 -t cloud.canister.io:5000/fahmialfareza/malanghub .
+      - name: Push to registry
+        run: docker push cloud.canister.io:5000/fahmialfareza/malanghub

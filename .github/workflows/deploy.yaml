@@ -83,78 +83,78 @@
 #         env:
 #           ECR_URI: ${{ secrets.ECR_URI }}
 
-name: Deploy to Heroku
+# name: Deploy to Heroku
 
-on:
-  push:
-    branches:
-      - main
+# on:
+#   push:
+#     branches:
+#       - main
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - run: echo "API_ADDRESS"=$API_ADDRESS > .env.production
-        env:
-          API_ADDRESS: ${{ secrets.API_ADDRESS }}
-      - run: echo "NEXT_PUBLIC_API_ADDRESS"=$NEXT_PUBLIC_API_ADDRESS >> .env.production
-        env:
-          NEXT_PUBLIC_API_ADDRESS: ${{ secrets.NEXT_PUBLIC_API_ADDRESS }}
-      - run: echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID"=$NEXT_PUBLIC_GOOGLE_CLIENT_ID >> .env.production
-        env:
-          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
-      - run: echo "NEXT_PUBLIC_FACEBOOK_APP_ID"=$NEXT_PUBLIC_FACEBOOK_APP_ID >> .env.production
-        env:
-          NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets.NEXT_PUBLIC_FACEBOOK_APP_ID }}
-      - run: echo "NEXT_PUBLIC_TINY_API_KEY"=$NEXT_PUBLIC_TINY_API_KEY >> .env.production
-        env:
-          NEXT_PUBLIC_TINY_API_KEY: ${{ secrets.NEXT_PUBLIC_TINY_API_KEY }}
-      - run: echo "MONGO_URI"=$MONGO_URI >> .env.production
-        env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-      - run: echo "JWT_SECRET"=$JWT_SECRET >> .env.production
-        env:
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      - run: echo "GOOGLE_CLIENT_ID"=$GOOGLE_CLIENT_ID >> .env.production
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      - run: echo "CLOUDINARY_CLOUD_NAME"=$CLOUDINARY_CLOUD_NAME >> .env.production
-        env:
-          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
-      - run: echo "CLOUDINARY_API_KEY"=$CLOUDINARY_API_KEY >> .env.production
-        env:
-          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
-      - run: echo "CLOUDINARY_API_SECRET"=$CLOUDINARY_API_SECRET >> .env.production
-        env:
-          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
-      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
-        with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
-          heroku_email: ${{secrets.HEROKU_EMAIL}}
-          usedocker: true
-          docker_build_args: |
-            NODE_ENV
-            API_ADDRESS
-            NEXT_PUBLIC_API_ADDRESS
-            NEXT_PUBLIC_GOOGLE_CLIENT_ID
-            NEXT_PUBLIC_FACEBOOK_APP_ID
-            NEXT_PUBLIC_TINY_API_KEY
-            MONGO_URI
-            JWT_SECRET
-            GOOGLE_CLIENT_ID
-            CLOUDINARY_CLOUD_NAME
-            CLOUDINARY_API_SECRET
-        env:
-          NODE_ENV: production
-          API_ADDRESS: ${{ secrets.MY_API_ADDRESS }}
-          NEXT_PUBLIC_API_ADDRESS: ${{ secrets.MY_NEXT_PUBLIC_API_ADDRESS }}
-          NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.MY_NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
-          NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets.MY_NEXT_PUBLIC_FACEBOOK_APP_ID }}
-          NEXT_PUBLIC_TINY_API_KEY: ${{ secrets.MY_NEXT_PUBLIC_TINY_API_KEY }}
-          MONGO_URI: ${{ secrets.MY_MONGO_URI }}
-          JWT_SECRET: ${{ secrets.MY_JWT_SECRET }}
-          GOOGLE_CLIENT_ID: ${{ secrets.MY_GOOGLE_CLIENT_ID }}
-          CLOUDINARY_CLOUD_NAME: ${{ secrets.MY_CLOUDINARY_CLOUD_NAME }}
-          CLOUDINARY_API_SECRET: ${{ secrets.MY_CLOUDINARY_API_SECRET }}
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - run: echo "API_ADDRESS"=$API_ADDRESS > .env.production
+#         env:
+#           API_ADDRESS: ${{ secrets.API_ADDRESS }}
+#       - run: echo "NEXT_PUBLIC_API_ADDRESS"=$NEXT_PUBLIC_API_ADDRESS >> .env.production
+#         env:
+#           NEXT_PUBLIC_API_ADDRESS: ${{ secrets.NEXT_PUBLIC_API_ADDRESS }}
+#       - run: echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID"=$NEXT_PUBLIC_GOOGLE_CLIENT_ID >> .env.production
+#         env:
+#           NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+#       - run: echo "NEXT_PUBLIC_FACEBOOK_APP_ID"=$NEXT_PUBLIC_FACEBOOK_APP_ID >> .env.production
+#         env:
+#           NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets.NEXT_PUBLIC_FACEBOOK_APP_ID }}
+#       - run: echo "NEXT_PUBLIC_TINY_API_KEY"=$NEXT_PUBLIC_TINY_API_KEY >> .env.production
+#         env:
+#           NEXT_PUBLIC_TINY_API_KEY: ${{ secrets.NEXT_PUBLIC_TINY_API_KEY }}
+#       - run: echo "MONGO_URI"=$MONGO_URI >> .env.production
+#         env:
+#           MONGO_URI: ${{ secrets.MONGO_URI }}
+#       - run: echo "JWT_SECRET"=$JWT_SECRET >> .env.production
+#         env:
+#           JWT_SECRET: ${{ secrets.JWT_SECRET }}
+#       - run: echo "GOOGLE_CLIENT_ID"=$GOOGLE_CLIENT_ID >> .env.production
+#         env:
+#           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+#       - run: echo "CLOUDINARY_CLOUD_NAME"=$CLOUDINARY_CLOUD_NAME >> .env.production
+#         env:
+#           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+#       - run: echo "CLOUDINARY_API_KEY"=$CLOUDINARY_API_KEY >> .env.production
+#         env:
+#           CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+#       - run: echo "CLOUDINARY_API_SECRET"=$CLOUDINARY_API_SECRET >> .env.production
+#         env:
+#           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+#       - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+#         with:
+#           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+#           heroku_app_name: ${{secrets.HEROKU_APP_NAME}}
+#           heroku_email: ${{secrets.HEROKU_EMAIL}}
+#           usedocker: true
+#           docker_build_args: |
+#             NODE_ENV
+#             API_ADDRESS
+#             NEXT_PUBLIC_API_ADDRESS
+#             NEXT_PUBLIC_GOOGLE_CLIENT_ID
+#             NEXT_PUBLIC_FACEBOOK_APP_ID
+#             NEXT_PUBLIC_TINY_API_KEY
+#             MONGO_URI
+#             JWT_SECRET
+#             GOOGLE_CLIENT_ID
+#             CLOUDINARY_CLOUD_NAME
+#             CLOUDINARY_API_SECRET
+#         env:
+#           NODE_ENV: production
+#           API_ADDRESS: ${{ secrets.MY_API_ADDRESS }}
+#           NEXT_PUBLIC_API_ADDRESS: ${{ secrets.MY_NEXT_PUBLIC_API_ADDRESS }}
+#           NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets.MY_NEXT_PUBLIC_GOOGLE_CLIENT_ID }}
+#           NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets.MY_NEXT_PUBLIC_FACEBOOK_APP_ID }}
+#           NEXT_PUBLIC_TINY_API_KEY: ${{ secrets.MY_NEXT_PUBLIC_TINY_API_KEY }}
+#           MONGO_URI: ${{ secrets.MY_MONGO_URI }}
+#           JWT_SECRET: ${{ secrets.MY_JWT_SECRET }}
+#           GOOGLE_CLIENT_ID: ${{ secrets.MY_GOOGLE_CLIENT_ID }}
+#           CLOUDINARY_CLOUD_NAME: ${{ secrets.MY_CLOUDINARY_CLOUD_NAME }}
+#           CLOUDINARY_API_SECRET: ${{ secrets.MY_CLOUDINARY_API_SECRET }}
