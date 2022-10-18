@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
-import Head from 'next/head';
-import { connect } from 'react-redux';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import axios from 'axios';
-import { signIn } from '../redux/actions/userActions';
-import { setActiveLink, setAlert } from '../redux/actions/layoutActions';
-import GoogleLogin from 'react-google-login';
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import { useEffect, useState } from "react";
+import Head from "next/head";
+import { connect } from "react-redux";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import axios from "axios";
+import { signIn } from "../redux/actions/userActions";
+import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
+import GoogleLogin from "react-google-login";
+import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
+import Cookies from "js-cookie";
 
 const SignIn = ({
   user: { isAuthenticated, error, token },
@@ -18,22 +19,26 @@ const SignIn = ({
   const router = useRouter();
 
   useEffect(() => {
-    setActiveLink('signin');
+    setActiveLink("signin");
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && localStorage.token) {
-      router.push('/users');
+    if (!router.isReady) return;
+
+    const token = localStorage.getItem("token");
+
+    if (isAuthenticated && token) {
+      router.push("/users");
     }
 
     if (error) {
-      setAlert(error, 'danger');
+      setAlert(error, "danger");
     }
-  }, [error, isAuthenticated]);
+  }, [error, isAuthenticated, router.isReady]);
 
   const [user, setUser] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const { email, password } = user;
@@ -44,8 +49,8 @@ const SignIn = ({
 
   const onSubmit = (event) => {
     event.preventDefault();
-    if (email === '' || password === '') {
-      setAlert('Please fill in all fields', 'danger');
+    if (email === "" || password === "") {
+      setAlert("Please fill in all fields", "danger");
     } else {
       signIn({
         email,
@@ -58,7 +63,7 @@ const SignIn = ({
     try {
       signIn({
         email: response.profileObj.email,
-        password: 'Google' + response.profileObj.googleId,
+        password: "Google" + response.profileObj.googleId,
       });
     } catch (e) {}
   };
@@ -67,7 +72,7 @@ const SignIn = ({
     try {
       signIn({
         email: response.email,
-        password: 'Facebook' + response.id,
+        password: "Facebook" + response.id,
       });
     } catch (e) {}
   };
@@ -112,7 +117,7 @@ const SignIn = ({
 
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> /{' '}
+          <Link href="/">Beranda</Link> /{" "}
           <span className="breadcrumb_last" aria-current="page">
             Masuk
           </span>
@@ -126,11 +131,11 @@ const SignIn = ({
             <div className="contact-left m-auto">
               <GoogleLogin
                 clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-                buttonText={'Masuk dengan Google'}
+                buttonText={"Masuk dengan Google"}
                 onSuccess={responseGoogle}
                 onFailure={responseGoogle}
-                cookiePolicy={'single_host_origin'}
-                className={'mr-3'}
+                cookiePolicy={"single_host_origin"}
+                className={"mr-3"}
                 render={(renderProps) => (
                   <a
                     onClick={renderProps.onClick}
@@ -151,7 +156,7 @@ const SignIn = ({
                     onClick={renderProps.onClick}
                     className="btn btn-primary btn-block btn-lg text-light"
                   >
-                    <i className="fa fa-facebook"></i> Masuk dengan{' '}
+                    <i className="fa fa-facebook"></i> Masuk dengan{" "}
                     <b>Facebook</b>
                   </a>
                 )}
@@ -191,25 +196,29 @@ const SignIn = ({
   );
 };
 
-export async function getServerSideProps({ req }) {
-  try {
-    const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
-      headers: {
-        Cookie: req.headers.cookie,
-      },
-    });
+// export async function getServerSideProps({ req }) {
+//   try {
+//     if (typeof window !== "undefined") {
+//       console.log(localStorage.get("token"));
+//     }
 
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/users',
-      },
-      props: {},
-    };
-  } catch (e) {
-    return { props: {} };
-  }
-}
+//     const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
+//       headers: {
+//         Cookie: req.headers.cookie,
+//       },
+//     });
+
+//     return {
+//       redirect: {
+//         permanent: false,
+//         destination: "/users",
+//       },
+//       props: {},
+//     };
+//   } catch (e) {
+//     return { props: {} };
+//   }
+// }
 
 const mapStateToProps = (state) => ({
   user: state.user,

@@ -1,15 +1,15 @@
-import { useEffect } from 'react';
-import Head from 'next/head';
-import { connect } from 'react-redux';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import axios from 'axios';
-import { loadUser, logout } from '../../redux/actions/userActions';
-import { setActiveLink } from '../../redux/actions/layoutActions';
-import assetsPath from '../../components/layouts/Assets';
-import Dashboard from '../../components/users/Dashboard';
-import EditProfileModal from '../../components/users/EditProfileModal';
-import parse from 'html-react-parser';
+import { useEffect } from "react";
+import Head from "next/head";
+import { connect } from "react-redux";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import axios from "axios";
+import { loadUser, logout } from "../../redux/actions/userActions";
+import { setActiveLink } from "../../redux/actions/layoutActions";
+import assetsPath from "../../components/layouts/Assets";
+import Dashboard from "../../components/users/Dashboard";
+import EditProfileModal from "../../components/users/EditProfileModal";
+import parse from "html-react-parser";
 
 const UserProfile = ({
   user: { user, loading: userLoading },
@@ -20,20 +20,29 @@ const UserProfile = ({
   const router = useRouter();
 
   useEffect(() => {
-    if (localStorage.token) {
+    if (!router.isReady) return;
+
+    const token = localStorage.getItem("token");
+
+    if (token) {
       loadUser();
     } else {
       logout();
+      router.push("/signin");
     }
-  }, []);
+  }, [router.isReady]);
 
   useEffect(() => {
-    if (!user && !localStorage.token) {
-      router.push('/signin');
+    if (router.isReady) return;
+
+    const token = localStorage.getItem("token");
+
+    if (!user && !token) {
+      router.push("/signin");
     }
 
-    setActiveLink('');
-  }, [user]);
+    setActiveLink("");
+  }, [user, router.isReady]);
 
   return (
     <>
@@ -90,11 +99,11 @@ const UserProfile = ({
                   src={
                     user && user.photo
                       ? user.photo
-                      : assetsPath('images/author.jpg')
+                      : assetsPath("images/author.jpg")
                   }
                   alt=""
                   className="rounded-circle img-fluid embed-responsive-item"
-                  style={{ objectFit: 'cover' }}
+                  style={{ objectFit: "cover" }}
                 />
               </div>
             </div>
@@ -103,7 +112,7 @@ const UserProfile = ({
                 {userLoading ? <Spinner /> : user && user.motto && user.motto}
               </span>
               <h1 className="mb-4 title">
-                Halo,{' '}
+                Halo,{" "}
                 <span className="typed-text">
                   {userLoading ? <Spinner /> : user && user.name}
                 </span>
@@ -238,25 +247,25 @@ const UserProfile = ({
   );
 };
 
-export async function getServerSideProps({ req }) {
-  try {
-    const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
-      headers: {
-        Cookie: req.headers.cookie,
-      },
-    });
+// export async function getServerSideProps({ req }) {
+//   try {
+//     const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
+//       headers: {
+//         Cookie: req.headers.cookie,
+//       },
+//     });
 
-    return { props: {} };
-  } catch (e) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: '/signin',
-      },
-      props: {},
-    };
-  }
-}
+//     return { props: {} };
+//   } catch (e) {
+//     return {
+//       redirect: {
+//         permanent: false,
+//         destination: "/signin",
+//       },
+//       props: {},
+//     };
+//   }
+// }
 
 const mapStateToProps = (state) => ({
   user: state.user,

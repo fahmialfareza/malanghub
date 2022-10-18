@@ -1,15 +1,15 @@
-import { useEffect } from 'react';
-import Head from 'next/head';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
-import { connect } from 'react-redux';
-import Moment from 'react-moment';
-import parse from 'html-react-parser';
-import axios from 'axios';
-import cookie from 'cookie';
-import { loadUser } from '../../../redux/actions/userActions';
-import { setActiveLink } from '../../../redux/actions/layoutActions';
-import Spinner from '../../../components/layouts/Spinner';
+import { useEffect } from "react";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { connect } from "react-redux";
+import Moment from "react-moment";
+import parse from "html-react-parser";
+import axios from "axios";
+import cookie from "cookie";
+import { loadUser } from "../../../redux/actions/userActions";
+import { setActiveLink } from "../../../redux/actions/layoutActions";
+import Spinner from "../../../components/layouts/Spinner";
 
 const NewsDraft = ({
   user: { user, loading: userLoading },
@@ -22,22 +22,23 @@ const NewsDraft = ({
   useEffect(() => {
     if (!router.isReady) return;
 
-    if (localStorage.token) {
+    const token = localStorage.getItem("token");
+    if (token) {
       loadUser();
     }
 
-    if (!user && !localStorage.token) {
-      router.push('/signin');
+    if (!user && !token) {
+      router.push("/signin");
     }
 
-    setActiveLink('');
+    setActiveLink("");
   }, [user, router.isReady]);
 
   return (
     <>
       <Head>
         <title>
-          Malanghub - Antrian Berita -{' '}
+          Malanghub - Antrian Berita -{" "}
           {currentNewsDraft && currentNewsDraft.title}
         </title>
         <meta
@@ -49,7 +50,7 @@ const NewsDraft = ({
           content={
             currentNewsDraft &&
             currentNewsDraft.content &&
-            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, '').slice(0, 255)
+            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, "").slice(0, 255)
           }
         />
 
@@ -71,7 +72,7 @@ const NewsDraft = ({
           content={
             currentNewsDraft &&
             currentNewsDraft.content &&
-            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, '').slice(0, 255)
+            currentNewsDraft?.content?.replace(/<(.|\n)*?>/g, "").slice(0, 255)
           }
         />
         <meta property="og:image" content={currentNewsDraft?.mainImage} />
@@ -94,7 +95,7 @@ const NewsDraft = ({
           content={
             currentNewsDraft &&
             currentNewsDraft.content &&
-            currentNewsDraft.content?.replace(/<(.|\n)*?>/g, '').slice(0, 255)
+            currentNewsDraft.content?.replace(/<(.|\n)*?>/g, "").slice(0, 255)
           }
         />
         <meta property="twitter:image" content={currentNewsDraft?.mainImage} />
@@ -102,7 +103,7 @@ const NewsDraft = ({
 
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> / Antrian Berita /{' '}
+          <Link href="/">Beranda</Link> / Antrian Berita /{" "}
           <span className="breadcrumb_last" aria-current="page">
             {newsDraftLoading ? (
               <Spinner />
@@ -142,7 +143,7 @@ const NewsDraft = ({
                               }
                               alt=""
                               className="rounded-circle img-fluid embed-responsive-item"
-                              style={{ objectFit: 'cover' }}
+                              style={{ objectFit: "cover" }}
                             />
                           </Link>
                         )
@@ -165,8 +166,8 @@ const NewsDraft = ({
                               )}
                             </Link>
                           )
-                        )}{' '}
-                        in{' '}
+                        )}{" "}
+                        in{" "}
                         {currentNewsDraft &&
                           currentNewsDraft.category &&
                           currentNewsDraft.category._id && (
@@ -186,7 +187,7 @@ const NewsDraft = ({
                       <ul className="blog-meta">
                         <li className="meta-item blog-lesson">
                           <span className="meta-value">
-                            {' '}
+                            {" "}
                             <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
                               {newsDraftLoading ? (
                                 <Spinner />
@@ -195,12 +196,12 @@ const NewsDraft = ({
                                 currentNewsDraft.created_at &&
                                 currentNewsDraft.created_at
                               )}
-                            </Moment>{' '}
+                            </Moment>{" "}
                           </span>
                         </li>
                         <li className="meta-item blog-students">
                           <span className="meta-value">
-                            {' '}
+                            {" "}
                             {newsDraftLoading ? (
                               <Spinner />
                             ) : (
@@ -231,7 +232,7 @@ const NewsDraft = ({
                             )
                           }
                           className="radius-image img-fluid pb-5 embed-responsive-item"
-                          style={{ objectFit: 'cover' }}
+                          style={{ objectFit: "cover" }}
                           alt=""
                         />
                       </div>
@@ -291,7 +292,7 @@ const NewsDraft = ({
                                 }
                                 alt=""
                                 className="rounded-circle img-fluid embed-responsive-item"
-                                style={{ objectFit: 'cover' }}
+                                style={{ objectFit: "cover" }}
                               />
                             </div>
                           </div>
@@ -454,7 +455,7 @@ const NewsDraft = ({
 
       <div
         className="display-ad"
-        style={{ margin: '8px auto', display: 'block', textAlign: 'center' }}
+        style={{ margin: "8px auto", display: "block", textAlign: "center" }}
       ></div>
     </>
   );
@@ -465,7 +466,7 @@ export async function getServerSideProps({ req, params }) {
     return {
       redirect: {
         permanent: false,
-        destination: '/signin',
+        destination: "/signin",
       },
       props: {},
     };
@@ -474,7 +475,7 @@ export async function getServerSideProps({ req, params }) {
   const { token } = cookie.parse(req.headers.cookie);
 
   let config = {
-    method: 'get',
+    method: "get",
     url: `${process.env.API_ADDRESS}/api/users`,
     headers: {
       Authorization: `Bearer ${token}`,
@@ -487,7 +488,7 @@ export async function getServerSideProps({ req, params }) {
     const { slug } = params;
 
     config = {
-      method: 'get',
+      method: "get",
       url: `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`,
     };
 
@@ -507,7 +508,7 @@ export async function getServerSideProps({ req, params }) {
     return {
       redirect: {
         permanent: false,
-        destination: '/signin',
+        destination: "/signin",
       },
       props: {},
     };

@@ -9,6 +9,7 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import { token } from "morgan";
 
 // Get All News Category
 export const getNewsCategories = () => async (dispatch) => {
@@ -42,8 +43,9 @@ export const getNewsCategories = () => async (dispatch) => {
 export const createNewsCategory = (formData) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let data = formData;
@@ -98,8 +100,9 @@ export const selectNewsCategory = (newsCategory) => async (dispatch) => {
 export const updateNewsCategory = (formData, id) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {
@@ -132,8 +135,8 @@ export const updateNewsCategory = (formData, id) => async (dispatch) => {
 export const deleteNewsCategory = (id) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {

@@ -6,8 +6,6 @@ exports.create = (req, res, next) => {
   try {
     let errors = [];
 
-    console.log(req.body);
-
     if (!validator.isAlpha(validator.blacklist(req.body.name, " "))) {
       errors.push("Silahkan masukkan nama");
     }

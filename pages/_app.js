@@ -1,12 +1,16 @@
 import Head from "next/head";
+import { Provider } from "react-redux";
 import { wrapper } from "../redux/store";
 import Header from "../components/layouts/Header";
 import Footer from "../components/layouts/Footer";
 import Alert from "../components/layouts/Alert";
 
-function MyApp({ Component, pageProps }) {
+function MyApp({ Component, ...rest }) {
+  const { store, props } = wrapper.useWrappedStore(rest);
+  const { pageProps } = props;
+
   return (
-    <>
+    <Provider store={store}>
       <Head>
         <title>Malanghub</title>
         <meta
@@ -22,8 +26,8 @@ function MyApp({ Component, pageProps }) {
       <Component {...pageProps} />
 
       <Footer />
-    </>
+    </Provider>
   );
 }
 
-export default wrapper.withRedux(MyApp);
+export default MyApp;

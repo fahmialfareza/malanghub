@@ -182,8 +182,9 @@ export const getNewsByUser = (userQuery, page) => async (dispatch) => {
 export const getMyNews = () => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {

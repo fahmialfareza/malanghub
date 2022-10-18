@@ -42,8 +42,9 @@ export const getCommentByNews = (id) => async (dispatch) => {
 export const createComment = (id, comment) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {
@@ -96,8 +97,9 @@ export const selectNewsComment = (newsComment) => async (dispatch) => {
 export const createCommentByComment = (id, comment) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {

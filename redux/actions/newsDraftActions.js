@@ -11,6 +11,7 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import { token } from "morgan";
 
 export const getAllNewsDrafts = () => async (dispatch) => {
   setLoading();
@@ -45,8 +46,9 @@ export const getAllNewsDrafts = () => async (dispatch) => {
 export const getMyNewsDrafts = () => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   var config = {
@@ -107,8 +109,9 @@ export const getOneByUser = (id) => async (dispatch) => {
 export const createNewsDraft = (formData) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let data = new FormData();
@@ -148,8 +151,9 @@ export const createNewsDraft = (formData) => async (dispatch) => {
 export const updateNewsDraft = (formData, id) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let data = new FormData();
@@ -189,8 +193,9 @@ export const updateNewsDraft = (formData, id) => async (dispatch) => {
 export const updateNewsDraftApproved = (formData, id) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {
@@ -243,8 +248,9 @@ export const selectNewsDraft = (newsDraft) => async (dispatch) => {
 export const deleteNewsDraft = (id) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   var config = {

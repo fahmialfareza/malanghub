@@ -10,6 +10,7 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import { token } from "morgan";
 
 // Get All News Tag
 export const getNewsTags = () => async (dispatch) => {
@@ -46,8 +47,9 @@ export const getNewsTags = () => async (dispatch) => {
 export const createNewsTag = (formData) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {
@@ -100,8 +102,9 @@ export const selectNewsTag = (newsTag) => async (dispatch) => {
 export const updateNewsTag = (formData, id) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {
@@ -134,8 +137,9 @@ export const updateNewsTag = (formData, id) => async (dispatch) => {
 export const deleteNewsTag = (id) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let config = {

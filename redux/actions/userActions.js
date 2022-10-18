@@ -19,8 +19,9 @@ import { request, setAuthToken } from "../../utils/axiosCreate";
 export const loadUser = () => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   try {
@@ -85,8 +86,9 @@ export const getUser = (id) => async (dispatch) => {
 export const updateProfile = (formData) => async (dispatch) => {
   setLoading();
 
-  if (localStorage.token) {
-    setAuthToken(localStorage.token);
+  const token = localStorage.getItem("token");
+  if (token) {
+    setAuthToken(token);
   }
 
   let data = new FormData();

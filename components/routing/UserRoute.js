@@ -8,6 +8,8 @@ const PrivateRoute = ({
   const router = useRouter();
 
   if (!isAuthenticated && !user) {
+    if (!router.isReady) return;
+
     return router.push("/signin");
   } else {
     return <Component {...props} />;
