@@ -56,4 +56,4 @@ jobs:
     steps:
       - name: Restart server
         run: >-
-          curl --location --request POST 'https://api.github.com/repos/fahmialfareza/reverse-proxy-vps/dispatches' --header 'Authorization: Bearer ${{ secrets.DISPATCH_TOKEN }}' --header 'Accept: application/vnd.github.v3+json' --header 'Content-Type: application/json' --data-raw '{"event_type": "restart"}'
+          curl --location --request POST 'https://api.github.com/repos/fahmialfareza/reverse-proxy-vps/dispatches' --header 'Authorization: Bearer ${{ secrets.DISPATCH_TOKEN }}' --header 'Accept: application/vnd.github.v3+json' --header 'Content-Type: application/json' --data-raw '{"event_type":"restart","client_payload":{"image":"cloud.canister.io:5000/fahmialfareza/malanghub","service_name":"server_malanghub"}}'
