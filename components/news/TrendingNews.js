@@ -7,12 +7,12 @@ const TrendingNews = ({ news, index }) => {
     <div className="grids5-info">
       <h4>{index + 1}.</h4>
       <div className="blog-info">
-        <Link href={`/news/${news.slug}`}>
-          <a className="blog-desc1">{news.title}</a>
+        <Link href={`/news/${news.slug}`} className="blog-desc1">
+          {news.title}
         </Link>
         <div className="author align-items-center mt-2 mb-1">
-          <Link href={`/users/${news.user._id}`}>{news.user.name}</Link> in{" "}
-          <Link href={`/newsCategories/${news.category?.slug}`}>
+          <Link href={`/users/${news.user._id}`} legacyBehavior>{news.user.name}</Link> in{" "}
+          <Link href={`/newsCategories/${news.category?.slug}`} legacyBehavior>
             {news.category?.name}
           </Link>
         </div>

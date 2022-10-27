@@ -18,7 +18,7 @@ const AllNewsItem = ({ news, getAllNews }) => {
       <div className="col-md-12 item">
         <div className="card">
           <div className="card-header p-0 position-relative embed-responsive embed-responsive-1by1">
-            <Link href={`/news/${news.data[0].slug}`}>
+            <Link href={`/news/${news.data[0].slug}`} legacyBehavior>
               <img
                 className="card-img-bottom d-block radius-image embed-responsive-item"
                 style={{ objectFit: 'cover' }}
@@ -28,18 +28,18 @@ const AllNewsItem = ({ news, getAllNews }) => {
             </Link>
           </div>
           <div className="card-body p-0 blog-details">
-            <Link href={`/news/${news.data[0].slug}`}>
-              <a className="blog-desc">{news.data[0].title}</a>
+            <Link href={`/news/${news.data[0].slug}`} className="blog-desc">
+              {news.data[0].title}
             </Link>
             <div className="text-truncate">
               {parse(news.data[0].content.replace(/<(.|\n)*?>/g, ''))}
             </div>
             <div className="author align-items-center mt-3 mb-1">
-              <Link href={`/users/${news.data[0].user._id}`}>
+              <Link href={`/users/${news.data[0].user._id}`} legacyBehavior>
                 {news.data[0].user.name}
               </Link>{' '}
               in{' '}
-              <Link href={`/newsCategories/${news.data[0].category.slug}`}>
+              <Link href={`/newsCategories/${news.data[0].category.slug}`} legacyBehavior>
                 {news.data[0].category.name}
               </Link>
             </div>
@@ -73,7 +73,7 @@ const AllNewsItem = ({ news, getAllNews }) => {
               >
                 <div className="card">
                   <div className="card-header p-0 position-relative embed-responsive embed-responsive-1by1">
-                    <Link href={`/news/${item.slug}`}>
+                    <Link href={`/news/${item.slug}`} legacyBehavior>
                       <img
                         className="card-img-bottom d-block radius-image embed-responsive-item"
                         style={{ objectFit: 'cover' }}
@@ -83,18 +83,18 @@ const AllNewsItem = ({ news, getAllNews }) => {
                     </Link>
                   </div>
                   <div className="card-body p-0 blog-details">
-                    <Link href={`/news/${item.slug}`}>
-                      <a className="blog-desc">{item.title}</a>
+                    <Link href={`/news/${item.slug}`} className="blog-desc">
+                      {item.title}
                     </Link>
                     <div className="text-truncate">
                       {parse(item.content.replace(/<(.|\n)*?>/g, ''))}
                     </div>
                     <div className="author align-items-center mt-3 mb-1">
-                      <Link href={`/users/${item.user._id}`}>
+                      <Link href={`/users/${item.user._id}`} legacyBehavior>
                         {item.user.name}
                       </Link>{' '}
                       in{' '}
-                      <Link href={`/newsCategories/${item.category.slug}`}>
+                      <Link href={`/newsCategories/${item.category.slug}`} legacyBehavior>
                         {item.category.name}
                       </Link>
                     </div>

@@ -20,10 +20,9 @@ const NewsTableItem = ({ news, index, getMyNews }) => {
         <Moment format="MMMM Do, YYYY">{news.created_at}</Moment>
       </td>
       <td>
-        <Link href={`/news/${news.slug}`}>
-          <a className="btn btn-outline-primary m-1">
-            <i className="fa fa-search-plus" aria-hidden="true"></i> Lihat
-          </a>
+        <Link href={`/news/${news.slug}`} className="btn btn-outline-primary m-1">
+
+          <i className="fa fa-search-plus" aria-hidden="true"></i>Lihat
         </Link>
       </td>
     </tr>

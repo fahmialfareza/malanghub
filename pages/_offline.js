@@ -9,8 +9,8 @@ function Offline() {
     >
       <div className="m-auto">
         <h1>Kamu sedang offline!</h1>
-        <Link href="/">
-          <a className="btn btn-style btn-outline">Kembali ke Beranda</a>
+        <Link href="/" className="btn btn-style btn-outline">
+          Kembali ke Beranda
         </Link>
       </div>
     </div>

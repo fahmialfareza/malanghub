@@ -60,10 +60,11 @@ const NewsDraftTableItem = ({
         <Moment format="MMMM Do, YYYY">{draft.created_at}</Moment>
       </td>
       <td>
-        <Link href={`/users/newsDrafts/${draft.slug}`}>
-          <a className="btn btn-outline-primary m-1">
-            <i className="fa fa-search-plus" aria-hidden="true"></i> Pratinjau
-          </a>
+        <Link
+          href={`/users/newsDrafts/${draft.slug}`}
+          className="btn btn-outline-primary m-1">
+
+          <i className="fa fa-search-plus" aria-hidden="true"></i>Pratinjau
         </Link>
         <button
           className="btn btn-primary m-1"

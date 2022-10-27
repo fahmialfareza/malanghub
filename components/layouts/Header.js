@@ -75,13 +75,13 @@ const Header = ({
   const guestHeader = (
     <>
       <li className={activeLink === "signup" ? "nav-item active" : "nav-item"}>
-        <Link href="/signup">
-          <a className="nav-link">Daftar</a>
+        <Link href="/signup" className="nav-link">
+          Daftar
         </Link>
       </li>
       <li className={activeLink === "signin" ? "nav-item active" : "nav-item"}>
-        <Link href="/signin">
-          <a className="nav-link">Masuk</a>
+        <Link href="/signin" className="nav-link">
+          Masuk
         </Link>
       </li>
     </>
@@ -89,19 +89,19 @@ const Header = ({
 
   const authHeader = (
     <div className="header-author d-flex ml-lg-4 pl-2 mt-lg-0 mt-3">
-      <Link href="/users">
-        <a className="img-circle img-circle-sm">
-          <img
-            src={
-              user && user.photo ? user.photo : assetsPath("images/author.jpg")
-            }
-            className="img-fluid"
-            alt="..."
-          />
-        </a>
+      <Link href="/users" className="img-circle img-circle-sm">
+
+        <img
+          src={
+            user && user.photo ? user.photo : assetsPath("images/author.jpg")
+          }
+          className="img-fluid"
+          alt="..."
+        />
+
       </Link>
       <div className="align-self ml-3">
-        <Link href="/users">
+        <Link href="/users" legacyBehavior>
           <h5>{user && user.name}</h5>
         </Link>
         <span>
@@ -123,12 +123,12 @@ const Header = ({
     <header className="w3l-header">
       <nav className="navbar navbar-expand-lg navbar-light fill px-lg-0 py-0 px-3">
         <div className="container">
-          <Link href="/">
-            <a className="navbar-brand">
-              <span aria-hidden>
-                <img src={logo} height="35" alt="" />
-              </span>
-            </a>
+          <Link href="/" className="navbar-brand">
+
+            <span aria-hidden>
+              <img src={logo} height="35" alt="" />
+            </span>
+
           </Link>
           <button
             className="navbar-toggler collapsed"
@@ -150,8 +150,8 @@ const Header = ({
                   activeLink === "home" ? "nav-item active" : "nav-item"
                 }
               >
-                <Link href="/">
-                  <a className="nav-link">Beranda</a>
+                <Link href="/" className="nav-link">
+                  Beranda
                 </Link>
               </li>
               <li
@@ -173,8 +173,8 @@ const Header = ({
                   Berita <span className="fa fa-angle-down"></span>
                 </a>
                 <div className="dropdown-menu" aria-labelledby="navbarDropdown">
-                  <Link href="/news">
-                    <a className="dropdown-item @@ls__active">Semua Berita</a>
+                  <Link href="/news" className="dropdown-item @@ls__active">
+                    Semua Berita
                   </Link>
                   {newsCategoryLoading && !newsCategories ? (
                     <Spinner />
@@ -183,14 +183,14 @@ const Header = ({
                     newsCategories !== null &&
                     newsCategories.length > 0 &&
                     newsCategories.map((category) => (
-                      <Link
+                      (<Link
                         key={category._id}
                         href={`/newsCategories/${category.slug}`}
-                      >
-                        <a className="dropdown-item @@ls__active">
-                          {category.name}
-                        </a>
-                      </Link>
+                        className="dropdown-item @@ls__active">
+
+                        {category.name}
+
+                      </Link>)
                     ))
                   )}
                 </div>
@@ -202,8 +202,8 @@ const Header = ({
                     : "nav-item @@contact__active"
                 }
               >
-                <Link href="/contact">
-                  <a className="nav-link">Kontak</a>
+                <Link href="/contact" className="nav-link">
+                  Kontak
                 </Link>
               </li>
               {!user && guestHeader}
