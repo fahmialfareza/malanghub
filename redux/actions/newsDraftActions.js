@@ -11,7 +11,6 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
-import { token } from "morgan";
 
 export const getAllNewsDrafts = () => async (dispatch) => {
   setLoading();

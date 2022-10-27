@@ -39,3 +39,5 @@ stderr.txt
 stdout.txt
 
 mongo-volume
+
+/tmp
