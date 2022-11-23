@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, use } from "react";
 import { connect } from "react-redux";
 import Link from "next/link";
 import Router, { useRouter } from "next/router";
@@ -20,13 +20,15 @@ Router.onRouteChangeError = () => NProgress.done();
 const Header = ({
   newsCategory: { newsCategories, loading: newsCategoryLoading },
   user: { user, isAuthenticated, loading: userLoading },
-  layout: { activeLink },
+  layout: { activeLink, theme },
   getNewsCategories,
   loadUser,
   logout,
   setTheme,
 }) => {
   const router = useRouter();
+  const themeSwitcher = useRef();
+
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -44,6 +46,12 @@ const Header = ({
       loadUser();
     }
   }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (theme) {
+      document.documentElement.setAttribute("data-theme", theme);
+    }
+  }, [theme]);
 
   const onLogout = (event) => {
     event.preventDefault();
@@ -238,12 +246,20 @@ const Header = ({
           <div className="mobile-position">
             <nav className="navigation">
               <div className="theme-switch-wrapper">
-                <label
-                  className="theme-switch"
-                  htmlFor="checkbox"
-                  onClick={() => setTheme()}
-                >
-                  <input type="checkbox" id="checkbox" />
+                <label className="theme-switch" htmlFor="checkbox">
+                  <input
+                    type="checkbox"
+                    id="checkbox"
+                    ref={themeSwitcher}
+                    checked={theme === "dark"}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setTheme("dark");
+                      } else {
+                        setTheme("light");
+                      }
+                    }}
+                  />
                   <div className="mode-container">
                     <i className="gg-sun"></i>
                     <i className="gg-moon"></i>

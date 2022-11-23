@@ -1,18 +1,11 @@
 import { SET_THEME, SET_ACTIVE_LINK, SET_ALERT, REMOVE_ALERT } from "./types";
 
 // Set Theme
-export const setTheme = () => (dispatch) => {
-  if (localStorage.getItem("theme") === "dark") {
-    dispatch({
-      type: SET_THEME,
-      payload: "light",
-    });
-  } else if (localStorage.getItem("theme") === "light") {
-    dispatch({
-      type: SET_THEME,
-      payload: "dark",
-    });
-  }
+export const setTheme = (theme) => (dispatch) => {
+  dispatch({
+    type: SET_THEME,
+    payload: theme,
+  });
 };
 
 export const setActiveLink = (link) => (dispatch) => {

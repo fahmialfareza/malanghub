@@ -131,7 +131,6 @@ class MyDocument extends Document {
             crossOrigin="anonymous"
           ></script>
           <script src="/assets/js/navbar-toggler.js"></script>
-          <script src="/assets/js/theme-change.js"></script>
         </body>
       </Html>
     );

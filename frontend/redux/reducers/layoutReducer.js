@@ -14,6 +14,8 @@ const initialState = {
 const layoutReducer = (state = initialState, action) => {
   switch (action.type) {
     case SET_THEME:
+      document.documentElement.setAttribute("data-theme", action.payload);
+      localStorage.setItem("theme", action.payload);
       return {
         ...state,
         theme: action.payload,
