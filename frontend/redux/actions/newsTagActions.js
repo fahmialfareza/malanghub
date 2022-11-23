@@ -1,46 +1,49 @@
 import {
-  GET_ALL_NEWS_CATEGORIES,
-  ADD_NEWS_CATEGORY,
-  SELECT_NEWS_CATEGORY,
-  UPDATE_NEWS_CATEGORY,
-  DELETE_NEWS_CATEGORY,
-  NEWS_CATEGORIES_ERROR,
-  NEWS_CATEGORIES_CLEAR_ERROR,
+  GET_ALL_NEWS_TAGS,
+  ADD_NEWS_TAG,
+  SELECT_NEWS_TAG,
+  UPDATE_NEWS_TAG,
+  DELETE_NEWS_TAG,
+  CLEAR_ALL_NEWS_TAGS,
+  NEWS_TAGS_ERROR,
+  NEWS_TAGS_CLEAR_ERROR,
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
-import { token } from "morgan";
 
-// Get All News Category
-export const getNewsCategories = () => async (dispatch) => {
+// Get All News Tag
+export const getNewsTags = () => async (dispatch) => {
   setLoading();
 
   let config = {
     method: "get",
-    url: `/api/newsCategories`,
+    url: "/api/newsTags",
+    headers: {},
   };
+
   try {
     let response = await request(config);
+    let data = await response.data.data;
 
     dispatch({
-      type: GET_ALL_NEWS_CATEGORIES,
-      payload: response.data.data,
+      type: GET_ALL_NEWS_TAGS,
+      payload: data,
     });
   } catch (e) {
     dispatch({
-      type: NEWS_CATEGORIES_ERROR,
+      type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
     });
 
     setTimeout(() => {
       dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
+        type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
   }
 };
 
-export const createNewsCategory = (formData) => async (dispatch) => {
+export const createNewsTag = (formData) => async (dispatch) => {
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -48,56 +51,54 @@ export const createNewsCategory = (formData) => async (dispatch) => {
     setAuthToken(token);
   }
 
-  let data = formData;
-
   let config = {
     method: "post",
-    url: "/api/newsCategories",
-    data: data,
+    url: "/api/newsTags",
+    data: formData,
   };
 
   try {
     const res = await request(config);
 
     dispatch({
-      type: ADD_NEWS_CATEGORY,
+      type: ADD_NEWS_TAG,
       payload: res.data.data,
     });
   } catch (e) {
     dispatch({
-      type: NEWS_CATEGORIES_ERROR,
+      type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
     });
 
     setTimeout(() => {
       dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
+        type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
   }
 };
 
-export const selectNewsCategory = (newsCategory) => async (dispatch) => {
+export const selectNewsTag = (newsTag) => async (dispatch) => {
   try {
     dispatch({
-      type: SELECT_NEWS_CATEGORY,
-      payload: newsCategory,
+      type: SELECT_NEWS_TAG,
+      payload: newsTag,
     });
   } catch (e) {
     dispatch({
-      type: NEWS_CATEGORIES_ERROR,
+      type: NEWS_TAGS_ERROR,
       payload: e,
     });
 
     setTimeout(() => {
       dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
+        type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
   }
 };
 
-export const updateNewsCategory = (formData, id) => async (dispatch) => {
+export const updateNewsTag = (formData, id) => async (dispatch) => {
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -107,7 +108,7 @@ export const updateNewsCategory = (formData, id) => async (dispatch) => {
 
   let config = {
     method: "put",
-    url: `/api/newsCategories/${id}`,
+    url: `/api/newsTags/${id}`,
     data: formData,
   };
 
@@ -115,54 +116,61 @@ export const updateNewsCategory = (formData, id) => async (dispatch) => {
     const res = await request(config);
 
     dispatch({
-      type: UPDATE_NEWS_CATEGORY,
+      type: UPDATE_NEWS_TAG,
       payload: res.data.data,
     });
   } catch (e) {
     dispatch({
-      type: NEWS_CATEGORIES_ERROR,
+      type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
     });
 
     setTimeout(() => {
       dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
+        type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
   }
 };
 
-export const deleteNewsCategory = (id) => async (dispatch) => {
+export const deleteNewsTag = (id) => async (dispatch) => {
   setLoading();
 
+  const token = localStorage.getItem("token");
   if (token) {
     setAuthToken(token);
   }
 
   let config = {
     method: "delete",
-    url: `/api/newsCategories/${id}`,
+    url: `/api/newsTags/${id}`,
   };
 
   try {
     await request(config);
 
     dispatch({
-      type: DELETE_NEWS_CATEGORY,
+      type: DELETE_NEWS_TAG,
       payload: id,
     });
   } catch (e) {
     dispatch({
-      type: NEWS_CATEGORIES_ERROR,
+      type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
     });
 
     setTimeout(() => {
       dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
+        type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
   }
+};
+
+export const clearNewsTags = () => {
+  return {
+    type: CLEAR_ALL_NEWS_TAGS,
+  };
 };
 
 // Set loading to true

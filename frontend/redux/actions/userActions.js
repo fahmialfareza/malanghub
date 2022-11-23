@@ -14,6 +14,7 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import { requestNextApi } from "../../utils/axiosNextApi";
 
 // Load User
 export const loadUser = () => async (dispatch) => {
@@ -140,7 +141,7 @@ export const signUp = (formData) => async (dispatch) => {
   };
 
   try {
-    const res = await request(config);
+    const res = await requestNextApi(config);
 
     localStorage.setItem("token", res.data.token);
 
@@ -176,7 +177,7 @@ export const signIn = (formData) => async (dispatch) => {
   };
 
   try {
-    const res = await request(config);
+    const res = await requestNextApi(config);
 
     localStorage.setItem("token", res.data.token);
 
@@ -212,7 +213,7 @@ export const logout = () => async (dispatch) => {
       headers: {},
     };
 
-    await request(config);
+    await requestNextApi(config);
 
     dispatch({ type: USER_LOGOUT });
   } catch (e) {
