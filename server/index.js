@@ -55,6 +55,8 @@ server.use(hpp());
 
 if (process.env.NODE_ENV === "development") {
   server.use(morgan("dev"));
+} else if (process.env.VERCEL === "true") {
+  server.use(morgan("common"));
 } else {
   // create a write stream (in serverend mode)
   let accessLogStream = fs.createWriteStream(
