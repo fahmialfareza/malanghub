@@ -8,7 +8,7 @@ import {
 const initialState = {
   activeLink: "home",
   alert: null,
-  theme: localStorage.getItem("theme"),
+  theme: typeof window !== "undefined" ? localStorage.getItem("theme") : null,
 };
 
 const layoutReducer = (state = initialState, action) => {
