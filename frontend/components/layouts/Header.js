@@ -5,7 +5,7 @@ import Router, { useRouter } from "next/router";
 import { getNewsCategories } from "../../redux/actions/newsCategoryActions";
 import { loadUser, logout } from "../../redux/actions/userActions";
 import assetsPath from "./Assets";
-import { setTheme, setThemeLocal } from "../../redux/actions/layoutActions";
+import { setTheme } from "../../redux/actions/layoutActions";
 import Spinner from "./Spinner";
 import logo from "./logo.png";
 import NProgress from "nprogress";
@@ -25,17 +25,12 @@ const Header = ({
   loadUser,
   logout,
   setTheme,
-  setThemeLocal,
 }) => {
   const router = useRouter();
   const [search, setSearch] = useState("");
 
   useEffect(() => {
     getNewsCategories();
-
-    if (localStorage.theme) {
-      setThemeLocal(localStorage.getItem("theme"));
-    }
 
     const token = localStorage.getItem("token");
     if (token) {
@@ -90,7 +85,6 @@ const Header = ({
   const authHeader = (
     <div className="header-author d-flex ml-lg-4 pl-2 mt-lg-0 mt-3">
       <Link href="/users" className="img-circle img-circle-sm">
-
         <img
           src={
             user && user.photo ? user.photo : assetsPath("images/author.jpg")
@@ -98,7 +92,6 @@ const Header = ({
           className="img-fluid"
           alt="..."
         />
-
       </Link>
       <div className="align-self ml-3">
         <Link href="/users" legacyBehavior>
@@ -124,11 +117,9 @@ const Header = ({
       <nav className="navbar navbar-expand-lg navbar-light fill px-lg-0 py-0 px-3">
         <div className="container">
           <Link href="/" className="navbar-brand">
-
             <span aria-hidden>
               <img src={logo} height="35" alt="" />
             </span>
-
           </Link>
           <button
             className="navbar-toggler collapsed"
@@ -183,14 +174,13 @@ const Header = ({
                     newsCategories !== null &&
                     newsCategories.length > 0 &&
                     newsCategories.map((category) => (
-                      (<Link
+                      <Link
                         key={category._id}
                         href={`/newsCategories/${category.slug}`}
-                        className="dropdown-item @@ls__active">
-
+                        className="dropdown-item @@ls__active"
+                      >
                         {category.name}
-
-                      </Link>)
+                      </Link>
                     ))
                   )}
                 </div>
@@ -279,5 +269,4 @@ export default connect(mapStateToProps, {
   loadUser,
   logout,
   setTheme,
-  setThemeLocal,
 })(Header);

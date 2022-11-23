@@ -15,13 +15,6 @@ export const setTheme = () => (dispatch) => {
   }
 };
 
-export const setThemeLocal = (theme) => (dispatch) => {
-  dispatch({
-    type: SET_THEME,
-    payload: theme,
-  });
-};
-
 export const setActiveLink = (link) => (dispatch) => {
   dispatch({
     type: SET_ACTIVE_LINK,
