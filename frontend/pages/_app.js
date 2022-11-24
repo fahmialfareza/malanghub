@@ -1,5 +1,7 @@
 import Head from "next/head";
 import { Provider } from "react-redux";
+import { Analytics } from "@vercel/analytics/react";
+
 import { wrapper } from "../redux/store";
 import Header from "../components/layouts/Header";
 import Footer from "../components/layouts/Footer";
@@ -24,6 +26,8 @@ function MyApp({ Component, ...rest }) {
       <Alert />
 
       <Component {...pageProps} />
+
+      <Analytics />
 
       <Footer />
     </Provider>
