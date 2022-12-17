@@ -1,4 +1,6 @@
-const { news, newsCategory, newsTag, user } = require("../models");
+const { news, redisClient } = require("../models");
+
+const oneDay = 60 * 60 * 24;
 
 class NewsController {
   async getAll(req, res, next) {
@@ -27,7 +29,17 @@ class NewsController {
 
   async getOne(req, res, next) {
     try {
-      let data = await news
+      const key = `news:${req.params.slug}`;
+      const redis = await redisClient();
+
+      let data = await redis.get(key);
+      if (data) {
+        await redis.disconnect();
+        data = JSON.parse(data);
+        return res.status(200).json({ data });
+      }
+
+      data = await news
         .findOne({ slug: req.params.slug, approved: true })
         .populate({
           path: "user",
@@ -39,6 +51,9 @@ class NewsController {
       if (!data) {
         return next({ message: "Berita tidak ditemukan", statusCode: 404 });
       }
+
+      await redis.set(key, JSON.stringify(data), { EX: oneDay });
+      await redis.disconnect();
 
       return res.status(200).json({ data });
     } catch (e) {

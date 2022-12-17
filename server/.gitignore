@@ -3,6 +3,7 @@ public/img/news/*
 
 .DS_Store
 .env.development
+.env.production
 access.log
 
 npm-debug.log*

@@ -24,6 +24,7 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
+    "redis": "^4.5.1",
     "slugify": "^1.6.5",
     "validator": "^13.7.0",
     "xss-clean": "^0.1.1"
