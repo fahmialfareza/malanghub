@@ -1,11 +1,11 @@
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { connect } from 'react-redux';
-import Moment from 'react-moment';
+import { useEffect } from "react";
+import Link from "next/link";
+import { connect } from "react-redux";
+import Moment from "react-moment";
 import {
   selectNewsDraft,
   getMyNewsDrafts,
-} from '../../../../redux/actions/newsDraftActions';
+} from "../../../../redux/actions/newsDraftActions";
 
 const NewsDraftTableItem = ({
   draft,
@@ -22,7 +22,7 @@ const NewsDraftTableItem = ({
 
     selectNewsDraft(draft);
 
-    window.$('#editNewsDraftModal').modal('toggle');
+    window.$("#editNewsDraftModal").modal("toggle");
   };
 
   const onClickDelete = (event) => {
@@ -30,7 +30,7 @@ const NewsDraftTableItem = ({
 
     selectNewsDraft(draft);
 
-    window.$('#deleteNewsDraftModal').modal('toggle');
+    window.$("#deleteNewsDraftModal").modal("toggle");
   };
 
   return (
@@ -40,10 +40,10 @@ const NewsDraftTableItem = ({
       <td>
         {draft.message
           ? draft.message
-          : 'Silahkan Tunggu Konfirmasi dari Admin'}
+          : "Silahkan Tunggu Konfirmasi dari Admin"}
       </td>
       <td>
-        {draft.status === 'process' ? (
+        {draft.status === "process" ? (
           <button className="btn btn-success btn-block">
             Sedang Diproses Admin
           </button>
@@ -62,8 +62,8 @@ const NewsDraftTableItem = ({
       <td>
         <Link
           href={`/users/newsDrafts/${draft.slug}`}
-          className="btn btn-outline-primary m-1">
-
+          className="btn btn-outline-primary m-1"
+        >
           <i className="fa fa-search-plus" aria-hidden="true"></i>Pratinjau
         </Link>
         <button

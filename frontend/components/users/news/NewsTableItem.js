@@ -1,8 +1,8 @@
-import { useEffect } from 'react';
-import Link from 'next/link';
-import { connect } from 'react-redux';
-import Moment from 'react-moment';
-import { getMyNews } from '../../../redux/actions/newsActions';
+import { useEffect } from "react";
+import Link from "next/link";
+import { connect } from "react-redux";
+import Moment from "react-moment";
+import { getMyNews } from "../../../redux/actions/newsActions";
 
 const NewsTableItem = ({ news, index, getMyNews }) => {
   useEffect(() => {
@@ -20,8 +20,10 @@ const NewsTableItem = ({ news, index, getMyNews }) => {
         <Moment format="MMMM Do, YYYY">{news.created_at}</Moment>
       </td>
       <td>
-        <Link href={`/news/${news.slug}`} className="btn btn-outline-primary m-1">
-
+        <Link
+          href={`/news/${news.slug}`}
+          className="btn btn-outline-primary m-1"
+        >
           <i className="fa fa-search-plus" aria-hidden="true"></i>Lihat
         </Link>
       </td>

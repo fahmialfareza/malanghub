@@ -118,7 +118,6 @@ export async function getServerSideProps() {
     dataRecent = response[0].data.data;
     dataTrending = response[1].data.data;
   } catch (e) {
-    console.log(e);
     return {
       notFound: true,
     };

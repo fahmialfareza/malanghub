@@ -1,17 +1,17 @@
-import cookie from 'cookie';
-import axios from 'axios';
+import cookie from "cookie";
+import axios from "axios";
 
 export default async (req, res) => {
-  if (req.method === 'GET') {
+  if (req.method === "GET") {
     if (!req.headers.cookie) {
-      res.status(403).json({ message: 'Not authorized' });
+      res.status(403).json({ message: "Not authorized" });
       return;
     }
 
     const { token } = cookie.parse(req.headers.cookie);
 
     const config = {
-      method: 'get',
+      method: "get",
       url: `${process.env.API_ADDRESS}/api/users`,
       headers: {
         Authorization: `Bearer ${token}`,
@@ -28,16 +28,16 @@ export default async (req, res) => {
   } else {
     // Destroy cookie
     res.setHeader(
-      'Set-cookie',
-      cookie.serialize('token', '', {
+      "Set-cookie",
+      cookie.serialize("token", "", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === "production",
         expires: new Date(0),
-        sameSite: 'strict',
-        path: '/',
+        sameSite: "strict",
+        path: "/",
       })
     );
-    res.setHeader('Allow', 'GET');
+    res.setHeader("Allow", "GET");
     res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 };

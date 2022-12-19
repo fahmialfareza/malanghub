@@ -14,7 +14,7 @@ const Footer = () => {
   const topFunction = () => {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
-  }
+  };
 
   return (
     <footer className="w3l-footer-16">
@@ -23,7 +23,8 @@ const Footer = () => {
           <div className="copy-right">
             <h6>
               © <span>{new Date().getFullYear()}</span> Malanghub . Made with{" "}
-              <span className="fa fa-heart" aria-hidden="true"></span>, Designed by
+              <span className="fa fa-heart" aria-hidden="true"></span>, Designed
+              by
               <a href="https://w3layouts.com">W3layouts</a>{" "}
             </h6>
           </div>

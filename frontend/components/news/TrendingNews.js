@@ -11,7 +11,10 @@ const TrendingNews = ({ news, index }) => {
           {news.title}
         </Link>
         <div className="author align-items-center mt-2 mb-1">
-          <Link href={`/users/${news.user._id}`} legacyBehavior>{news.user.name}</Link> in{" "}
+          <Link href={`/users/${news.user._id}`} legacyBehavior>
+            {news.user.name}
+          </Link>{" "}
+          in{" "}
           <Link href={`/newsCategories/${news.category?.slug}`} legacyBehavior>
             {news.category?.name}
           </Link>

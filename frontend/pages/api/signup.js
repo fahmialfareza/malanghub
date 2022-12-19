@@ -1,10 +1,10 @@
-import cookie from 'cookie';
-import axios from 'axios';
+import cookie from "cookie";
+import axios from "axios";
 
 export default async (req, res) => {
-  if (req.method === 'POST') {
+  if (req.method === "POST") {
     const config = {
-      method: 'post',
+      method: "post",
       url: `${process.env.API_ADDRESS}/api/users/signup`,
       data: req.body,
     };
@@ -14,13 +14,13 @@ export default async (req, res) => {
 
       // @todo - Set cookie
       res.setHeader(
-        'Set-cookie',
-        cookie.serialize('token', response.data.token, {
+        "Set-cookie",
+        cookie.serialize("token", response.data.token, {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
+          secure: process.env.NODE_ENV === "production",
           maxAge: 60 * 60 * 24 * 30, // 30 days
-          sameSite: 'strict',
-          path: '/',
+          sameSite: "strict",
+          path: "/",
         })
       );
 
@@ -29,7 +29,7 @@ export default async (req, res) => {
       res.status(e.response.status).json({ message: e.response.data.message });
     }
   } else {
-    res.setHeader('Allow', 'POST');
+    res.setHeader("Allow", "POST");
     res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 };
