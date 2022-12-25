@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -30,6 +30,7 @@ const SingleNews = ({
   const { slug } = router.query;
 
   const [comment, setComment] = useState("");
+  const contentRef = useRef();
 
   useEffect(() => {
     setActiveLink("news");
@@ -52,6 +53,14 @@ const SingleNews = ({
 
     setComment("");
   };
+
+  useEffect(() => {
+    if (contentRef) {
+      contentRef.current.querySelectorAll("*").forEach(function (node) {
+        node.removeAttribute("style");
+      });
+    }
+  }, [contentRef, currentNews]);
 
   return (
     <>
@@ -199,9 +208,9 @@ const SingleNews = ({
                     </div>
 
                     <div className="single-post-content text-justify">
-                      {currentNews &&
-                        currentNews.content &&
-                        parse(currentNews.content)}
+                      {currentNews && currentNews.content && (
+                        <div ref={contentRef}>{parse(currentNews.content)}</div>
+                      )}
 
                       <div className="d-grid left-right mt-5 pb-md-5">
                         <div className="buttons-singles tags">

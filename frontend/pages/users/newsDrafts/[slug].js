@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -19,6 +19,8 @@ const NewsDraft = ({
 }) => {
   const router = useRouter();
 
+  const contentRef = useRef();
+
   useEffect(() => {
     if (!router.isReady) return;
 
@@ -33,6 +35,14 @@ const NewsDraft = ({
 
     setActiveLink("");
   }, [user, router.isReady]);
+
+  useEffect(() => {
+    if (contentRef) {
+      contentRef.current.querySelectorAll("*").forEach(function (node) {
+        node.removeAttribute("style");
+      });
+    }
+  }, [contentRef, currentNewsDraft]);
 
   return (
     <>
@@ -250,8 +260,11 @@ const NewsDraft = ({
                         <Spinner />
                       ) : (
                         currentNewsDraft &&
-                        currentNewsDraft.content &&
-                        parse(currentNewsDraft.content)
+                        currentNewsDraft.content && (
+                          <div ref={contentRef}>
+                            {parse(currentNewsDraft.content)}
+                          </div>
+                        )
                       )}
 
                       <div className="d-grid left-right mt-5 pb-md-5">
