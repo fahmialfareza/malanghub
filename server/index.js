@@ -32,10 +32,15 @@ const server = express();
 server.use(cors());
 
 // Body Parser
-server.use(express.json());
+server.use(
+  express.json({
+    limit: "100mb",
+  })
+);
 server.use(
   express.urlencoded({
     extended: true,
+    limit: "100mb",
   })
 );
 
@@ -77,6 +82,7 @@ if (process.env.NODE_ENV === "development") {
 server.use(
   fileUpload({
     useTempFiles: true,
+    limits: { fileSize: 100 * 1024 * 1024 },
   })
 );
 
