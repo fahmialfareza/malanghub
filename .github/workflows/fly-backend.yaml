@@ -1,0 +1,39 @@
+name: Fly Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    name: Deploy app - backend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo "MONGO_URI"=$MONGO_URI >> server/.env.production
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+      - run: echo "REDIS_URI"=$REDIS_URI >> server/.env.production
+        env:
+          REDIS_URI: ${{ secrets.REDIS_URI }}
+      - run: echo "JWT_SECRET"=$JWT_SECRET >> server/.env.production
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      - run: echo "GOOGLE_CLIENT_ID"=$GOOGLE_CLIENT_ID >> server/.env.production
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+      - run: echo "PORT"=$PORT >> server/.env.production
+        env:
+          PORT: ${{ secrets.PORT }}
+      - run: echo "CLOUDINARY_CLOUD_NAME"=$CLOUDINARY_CLOUD_NAME >> server/.env.production
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      - run: echo "CLOUDINARY_API_KEY"=$CLOUDINARY_API_KEY >> server/.env.production
+        env:
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      - run: echo "CLOUDINARY_API_SECRET"=$CLOUDINARY_API_SECRET >> server/.env.production
+        env:
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only server
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
