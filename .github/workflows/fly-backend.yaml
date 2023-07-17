@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: echo "MONGO_URI"=$MONGO_URI >> server/.env.production
+      - run: echo "MONGO_URI"=$MONGO_URI > server/.env.production
         env:
           MONGO_URI: ${{ secrets.MONGO_URI }}
       - run: echo "REDIS_URI"=$REDIS_URI >> server/.env.production
