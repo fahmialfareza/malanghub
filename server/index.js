@@ -9,6 +9,7 @@ const hpp = require("hpp");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
 const morgan = require("morgan");
+const compression = require("compression");
 
 const PORT = process.env.PORT || 4000;
 // Import error handler
@@ -27,6 +28,8 @@ const server = express();
 
 // CORS
 server.use(cors());
+
+server.use(compression());
 
 // Body Parser
 server.use(

@@ -12,5 +12,6 @@ module.exports = withPWA(
     images: {
       disableStaticImages: true,
     },
+    compress: true,
   })
 );
