@@ -247,26 +247,6 @@ const UserProfile = ({
   );
 };
 
-// export async function getServerSideProps({ req }) {
-//   try {
-//     const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
-//       headers: {
-//         Cookie: req.headers.cookie,
-//       },
-//     });
-
-//     return { props: {} };
-//   } catch (e) {
-//     return {
-//       redirect: {
-//         permanent: false,
-//         destination: "/signin",
-//       },
-//       props: {},
-//     };
-//   }
-// }
-
 const mapStateToProps = (state) => ({
   user: state.user,
 });

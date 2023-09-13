@@ -10,6 +10,7 @@ import cookie from "cookie";
 import { loadUser } from "../../../redux/actions/userActions";
 import { setActiveLink } from "../../../redux/actions/layoutActions";
 import Spinner from "../../../components/layouts/Spinner";
+import Sentry from "@sentry/nextjs";
 
 const NewsDraft = ({
   user: { user, loading: userLoading },
@@ -487,6 +488,14 @@ const NewsDraft = ({
 };
 
 export async function getServerSideProps({ req, params }) {
+  const transaction = Sentry.startTransaction({
+    name: "newsDrafts.[slug].getServerSideProps",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   if (!req.headers.cookie) {
     return {
       redirect: {
@@ -523,13 +532,17 @@ export async function getServerSideProps({ req, params }) {
 
       data = res.data.data;
     } catch (e) {
+      Sentry.captureException(e);
       return {
         notFound: true,
       };
+    } finally {
+      transaction.finish();
     }
 
     return { props: { currentNewsDraft: data } };
   } catch (e) {
+    Sentry.captureException(e);
     return {
       redirect: {
         permanent: false,
@@ -537,6 +550,8 @@ export async function getServerSideProps({ req, params }) {
       },
       props: {},
     };
+  } finally {
+    transaction.finish();
   }
 }
 

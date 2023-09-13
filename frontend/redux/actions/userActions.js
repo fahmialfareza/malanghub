@@ -15,9 +15,18 @@ import {
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
 import { requestNextApi } from "../../utils/axiosNextApi";
+import Sentry from "@sentry/nextjs";
 
 // Load User
 export const loadUser = () => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "userActions.loadUser",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -33,6 +42,8 @@ export const loadUser = () => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     localStorage.removeItem("token");
     dispatch({
       type: USER_AUTH_ERROR,
@@ -44,6 +55,8 @@ export const loadUser = () => async (dispatch) => {
         type: USER_CLEAR_ERRORS,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
@@ -55,6 +68,14 @@ export const getUserProfile = (data) => async (dispatch) => {
 };
 
 export const getUser = (id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "userActions.getUser",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let config = {
@@ -70,6 +91,8 @@ export const getUser = (id) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: USER_GET_PROFILE_ERROR,
       payload: e.response.data.message,
@@ -80,11 +103,21 @@ export const getUser = (id) => async (dispatch) => {
         type: USER_CLEAR_ERRORS,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Update Profile
 export const updateProfile = (formData) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "userActions.updateProfile",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -117,6 +150,8 @@ export const updateProfile = (formData) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: USER_UPDATE_PROFILE_ERRORS,
       payload: e.response.data.message,
@@ -127,11 +162,21 @@ export const updateProfile = (formData) => async (dispatch) => {
         type: USER_CLEAR_ERRORS,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Sign Up
 export const signUp = (formData) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "userActions.signUp",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const config = {
@@ -152,6 +197,8 @@ export const signUp = (formData) => async (dispatch) => {
 
     loadUser();
   } catch (e) {
+    Sentry.captureException(e);
+
     localStorage.removeItem("token");
     dispatch({
       type: USER_SIGNUP_FAIL,
@@ -163,11 +210,21 @@ export const signUp = (formData) => async (dispatch) => {
         type: USER_CLEAR_ERRORS,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Login user
 export const signIn = (formData) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "userActions.signIn",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const config = {
@@ -188,6 +245,8 @@ export const signIn = (formData) => async (dispatch) => {
 
     loadUser();
   } catch (e) {
+    Sentry.captureException(e);
+
     localStorage.removeItem("token");
     dispatch({
       type: USER_SIGNIN_FAIL,
@@ -199,11 +258,21 @@ export const signIn = (formData) => async (dispatch) => {
         type: USER_CLEAR_ERRORS,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Logout
 export const logout = () => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "userActions.logout",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   try {
     localStorage.removeItem("token");
 
@@ -217,6 +286,8 @@ export const logout = () => async (dispatch) => {
 
     dispatch({ type: USER_LOGOUT });
   } catch (e) {
+    Sentry.captureException(e);
+
     localStorage.removeItem("token");
     dispatch({
       type: USER_SIGNIN_FAIL,
@@ -228,6 +299,8 @@ export const logout = () => async (dispatch) => {
         type: USER_CLEAR_ERRORS,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 

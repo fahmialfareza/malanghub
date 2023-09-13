@@ -10,9 +10,18 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import Sentry from "@sentry/nextjs";
 
 // Get All News Tag
 export const getNewsTags = () => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsTagActions.getNewsTags",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let config = {
@@ -30,6 +39,8 @@ export const getNewsTags = () => async (dispatch) => {
       payload: data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
@@ -40,10 +51,20 @@ export const getNewsTags = () => async (dispatch) => {
         type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const createNewsTag = (formData) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsTagActions.createNewsTag",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -65,6 +86,8 @@ export const createNewsTag = (formData) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
@@ -75,16 +98,28 @@ export const createNewsTag = (formData) => async (dispatch) => {
         type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const selectNewsTag = (newsTag) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsTagActions.selectNewsTag",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   try {
     dispatch({
       type: SELECT_NEWS_TAG,
       payload: newsTag,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_TAGS_ERROR,
       payload: e,
@@ -95,10 +130,20 @@ export const selectNewsTag = (newsTag) => async (dispatch) => {
         type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const updateNewsTag = (formData, id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsTagActions.updateNewsTag",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -120,6 +165,8 @@ export const updateNewsTag = (formData, id) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
@@ -130,10 +177,20 @@ export const updateNewsTag = (formData, id) => async (dispatch) => {
         type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const deleteNewsTag = (id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsTagActions.deleteNewsTag",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -154,6 +211,8 @@ export const deleteNewsTag = (id) => async (dispatch) => {
       payload: id,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_TAGS_ERROR,
       payload: e.response.data.message,
@@ -164,6 +223,8 @@ export const deleteNewsTag = (id) => async (dispatch) => {
         type: NEWS_TAGS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 

@@ -8,9 +8,18 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import Sentry from "@sentry/nextjs";
 
 // Get Comment By News
 export const getCommentByNews = (id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsCommentActions.getCommentByNews",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let config = {
@@ -26,6 +35,8 @@ export const getCommentByNews = (id) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_COMMENT_ERROR,
       payload: e.response.data.message,
@@ -36,10 +47,20 @@ export const getCommentByNews = (id) => async (dispatch) => {
         type: NEWS_COMMENT_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const createComment = (id, comment) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsCommentActions.createComment",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -61,6 +82,8 @@ export const createComment = (id, comment) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_COMMENT_ERROR,
       payload: e.response.data.message,
@@ -71,16 +94,28 @@ export const createComment = (id, comment) => async (dispatch) => {
         type: NEWS_COMMENT_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const selectNewsComment = (newsComment) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsCommentActions.selectNewsComment",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   try {
     dispatch({
       type: SELECT_NEWS_COMMENT,
       payload: newsComment,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_COMMENT_ERROR,
       payload: e,
@@ -91,10 +126,20 @@ export const selectNewsComment = (newsComment) => async (dispatch) => {
         type: NEWS_COMMENT_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const createCommentByComment = (id, comment) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsCommentActions.createCommentByComment",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -116,6 +161,8 @@ export const createCommentByComment = (id, comment) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_COMMENT_ERROR,
       payload: e.response.data.message,
@@ -126,6 +173,8 @@ export const createCommentByComment = (id, comment) => async (dispatch) => {
         type: NEWS_COMMENT_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 

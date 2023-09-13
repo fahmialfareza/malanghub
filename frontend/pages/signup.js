@@ -8,6 +8,7 @@ import { signUp } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
+import Sentry from "@sentry/nextjs";
 
 const SignUp = ({
   user: { isAuthenticated, error, token },
@@ -64,6 +65,14 @@ const SignUp = ({
   };
 
   const responseGoogle = (response) => {
+    const transaction = Sentry.startTransaction({
+      name: "signup.responseGoogle",
+    });
+
+    Sentry.configureScope((scope) => {
+      scope.setSpan(transaction);
+    });
+
     try {
       signUp({
         name: response.profileObj.name,
@@ -72,10 +81,22 @@ const SignUp = ({
         passwordConfirmation: "Google" + response.profileObj.googleId,
         photo: response.profileObj.imageUrl,
       });
-    } catch (e) {}
+    } catch (e) {
+      Sentry.captureException(e);
+    } finally {
+      transaction.finish();
+    }
   };
 
   const responseFacebook = (response) => {
+    const transaction = Sentry.startTransaction({
+      name: "signup.responseFacebook",
+    });
+
+    Sentry.configureScope((scope) => {
+      scope.setSpan(transaction);
+    });
+
     try {
       signUp({
         name: response.name,
@@ -84,7 +105,11 @@ const SignUp = ({
         passwordConfirmation: "Facebook" + response.id,
         photo: response.picture.data.url,
       });
-    } catch (e) {}
+    } catch (e) {
+      Sentry.captureException(e);
+    } finally {
+      transaction.finish();
+    }
   };
 
   return (
@@ -228,6 +253,14 @@ const SignUp = ({
 };
 
 export async function getServerSideProps({ req }) {
+  const transaction = Sentry.startTransaction({
+    name: "signup.getServerSideProps",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   try {
     const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
       headers: {
@@ -243,7 +276,10 @@ export async function getServerSideProps({ req }) {
       props: {},
     };
   } catch (e) {
+    Sentry.captureException(e);
     return { props: {} };
+  } finally {
+    transaction.finish();
   }
 }
 

@@ -13,8 +13,7 @@ import {
 } from "../../redux/actions/newsCommentActions";
 import { setAlert, setActiveLink } from "../../redux/actions/layoutActions";
 import RelatedNews from "../../components/news/RelatedNews";
-import Spinner from "../../components/layouts/Spinner";
-import AddComment from "../../components/news/comments/AddComment";
+import Sentry from "@sentry/nextjs";
 
 const SingleNews = ({
   currentNews,
@@ -348,164 +347,6 @@ const SingleNews = ({
                           </div>
                         </div>
                       </div>
-
-                      {/* <div className="comments mt-5">
-                      <h4 className="side-title mb-4">
-                        Komentar (
-                        {newsComments?.length > 0
-                          ? newsComments?.length
-                          : "0"}
-                        )
-                      </h4>
-
-                      {isAuthenticated && token && user && (
-                        <div className="leave-comment-form mt-5" id="reply">
-                          <h4 className="side-title mb-2">Komentar</h4>
-                          <form onSubmit={onComment}>
-                            <div className="form-group">
-                              <textarea
-                                name="Comment"
-                                className="form-control"
-                                placeholder="Komentarmu *"
-                                required=""
-                                spellcheck="false"
-                                value={comment}
-                                onChange={(event) =>
-                                  setComment(event.target.value)
-                                }
-                              ></textarea>
-                            </div>
-
-                            <div className="submit text-right">
-                              <button className="btn btn-style btn-primary">
-                                Kirim{" "}
-                              </button>
-                            </div>
-                          </form>
-                        </div>
-                      )}
-
-                      {newsComments?.length > 0 &&
-                        newsComments.map((newsComment) => (
-                          <div key={newsComment._id} className="media">
-                            <div className="img-circle">
-                              <img
-                                src={newsComment?.user?.photo}
-                                className="img-fluid"
-                                alt="..."
-                              />
-                            </div>
-                            <div className="media-body">
-                              <ul className="time-rply mb-2">
-                                <li>
-                                  <Link
-                                    href={`/users/${newsComment?.user?._id}`}
-                                  >
-                                    <a className="name mt-0 mb-2 d-block">
-                                      {newsComment?.user?.name}
-                                    </a>
-                                  </Link>
-                                  <Moment format="dddd, Do MMMM YYYY">
-                                    {newsComment?.created_at}
-                                  </Moment>{" "}
-                                  -{" "}
-                                  <Moment format="HH:mm">
-                                    {newsComment?.created_at}
-                                  </Moment>
-                                </li>
-                                {isAuthenticated && (
-                                  <li className="reply-last">
-                                    <a
-                                      href="#"
-                                      className="reply"
-                                      data-toggle="modal"
-                                      data-target="#addCommentModal"
-                                      onClick={(event) => {
-                                        event.preventDefault();
-
-                                        selectNewsComment(newsComment);
-
-                                        window
-                                          .$("#addCommentModal")
-                                          .modal("toggle");
-                                      }}
-                                    >
-                                      Balas
-                                    </a>
-                                  </li>
-                                )}
-                              </ul>
-                              <p>{newsComment?.comment}</p>
-                              {newsComment?.commentReplies?.length > 0 &&
-                                newsComment?.commentReplies.map(
-                                  (commentReply, index) => (
-                                    <div
-                                      key={index}
-                                      className="media second mt-4 p-0 pt-2"
-                                    >
-                                      <a
-                                        className="img-circle img-circle-sm"
-                                        href="#url"
-                                      >
-                                        <img
-                                          src={commentReply?.user?.photo}
-                                          className="img-fluid"
-                                          alt="..."
-                                        />
-                                      </a>
-                                      <div className="media-body">
-                                        <ul className="time-rply mb-2">
-                                          <li>
-                                            <a
-                                              href="#URL"
-                                              className="name mt-0 mb-2 d-block"
-                                            >
-                                              {commentReply?.user?.name}
-                                            </a>
-                                            <Moment format="dddd, Do MMMM YYYY">
-                                              {commentReply?.created_at}
-                                            </Moment>{" "}
-                                            -{" "}
-                                            <Moment format="HH:mm">
-                                              {commentReply?.created_at}
-                                            </Moment>
-                                          </li>
-                                          {isAuthenticated && (
-                                            <li className="reply-last">
-                                              <a
-                                                href="#reply"
-                                                className="reply"
-                                                data-toggle="modal"
-                                                data-target="#addCommentModal"
-                                                onClick={(event) => {
-                                                  event.preventDefault();
-
-                                                  selectNewsComment(
-                                                    newsComment
-                                                  );
-
-                                                  window
-                                                    .$("#addCommentModal")
-                                                    .modal("toggle");
-                                                }}
-                                              >
-                                                {" "}
-                                                Balas
-                                              </a>
-                                            </li>
-                                          )}
-                                        </ul>
-                                        <p>{commentReply?.comment}</p>
-                                      </div>
-                                    </div>
-                                  )
-                                )}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
-
-                    <AddComment /> */}
                     </div>
                   </div>
                 </div>
@@ -539,6 +380,14 @@ const SingleNews = ({
 };
 
 export async function getServerSideProps({ params }) {
+  const transaction = Sentry.startTransaction({
+    name: "news.[slug].getServerSideProps",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   const { slug } = params;
 
   let config = {
@@ -562,12 +411,18 @@ export async function getServerSideProps({ params }) {
 
       data.push(res.data.data);
     } catch (e) {
+      Sentry.captureException(e);
       return { props: { currentNews: data[0], relatedNews: null } };
+    } finally {
+      transaction.finish();
     }
   } catch (e) {
+    Sentry.captureException(e);
     return {
       notFound: true,
     };
+  } finally {
+    transaction.finish();
   }
 
   return { props: { currentNews: data[0], relatedNews: data[1] } };

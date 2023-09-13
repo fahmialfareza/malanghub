@@ -9,6 +9,7 @@ import { setActiveLink } from "../../redux/actions/layoutActions";
 import Spinner from "../../components/layouts/Spinner";
 import AllNewsItem from "../../components/news/AllNewsItem";
 import TrendingNews from "../../components/news/TrendingNews";
+import Sentry from "@sentry/nextjs";
 
 const News = ({
   trendingNews,
@@ -104,6 +105,14 @@ const News = ({
 };
 
 export async function getServerSideProps() {
+  const transaction = Sentry.startTransaction({
+    name: "news.index.getServerSideProps",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   let configTrending = {
     method: "get",
     url: `${
@@ -121,9 +130,12 @@ export async function getServerSideProps() {
 
     dataTrending = response.data.data;
   } catch (e) {
+    Sentry.captureException(e);
     return {
       notFound: true,
     };
+  } finally {
+    transaction.finish();
   }
 
   return { props: { trendingNews: dataTrending } };

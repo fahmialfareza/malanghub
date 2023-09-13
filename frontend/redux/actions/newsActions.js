@@ -1,6 +1,5 @@
 import {
   GET_ALL_NEWS,
-  GET_RELATED_NEWS,
   GET_MY_NEWS,
   GET_ONE_NEWS,
   NEWS_ERROR,
@@ -8,9 +7,18 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import Sentry from "@sentry/nextjs";
 
 // Get All News
 export const getAllNews = (page) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsActions.getAllNews",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let configAll = {
@@ -30,6 +38,7 @@ export const getAllNews = (page) => async (dispatch) => {
       },
     });
   } catch (e) {
+    Sentry.captureException(e);
     dispatch({
       type: NEWS_ERROR,
       payload: e.response.data.message,
@@ -40,11 +49,21 @@ export const getAllNews = (page) => async (dispatch) => {
         type: NEWS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Search News
 export const getNewsBySearch = (search, page) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsActions.getNewsBySearch",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let configSearch = {
@@ -64,6 +83,7 @@ export const getNewsBySearch = (search, page) => async (dispatch) => {
       },
     });
   } catch (e) {
+    Sentry.captureException(e);
     dispatch({
       type: NEWS_ERROR,
       payload: e.response.data.message,
@@ -74,11 +94,21 @@ export const getNewsBySearch = (search, page) => async (dispatch) => {
         type: NEWS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Get News by Category
 export const getNewsByCategory = (id, page) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsActions.getNewsByCategory",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let configCategory = {
@@ -98,6 +128,8 @@ export const getNewsByCategory = (id, page) => async (dispatch) => {
       },
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_ERROR,
       payload: e.response.data.message,
@@ -108,10 +140,20 @@ export const getNewsByCategory = (id, page) => async (dispatch) => {
         type: NEWS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const getNewsByTag = (id, page) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsActions.getNewsByTag",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let configTag = {
@@ -132,6 +174,8 @@ export const getNewsByTag = (id, page) => async (dispatch) => {
       },
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_ERROR,
       payload: e.response.data.message,
@@ -142,11 +186,21 @@ export const getNewsByTag = (id, page) => async (dispatch) => {
         type: NEWS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Get News by User
 export const getNewsByUser = (userQuery, page) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsActions.getNewsByUser",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let configUser = {
@@ -166,6 +220,8 @@ export const getNewsByUser = (userQuery, page) => async (dispatch) => {
       },
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_ERROR,
       payload: e.response.data.message,
@@ -176,10 +232,20 @@ export const getNewsByUser = (userQuery, page) => async (dispatch) => {
         type: NEWS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const getMyNews = () => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsActions.getMyNews",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -200,6 +266,8 @@ export const getMyNews = () => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_ERROR,
       payload: e.response.data.message,
@@ -210,11 +278,21 @@ export const getMyNews = () => async (dispatch) => {
         type: NEWS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 // Get One
 export const getOne = (id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsActions.getOne",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   let config = {
@@ -230,6 +308,8 @@ export const getOne = (id) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_ERROR,
       payload: e.response.data.message,
@@ -240,6 +320,8 @@ export const getOne = (id) => async (dispatch) => {
         type: NEWS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 

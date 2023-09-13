@@ -41,3 +41,5 @@ stdout.txt
 mongo-volume
 
 /tmp
+# Sentry Auth Token
+.sentryclirc

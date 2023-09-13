@@ -11,8 +11,17 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
+import Sentry from "@sentry/nextjs";
 
 export const getAllNewsDrafts = () => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.getAllNewsDrafts",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   var config = {
@@ -29,6 +38,8 @@ export const getAllNewsDrafts = () => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e.response.data.message,
@@ -39,10 +50,20 @@ export const getAllNewsDrafts = () => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const getMyNewsDrafts = () => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.getMyNewsDrafts",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -63,6 +84,8 @@ export const getMyNewsDrafts = () => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e.response.data.message,
@@ -73,10 +96,20 @@ export const getMyNewsDrafts = () => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const getOneByUser = (id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.getOneByUser",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   var config = {
@@ -92,6 +125,8 @@ export const getOneByUser = (id) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e.response.data.message,
@@ -102,10 +137,20 @@ export const getOneByUser = (id) => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const createNewsDraft = (formData) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.createNewsDraft",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -134,6 +179,8 @@ export const createNewsDraft = (formData) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e.response.data.message,
@@ -144,10 +191,20 @@ export const createNewsDraft = (formData) => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const updateNewsDraft = (formData, id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.updateNewsDraft",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -176,6 +233,8 @@ export const updateNewsDraft = (formData, id) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e.response.data.message,
@@ -186,10 +245,20 @@ export const updateNewsDraft = (formData, id) => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const updateNewsDraftApproved = (formData, id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.updateNewsDraftApproved",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -211,6 +280,8 @@ export const updateNewsDraftApproved = (formData, id) => async (dispatch) => {
       payload: res.data.data,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e.response.data.message,
@@ -221,16 +292,28 @@ export const updateNewsDraftApproved = (formData, id) => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const selectNewsDraft = (newsDraft) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.selectNewsDraft",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   try {
     dispatch({
       type: SELECT_NEWS_DRAFT,
       payload: newsDraft,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e,
@@ -241,10 +324,20 @@ export const selectNewsDraft = (newsDraft) => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 
 export const deleteNewsDraft = (id) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "newsDraftActions.deleteNewsDraft",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   setLoading();
 
   const token = localStorage.getItem("token");
@@ -265,6 +358,8 @@ export const deleteNewsDraft = (id) => async (dispatch) => {
       payload: id,
     });
   } catch (e) {
+    Sentry.captureException(e);
+
     dispatch({
       type: NEWS_DRAFTS_ERROR,
       payload: e.response.data.message,
@@ -275,6 +370,8 @@ export const deleteNewsDraft = (id) => async (dispatch) => {
         type: NEWS_DRAFTS_CLEAR_ERROR,
       });
     }, 5000);
+  } finally {
+    transaction.finish();
   }
 };
 

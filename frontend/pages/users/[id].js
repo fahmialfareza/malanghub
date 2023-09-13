@@ -12,6 +12,7 @@ import { getNewsByUser } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import assetsPath from "../../components/layouts/Assets";
 import Spinner from "../../components/layouts/Spinner";
+import Sentry from "@sentry/nextjs";
 
 const GetUserProfile = ({
   getNewsByUser,
@@ -412,6 +413,14 @@ const GetUserProfile = ({
 };
 
 export async function getServerSideProps({ params }) {
+  const transaction = Sentry.startTransaction({
+    name: "users.[id].getServerSideProps",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   const { id } = params;
 
   let configTrending = {
@@ -441,9 +450,12 @@ export async function getServerSideProps({ params }) {
     dataTrending = response[0].data.data;
     dataUser = response[1].data.data;
   } catch (e) {
+    Sentry.captureException(e);
     return {
       notFound: true,
     };
+  } finally {
+    transaction.finish();
   }
 
   return { props: { trendingNewsByUser: dataTrending, userProfile: dataUser } };

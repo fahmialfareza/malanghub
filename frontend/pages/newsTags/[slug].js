@@ -10,7 +10,7 @@ import { setActiveLink } from "../../redux/actions/layoutActions";
 import Spinner from "../../components/layouts/Spinner";
 import NewsByTagItem from "../../components/news/NewsByTagItem";
 import TrendingNews from "../../components/news/TrendingNews";
-import assetsPath from "../../components/layouts/Assets";
+import Sentry from "@sentry/nextjs";
 
 const NewsTag = ({
   trendingNews,
@@ -136,6 +136,14 @@ const NewsTag = ({
 };
 
 export async function getServerSideProps({ params }) {
+  const transaction = Sentry.startTransaction({
+    name: "newsTags.[slug].getServerSideProps",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
   const { slug } = params;
 
   let configTrending = {
@@ -162,9 +170,12 @@ export async function getServerSideProps({ params }) {
     dataTrending = response[0].data.data;
     dataNewsTag = response[1].data.data;
   } catch (e) {
+    Sentry.captureException(e);
     return {
       notFound: true,
     };
+  } finally {
+    transaction.finish();
   }
 
   return { props: { trendingNews: dataTrending, oneNewsTag: dataNewsTag } };
