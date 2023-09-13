@@ -16,7 +16,6 @@ module.exports = withPWA(
   })
 );
 
-
 // Injected content via Sentry wizard below
 
 const { withSentryConfig } = require("@sentry/nextjs");
@@ -32,6 +31,8 @@ module.exports = withSentryConfig(
 
     org: "malanghub",
     project: "malanghub-frontend",
+
+    authToken: process.env.SENTRY_AUTH_TOKEN,
   },
   {
     // For all available options, see:
