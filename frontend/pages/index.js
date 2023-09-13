@@ -7,7 +7,7 @@ import { setActiveLink } from "../redux/actions/layoutActions";
 import Spinner from "../components/layouts/Spinner";
 import TrendingNews from "../components/news/TrendingNews";
 import NewsItem from "../components/news/NewsItem";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 const Home = ({
   recentNews,

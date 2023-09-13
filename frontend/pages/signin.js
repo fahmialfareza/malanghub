@@ -7,7 +7,7 @@ import { signIn } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
 import GoogleLogin from "react-google-login";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 const SignIn = ({
   user: { isAuthenticated, error, token },

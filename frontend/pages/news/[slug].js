@@ -13,7 +13,7 @@ import {
 } from "../../redux/actions/newsCommentActions";
 import { setAlert, setActiveLink } from "../../redux/actions/layoutActions";
 import RelatedNews from "../../components/news/RelatedNews";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 const SingleNews = ({
   currentNews,

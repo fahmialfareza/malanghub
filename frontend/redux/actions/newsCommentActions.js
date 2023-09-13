@@ -8,7 +8,7 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 // Get Comment By News
 export const getCommentByNews = (id) => async (dispatch) => {

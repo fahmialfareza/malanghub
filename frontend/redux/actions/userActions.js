@@ -15,7 +15,7 @@ import {
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
 import { requestNextApi } from "../../utils/axiosNextApi";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 // Load User
 export const loadUser = () => async (dispatch) => {

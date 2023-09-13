@@ -10,7 +10,7 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 // Get All News Tag
 export const getNewsTags = () => async (dispatch) => {

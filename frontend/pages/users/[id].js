@@ -12,7 +12,7 @@ import { getNewsByUser } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import assetsPath from "../../components/layouts/Assets";
 import Spinner from "../../components/layouts/Spinner";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 const GetUserProfile = ({
   getNewsByUser,

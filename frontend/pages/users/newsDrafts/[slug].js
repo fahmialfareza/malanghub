@@ -10,7 +10,7 @@ import cookie from "cookie";
 import { loadUser } from "../../../redux/actions/userActions";
 import { setActiveLink } from "../../../redux/actions/layoutActions";
 import Spinner from "../../../components/layouts/Spinner";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 
 const NewsDraft = ({
   user: { user, loading: userLoading },
