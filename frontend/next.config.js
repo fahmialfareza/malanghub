@@ -29,8 +29,8 @@ module.exports = withSentryConfig(
     // Suppresses source map uploading logs during build
     silent: true,
 
-    org: "malanghub",
-    project: "malanghub-frontend",
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
 
     authToken: process.env.SENTRY_AUTH_TOKEN,
   },
