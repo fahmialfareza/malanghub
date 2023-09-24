@@ -1,6 +1,6 @@
-const path = require('path');
-const crypto = require('crypto');
-const { uploader } = require('../../utils/cloudinary');
+const path = require("path");
+const crypto = require("crypto");
+const { uploader } = require("../../utils/cloudinary");
 
 exports.upload = async (req, res, next) => {
   try {
@@ -9,21 +9,21 @@ exports.upload = async (req, res, next) => {
     const file = req.files.file;
 
     // Make sure image is photo
-    if (!file.mimetype.startsWith('image')) {
-      errors.push('File haruslah sebuah gambar');
+    if (!file.mimetype.startsWith("image")) {
+      errors.push("File haruslah sebuah gambar");
     }
 
     // Check file size (max 1MB)
     if (file.size > 1000000) {
-      errors.push('Gambar harus kurang dari 1 MB');
+      errors.push("Gambar harus kurang dari 1 MB");
     }
 
     if (errors.length > 0) {
-      return next({ message: errors.join(', '), statusCode: 400 });
+      return next({ message: errors.join(", "), statusCode: 400 });
     }
 
     // Create custom filename
-    let fileName = crypto.randomBytes(16).toString('hex');
+    let fileName = crypto.randomBytes(16).toString("hex");
 
     // Rename the file
     file.name = `${fileName}${path.parse(file.name).ext}`;
@@ -34,6 +34,7 @@ exports.upload = async (req, res, next) => {
 
     next();
   } catch (e) {
+    console.error(e);
     return next(e);
   }
 };

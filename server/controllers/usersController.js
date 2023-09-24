@@ -38,6 +38,7 @@ class UsersController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -74,6 +75,7 @@ class UsersController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -112,6 +114,7 @@ class UsersController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -130,6 +133,7 @@ class UsersController {
 
       return res.status(200).json({ token });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }

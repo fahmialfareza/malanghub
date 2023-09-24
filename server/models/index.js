@@ -27,6 +27,7 @@ async function redisClient() {
 
     return client;
   } catch (error) {
+    console.error(error);
     throw error;
   }
 }

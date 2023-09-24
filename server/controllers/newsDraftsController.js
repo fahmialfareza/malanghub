@@ -1,4 +1,4 @@
-const { news, user } = require('../models');
+const { news, user } = require("../models");
 
 class NewsController {
   async getAll(req, res, next) {
@@ -13,6 +13,7 @@ class NewsController {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -25,21 +26,22 @@ class NewsController {
           approved: false,
         })
         .populate({
-          path: 'user',
-          select: '-password -role',
+          path: "user",
+          select: "-password -role",
         })
-        .populate('category')
-        .populate('tags');
+        .populate("category")
+        .populate("tags");
 
       if (!data) {
         return next({
-          message: 'Draft Berita tidak ditemukan',
+          message: "Draft Berita tidak ditemukan",
           statusCode: 404,
         });
       }
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -51,16 +53,17 @@ class NewsController {
       data = await news
         .findById(data.id)
         .populate({
-          path: 'user',
-          select: '-password -role',
+          path: "user",
+          select: "-password -role",
         })
-        .populate('category')
-        .populate('tags');
+        .populate("category")
+        .populate("tags");
 
       return res.status(201).json({ data });
     } catch (e) {
+      console.error(e);
       if (e.code === 11000) {
-        return next({ message: 'Judul yang sama sudah ada', statusCode: 400 });
+        return next({ message: "Judul yang sama sudah ada", statusCode: 400 });
       }
 
       return next(e);
@@ -77,7 +80,7 @@ class NewsController {
 
       if (!data) {
         return next({
-          message: 'Draft Berita tidak ditemukan',
+          message: "Draft Berita tidak ditemukan",
           statusCode: 404,
         });
       }
@@ -85,16 +88,17 @@ class NewsController {
       data = await news
         .findById(data.id)
         .populate({
-          path: 'user',
-          select: '-password -role',
+          path: "user",
+          select: "-password -role",
         })
-        .populate('category')
-        .populate('tags');
+        .populate("category")
+        .populate("tags");
 
       return res.status(201).json({ data });
     } catch (e) {
+      console.error(e);
       if (e.code === 11000) {
-        return next({ message: 'Judul yang sama sudah ada', statusCode: 400 });
+        return next({ message: "Judul yang sama sudah ada", statusCode: 400 });
       }
 
       return next(e);
@@ -106,7 +110,7 @@ class NewsController {
       let data = { n: 0 };
       const userData = await user.findById(req.user.id);
 
-      if (userData.role.includes('admin')) {
+      if (userData.role.includes("admin")) {
         data = await news.remove({
           _id: req.params.id,
         });
@@ -119,13 +123,14 @@ class NewsController {
 
       if (data.n === 0) {
         return next({
-          message: 'Draft Berita tidak ditemukan',
+          message: "Draft Berita tidak ditemukan",
           statusCode: 404,
         });
       }
 
       return res.status(200).json({ data: {} });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }

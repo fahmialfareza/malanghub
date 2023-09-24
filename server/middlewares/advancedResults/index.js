@@ -115,6 +115,7 @@ const advancedResults = (model) => async (req, res, next) => {
 
     next();
   } catch (e) {
+    console.error(e);
     return next(e);
   }
 };

@@ -3,15 +3,7 @@ const { newsTag } = require("../models");
 class NewsCategoriesController {
   async getAll(req, res, next) {
     try {
-      const data = await newsTag.find().populate({
-        path: "news",
-        match: { approved: true },
-        populate: [
-          { path: "user", select: "-password -role" },
-          { path: "tags" },
-          { path: "category" },
-        ],
-      });
+      const data = await newsTag.find();
 
       if (data.length === 0) {
         return next({ message: "Tag Berita tidak ditemukan", statusCode: 404 });
@@ -19,6 +11,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -41,6 +34,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -51,6 +45,7 @@ class NewsCategoriesController {
 
       return res.status(201).json({ data });
     } catch (e) {
+      console.error(e);
       if (e.code === 11000) {
         return next({
           message: "Nama Tag Berita sudah ada",
@@ -85,6 +80,7 @@ class NewsCategoriesController {
 
       return res.status(201).json({ data });
     } catch (e) {
+      console.error(e);
       if (e.code === 11000) {
         return next({
           message: "Nama Tag Berita sudah ada",
@@ -106,6 +102,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data: {} });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }

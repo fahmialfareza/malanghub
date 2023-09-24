@@ -27,6 +27,7 @@ exports.update = async (req, res, next) => {
 
     next();
   } catch (e) {
+    console.error(e);
     return next(e);
   }
 };
@@ -45,6 +46,7 @@ exports.deleteNews = (req, res, next) => {
 
     next();
   } catch (e) {
+    console.error(e);
     return next(e);
   }
 };

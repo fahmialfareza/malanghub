@@ -3,6 +3,7 @@ class ImageUploadController {
     try {
       return res.status(200).json({ uploaded: true, location: req.body.file });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }

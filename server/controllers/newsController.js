@@ -7,6 +7,7 @@ class NewsController {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -15,6 +16,7 @@ class NewsController {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -23,6 +25,7 @@ class NewsController {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -57,6 +60,7 @@ class NewsController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -93,6 +97,7 @@ class NewsController {
 
       return res.status(201).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -107,6 +112,7 @@ class NewsController {
 
       return res.status(200).json({ data: {} });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }

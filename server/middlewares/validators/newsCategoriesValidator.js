@@ -18,6 +18,7 @@ exports.create = (req, res, next) => {
 
     next();
   } catch (e) {
+    console.error(e);
     return next(e);
   }
 };
@@ -46,6 +47,7 @@ exports.update = async (req, res, next) => {
 
     next();
   } catch (e) {
+    console.error(e);
     return next(e);
   }
 };
@@ -64,6 +66,7 @@ exports.deleteCategory = (req, res, next) => {
 
     next();
   } catch (e) {
+    console.error(e);
     return next(e);
   }
 };

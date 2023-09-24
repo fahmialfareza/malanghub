@@ -22,6 +22,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -49,6 +50,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -60,6 +62,7 @@ class NewsCategoriesController {
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
+        console.error(e);
         return next({
           message: "Kategori Berita tidak ditemukan",
           statusCode: 400,
@@ -103,6 +106,7 @@ class NewsCategoriesController {
       return res.status(201).json({ data });
     } catch (e) {
       if (e.code === 11000) {
+        console.error(e);
         return next({
           message: "Nama Kategori Berita sudah ada",
           statusCode: 400,
@@ -126,6 +130,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data: {} });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }

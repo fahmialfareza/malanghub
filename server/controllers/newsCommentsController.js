@@ -17,6 +17,7 @@ class NewsCommentsController {
 
       return res.status(200).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -35,6 +36,7 @@ class NewsCommentsController {
 
       res.status(201).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
@@ -69,6 +71,7 @@ class NewsCommentsController {
 
       return res.status(201).json({ data });
     } catch (e) {
+      console.error(e);
       return next(e);
     }
   }
