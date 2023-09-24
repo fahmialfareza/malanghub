@@ -1,69 +1,195 @@
 require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
-const bcrypt = require("bcryptjs");
-const jose = require("jose");
+const passport = require("passport");
+const localStrategy = require("passport-local").Strategy;
+const JWTStrategy = require("passport-jwt").Strategy;
+const ExtractJWT = require("passport-jwt").ExtractJwt;
+const bcrypt = require("bcrypt");
 
 const { user } = require("../../models");
 
 exports.signup = async (req, res, next) => {
-  try {
-    const newUser = await user.create(req.body);
-    req.user = newUser;
+  passport.authenticate("signup", { session: false }, (err, user, info) => {
+    if (err) {
+      return next({ message: "Email sudah dipakai pengguna lain" });
+    }
+
+    if (err || !user) {
+      return next({ message: info.message, statusCode: 401 });
+    }
+
+    req.user = user;
+
     next();
-  } catch (e) {
-    console.log(e);
-    next({ message: "Email sudah dipakai pengguna lain", statusCode: 400 });
-  }
+  })(req, res, next);
 };
+
+passport.use(
+  "signup",
+  new localStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+      passReqToCallback: true,
+    },
+    async (req, email, password, done) => {
+      try {
+        const newUser = await user.create(req.body);
+
+        return done(null, newUser);
+      } catch (e) {
+        console.error(e);
+        return done(e.message, false, {
+          message: "Email sudah dipakai pengguna lain",
+        });
+      }
+    }
+  )
+);
 
 exports.signin = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const userLogin = await user.findOne({ email });
-
-    if (!userLogin) {
-      return next({ message: "Pengguna tidak ditemukan", statusCode: 401 });
+  passport.authenticate("signin", { session: false }, (err, user, info) => {
+    if (err) {
+      return next({ message: "Email sudah dipakai pengguna lain" });
     }
 
-    const validate = await bcrypt.compare(password, userLogin.password);
-
-    if (!validate) {
-      return next({ message: "Password Anda salah", statusCode: 401 });
+    if (!user) {
+      return next({ message: info.message, statusCode: 401 });
     }
 
-    req.user = userLogin;
+    req.user = user;
+
     next();
-  } catch (e) {
-    console.log(e);
-    next({ message: "Gagal masuk", statusCode: 500 });
-  }
+  })(req, res, next);
 };
 
-const authorize = (role) => {
-  return async (req, res, next) => {
-    try {
-      const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return next({ message: "Anda tidak diizinkan", statusCode: 403 });
+passport.use(
+  "signin",
+  new localStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email, password, done) => {
+      try {
+        const userLogin = await user.findOne({ email });
+
+        if (!userLogin) {
+          return done(null, false, { message: "Pengguna tidak ditemukan" });
+        }
+
+        const validate = await bcrypt.compare(password, userLogin.password);
+
+        if (!validate) {
+          return done(null, false, { message: "Password Anda salah" });
+        }
+
+        return done(null, userLogin, {
+          message: "Berhasil masuk",
+        });
+      } catch (e) {
+        console.error(e);
+        return done(e.message, false, { message: "Gagal masuk" });
       }
-
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-      const token = authHeader.split(" ")[1];
-
-      const { payload } = await jose.jwtVerify(token, secret);
-
-      const userLogin = await user.findOne({ _id: payload.user.id });
-      if (!userLogin || !userLogin.role.includes(role)) {
-        return next({ message: "Anda tidak diizinkan", statusCode: 403 });
-      }
-
-      req.user = payload.user;
-      next();
-    } catch (e) {
-      console.log(e);
-      next({ message: "Anda tidak diizinkan", statusCode: 403 });
     }
-  };
+  )
+);
+
+exports.admin = async (req, res, next) => {
+  passport.authorize("admin", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+
+    if (err || !user) {
+      return next({ message: info.message, statusCode: 403 });
+    }
+
+    req.user = user;
+
+    next();
+  })(req, res, next);
 };
 
-exports.admin = authorize("admin");
-exports.user = authorize("user");
+passport.use(
+  "admin",
+  new JWTStrategy(
+    {
+      secretOrKey: process.env.JWT_SECRET,
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    },
+    async (token, done) => {
+      try {
+        const userLogin = await user.findOne({
+          _id: token.user.id,
+        });
+
+        if (!userLogin) {
+          return done(null, false, { message: "Anda tidak diizinkan" });
+        }
+
+        // if user.role includes transaksi it will next
+        if (userLogin.role.includes("admin")) {
+          return done(null, token.user);
+        }
+
+        // if user.role not includes transaksi it will not authorization
+        return done(null, false, { message: "Anda tidak diizinkan" });
+      } catch (e) {
+        console.error(e);
+        return done(e.message, false, { message: "Anda tidak diizinkan" });
+      }
+    }
+  )
+);
+
+exports.user = async (req, res, next) => {
+  passport.authorize("user", (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+
+    if (err || !user) {
+      return next({ message: info.message, statusCode: 403 });
+    }
+
+    req.user = user;
+
+    next();
+  })(req, res, next);
+};
+
+passport.use(
+  "user",
+  new JWTStrategy(
+    {
+      secretOrKey: process.env.JWT_SECRET,
+      jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
+    },
+    async (token, done) => {
+      try {
+        const userLogin = await user.findOne({
+          _id: token.user.id,
+        });
+
+        if (!userLogin) {
+          return done(null, false, { message: "Anda tidak diizinkan" });
+        }
+
+        // if user.role includes transaksi it will next
+        if (userLogin.role.includes("user")) {
+          return done(null, token.user);
+        }
+
+        // if user.role not includes transaksi it will not authorization
+        return done(null, false, {
+          message: "Anda tidak diizinkan",
+        });
+      } catch (e) {
+        console.error(e);
+        return done(e.message, false, {
+          message: "Anda tidak diizinkan",
+        });
+      }
+    }
+  )
+);

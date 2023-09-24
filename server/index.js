@@ -4,10 +4,13 @@ const fs = require("fs");
 const express = require("express");
 const mongoSanitize = require("express-mongo-sanitize");
 const xss = require("xss-clean");
+const rateLimit = require("express-rate-limit");
 const hpp = require("hpp");
 const cors = require("cors");
 const fileUpload = require("express-fileupload");
 const morgan = require("morgan");
+const compression = require("compression");
+
 const PORT = process.env.PORT || 4000;
 // Import error handler
 const errorHandler = require("./middlewares/errorHandler");
@@ -25,6 +28,8 @@ const server = express();
 
 // CORS
 server.use(cors());
+
+server.use(compression());
 
 // Body Parser
 server.use(
@@ -44,6 +49,14 @@ server.use(mongoSanitize());
 
 // Prevent XSS attact
 server.use(xss());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 min
+  max: 600,
+});
+
+server.use(limiter);
 
 // Prevent http param pollution
 server.use(hpp());

@@ -1,29 +1,39 @@
-# Adjust BUN_VERSION as desired
-ARG BUN_VERSION=1.0
-FROM oven/bun:${BUN_VERSION}
+# syntax = docker/dockerfile:1
 
-LABEL fly_launch_runtime="Bun.sh"
+# Adjust NODE_VERSION as desired
+ARG NODE_VERSION=18.16.1
+FROM node:${NODE_VERSION}-slim as base
 
-# app lives here
+LABEL fly_launch_runtime="Node.js"
+
+# Node.js app lives here
 WORKDIR /app
 
 # Set production environment
 ENV NODE_ENV=production
-EXPOSE 3000
+
+
+# Throw-away build stage to reduce size of final image
+FROM base as build
 
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
-  apt-get install -y python-is-python3 pkg-config build-essential tini 
+    apt-get install -y python-is-python3 pkg-config build-essential 
 
 # Install node modules
-COPY package.json bun.lockb ./
-RUN bun install
+COPY --link package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
 # Copy application code
-COPY . .
+COPY --link . .
 
-# Use Tini as the entrypoint
-ENTRYPOINT ["/usr/bin/tini", "--"]
+
+# Final stage for app image
+FROM base
+
+# Copy built application
+COPY --from=build /app /app
 
 # Start the server by default, this can be overwritten at runtime
-CMD [ "bun", "start" ]
+EXPOSE 3000
+CMD [ "yarn", "run", "start" ]
