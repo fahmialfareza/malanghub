@@ -1,4 +1,4 @@
-const jwt = require("jsonwebtoken");
+const jose = require("jose");
 const { user, redisClient } = require("../models");
 
 const oneDay = 60 * 60 * 24;
@@ -127,9 +127,14 @@ class UsersController {
         },
       };
 
-      const token = await jwt.sign(body, process.env.JWT_SECRET, {
-        expiresIn: "30d",
-      });
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+      const alg = "HS256";
+
+      const token = await new jose.SignJWT(body)
+        .setProtectedHeader({ alg })
+        .setIssuedAt()
+        .setExpirationTime("30d")
+        .sign(secret);
 
       return res.status(200).json({ token });
     } catch (e) {

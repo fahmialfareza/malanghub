@@ -1,5 +1,4 @@
 const express = require("express");
-const passport = require("passport");
 
 const imageUploadValidator = require("../middlewares/validators/imageUploadValidator");
 const imageUploadController = require("../controllers/imageUploadController");
