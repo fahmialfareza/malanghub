@@ -33,6 +33,18 @@ jobs:
       - run: echo "CLOUDINARY_API_SECRET"=$CLOUDINARY_API_SECRET >> server/.env.production
         env:
           CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+      - run: echo "NEW_RELIC_APP_NAME"=$NEW_RELIC_APP_NAME >> server/.env.production
+        env:
+          NEW_RELIC_APP_NAME: ${{ secrets.NEW_RELIC_APP_NAME }}
+      - run: echo "NEW_RELIC_LICENSE_KEY"=$NEW_RELIC_LICENSE_KEY >> server/.env.production
+        env:
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      - run: echo "NEW_RELIC_DISTRIBUTED_TRACING_ENABLED"=$NEW_RELIC_DISTRIBUTED_TRACING_ENABLED >> server/.env.production
+        env:
+          NEW_RELIC_DISTRIBUTED_TRACING_ENABLED: ${{ secrets.NEW_RELIC_DISTRIBUTED_TRACING_ENABLED }}
+      - run: echo "NEW_RELIC_LOG"=$NEW_RELIC_LOG >> server/.env.production
+        env:
+          NEW_RELIC_LOG: ${{ secrets.NEW_RELIC_LOG }}
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - run: flyctl deploy --remote-only server
         env:
