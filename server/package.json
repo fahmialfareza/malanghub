@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "NODE_ENV=development npx nodemon index.js",
-    "start": "NODE_ENV=production node index.js"
+    "dev": "NODE_ENV=development npx nodemon -r newrelic index.js",
+    "start": "NODE_ENV=production node -r newrelic index.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
@@ -21,6 +21,7 @@
     "mongoose": "^7.5.2",
     "mongoose-delete": "^1.0.1",
     "morgan": "^1.10.0",
+    "newrelic": "^11.1.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",

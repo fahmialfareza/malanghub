@@ -9,8 +9,8 @@ mongoose
     useUnifiedTopology: true,
     useNewUrlParser: true,
   })
-  .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err.message));
+  .then(() => console.error("MongoDB Connected"))
+  .catch((err) => console.error(err.message));
 
 // function connect to redis
 async function redisClient() {

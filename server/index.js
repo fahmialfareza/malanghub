@@ -1,4 +1,5 @@
 require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+require("newrelic");
 const path = require("path");
 const fs = require("fs");
 const express = require("express");
@@ -100,4 +101,4 @@ server.use("/api/upload", imageUploadRoute);
 
 server.use(errorHandler);
 
-server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+server.listen(PORT, () => console.error(`Server started on port ${PORT}`));
