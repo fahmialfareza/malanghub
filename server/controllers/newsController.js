@@ -31,13 +31,14 @@ class NewsController {
   }
 
   async getOne(req, res, next) {
+    let redis;
+
     try {
       const key = `news:${req.params.slug}`;
       const redis = await redisClient();
 
       let data = await redis.get(key);
       if (data) {
-        await redis.disconnect();
         data = JSON.parse(data);
         return res.status(200).json({ data });
       }
@@ -55,13 +56,17 @@ class NewsController {
         return next({ message: "Berita tidak ditemukan", statusCode: 404 });
       }
 
-      await redis.set(key, JSON.stringify(data), { EX: oneDay });
-      await redis.disconnect();
+      const dataByteSize = Buffer.from(JSON.stringify(data)).length;
+      if (dataByteSize < 1048576) {
+        await redis.set(key, JSON.stringify(data), { EX: oneDay });
+      }
 
       return res.status(200).json({ data });
     } catch (e) {
       console.error(e);
       return next(e);
+    } finally {
+      await redis.disconnect();
     }
   }
 
