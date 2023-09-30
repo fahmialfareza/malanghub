@@ -35,7 +35,7 @@ class NewsController {
 
     try {
       const key = `news:${req.params.slug}`;
-      const redis = await redisClient();
+      redis = await redisClient();
 
       let data = await redis.get(key);
       if (data) {
