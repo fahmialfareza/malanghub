@@ -5,10 +5,7 @@ const { createClient } = require("redis");
 const uri = process.env.MONGO_URI;
 
 mongoose
-  .connect(uri, {
-    useUnifiedTopology: true,
-    useNewUrlParser: true,
-  })
+  .connect(uri, {})
   .then(() => console.error("MongoDB Connected"))
   .catch((err) => console.error(err.message));
 
