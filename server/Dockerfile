@@ -26,17 +26,24 @@ RUN yarn install --frozen-lockfile
 # Copy application code
 COPY . .
 
-
 # Final stage for app image
 FROM base
 
 RUN apt-get update -qq && \
-    apt-get install -y curl sudo tini
+    apt-get install -y curl sudo tini redis-server
+
+# Disable protected mode in Redis configuration
+RUN echo "protected-mode no" >> /etc/redis/redis.conf
 
 # Copy built application
-COPY --from=build /app /app
+COPY .env.production .
+COPY --from=build /app .
+
+# Copy the startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
-CMD [ "yarn", "start" ]
+CMD ["/start.sh"]
