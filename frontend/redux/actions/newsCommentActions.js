@@ -39,7 +39,7 @@ export const getCommentByNews = (id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_COMMENT_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -86,7 +86,7 @@ export const createComment = (id, comment) => async (dispatch) => {
 
     dispatch({
       type: NEWS_COMMENT_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -165,7 +165,7 @@ export const createCommentByComment = (id, comment) => async (dispatch) => {
 
     dispatch({
       type: NEWS_COMMENT_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {

@@ -43,7 +43,7 @@ export const getNewsTags = () => async (dispatch) => {
 
     dispatch({
       type: NEWS_TAGS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -90,7 +90,7 @@ export const createNewsTag = (formData) => async (dispatch) => {
 
     dispatch({
       type: NEWS_TAGS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -169,7 +169,7 @@ export const updateNewsTag = (formData, id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_TAGS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -215,7 +215,7 @@ export const deleteNewsTag = (id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_TAGS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {

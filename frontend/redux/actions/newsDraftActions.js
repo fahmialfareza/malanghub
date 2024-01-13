@@ -42,7 +42,7 @@ export const getAllNewsDrafts = () => async (dispatch) => {
 
     dispatch({
       type: NEWS_DRAFTS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -88,7 +88,7 @@ export const getMyNewsDrafts = () => async (dispatch) => {
 
     dispatch({
       type: NEWS_DRAFTS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -129,7 +129,7 @@ export const getOneByUser = (id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_DRAFTS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -183,7 +183,7 @@ export const createNewsDraft = (formData) => async (dispatch) => {
 
     dispatch({
       type: NEWS_DRAFTS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -237,7 +237,7 @@ export const updateNewsDraft = (formData, id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_DRAFTS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -284,7 +284,7 @@ export const updateNewsDraftApproved = (formData, id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_DRAFTS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -362,7 +362,7 @@ export const deleteNewsDraft = (id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_DRAFTS_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {

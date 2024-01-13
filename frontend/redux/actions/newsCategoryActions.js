@@ -39,7 +39,7 @@ export const getNewsCategories = () => async (dispatch) => {
 
     dispatch({
       type: NEWS_CATEGORIES_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -88,7 +88,7 @@ export const createNewsCategory = (formData) => async (dispatch) => {
 
     dispatch({
       type: NEWS_CATEGORIES_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -167,7 +167,7 @@ export const updateNewsCategory = (formData, id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_CATEGORIES_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -213,7 +213,7 @@ export const deleteNewsCategory = (id) => async (dispatch) => {
 
     dispatch({
       type: NEWS_CATEGORIES_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {

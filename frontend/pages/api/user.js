@@ -23,7 +23,9 @@ export default async (req, res) => {
 
       res.status(response.status).json(response.data);
     } catch (e) {
-      res.status(e.response.status).json({ message: e.response.data.message });
+      res
+        .status(e.response.status)
+        .json({ message: e?.response?.data?.message });
     }
   } else {
     // Destroy cookie

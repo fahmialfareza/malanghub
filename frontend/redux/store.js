@@ -1,18 +1,11 @@
-import { createStore, applyMiddleware } from "redux";
-import { composeWithDevTools } from "redux-devtools-extension";
-import thunk from "redux-thunk";
+import { configureStore } from "@reduxjs/toolkit";
 import { createWrapper } from "next-redux-wrapper";
-import rootReducer from "./reducers";
+import rootReducer from "./reducers"; // Update this if using createSlice
 
-const initialState = {};
-
-const middleware = [thunk];
-
-const devTools =
-  process.env.NODE_ENV === "production"
-    ? applyMiddleware(...middleware)
-    : composeWithDevTools(applyMiddleware(...middleware));
-
-const makeStore = () => createStore(rootReducer, initialState, devTools);
+const makeStore = () =>
+  configureStore({
+    reducer: rootReducer,
+    devTools: process.env.NODE_ENV !== "production",
+  });
 
 export const wrapper = createWrapper(makeStore);

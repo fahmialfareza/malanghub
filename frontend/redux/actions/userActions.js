@@ -47,7 +47,7 @@ export const loadUser = () => async (dispatch) => {
     localStorage.removeItem("token");
     dispatch({
       type: USER_AUTH_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -95,7 +95,7 @@ export const getUser = (id) => async (dispatch) => {
 
     dispatch({
       type: USER_GET_PROFILE_ERROR,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -154,7 +154,7 @@ export const updateProfile = (formData) => async (dispatch) => {
 
     dispatch({
       type: USER_UPDATE_PROFILE_ERRORS,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -202,7 +202,7 @@ export const signUp = (formData) => async (dispatch) => {
     localStorage.removeItem("token");
     dispatch({
       type: USER_SIGNUP_FAIL,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -250,7 +250,7 @@ export const signIn = (formData) => async (dispatch) => {
     localStorage.removeItem("token");
     dispatch({
       type: USER_SIGNIN_FAIL,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
@@ -291,7 +291,7 @@ export const logout = () => async (dispatch) => {
     localStorage.removeItem("token");
     dispatch({
       type: USER_SIGNIN_FAIL,
-      payload: e.response.data.message,
+      payload: e?.response?.data?.message,
     });
 
     setTimeout(() => {
