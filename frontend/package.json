@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.1.0",
     "@sentry/nextjs": "^7.93.0",
     "@tinymce/tinymce-react": "^4.3.2",
     "@vercel/analytics": "^1.1.1",
