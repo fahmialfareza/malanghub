@@ -3,15 +3,16 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { signIn } from "../redux/actions/userActions";
+import { signIn, googleLogin } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
-import GoogleLogin from "react-google-login";
+import { useGoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 import * as Sentry from "@sentry/nextjs";
 
 const SignIn = ({
   user: { isAuthenticated, error, token },
   signIn,
+  googleLogin,
   setActiveLink,
   setAlert,
 }) => {
@@ -58,7 +59,7 @@ const SignIn = ({
     }
   };
 
-  const responseGoogle = (response) => {
+  const responseGoogle = (accessToken) => {
     const transaction = Sentry.startTransaction({
       name: "signin.responseGoogle",
     });
@@ -68,9 +69,8 @@ const SignIn = ({
     });
 
     try {
-      signIn({
-        email: response.profileObj.email,
-        password: "Google" + response.profileObj.googleId,
+      googleLogin({
+        access_token: accessToken,
       });
     } catch (e) {
       Sentry.captureException(e);
@@ -78,6 +78,10 @@ const SignIn = ({
       transaction.finish();
     }
   };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: (response) => responseGoogle(response.access_token),
+  });
 
   const responseFacebook = (response) => {
     const transaction = Sentry.startTransaction({
@@ -146,28 +150,17 @@ const SignIn = ({
           </span>
         </div>
       </nav>
-
       <section className="w3l-contact-2 py-5">
         <div className="container py-lg-5 py-md-4">
           <h3 className="section-title-left">Masuk </h3>
           <div className="contact-grids d-grid">
             <div className="contact-left m-auto">
-              <GoogleLogin
-                clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-                buttonText={"Masuk dengan Google"}
-                onSuccess={responseGoogle}
-                onFailure={responseGoogle}
-                cookiePolicy={"single_host_origin"}
-                className={"mr-3"}
-                render={(renderProps) => (
-                  <a
-                    onClick={renderProps.onClick}
-                    className="btn btn-danger btn-block btn-lg text-light"
-                  >
-                    <i className="fa fa-google"></i> Masuk dengan <b>Google</b>
-                  </a>
-                )}
-              />
+              <a
+                onClick={loginWithGoogle}
+                className="btn btn-danger btn-block btn-lg text-light"
+              >
+                <i className="fa fa-google"></i> Masuk dengan <b>Google</b>
+              </a>
 
               <FacebookLogin
                 appId={process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}
@@ -225,6 +218,7 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
   signIn,
+  googleLogin,
   setActiveLink,
   setAlert,
 })(SignIn);

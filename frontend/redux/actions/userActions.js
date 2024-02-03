@@ -263,6 +263,54 @@ export const signIn = (formData) => async (dispatch) => {
   }
 };
 
+// Google Login
+export const googleLogin = (formData) => async (dispatch) => {
+  const transaction = Sentry.startTransaction({
+    name: "userActions.googleLogin",
+  });
+
+  Sentry.configureScope((scope) => {
+    scope.setSpan(transaction);
+  });
+
+  setLoading();
+
+  const config = {
+    method: "post",
+    url: "/api/google",
+    data: formData,
+  };
+
+  try {
+    const res = await requestNextApi(config);
+
+    localStorage.setItem("token", res.data.token);
+
+    dispatch({
+      type: USER_SIGNIN_SUCCESS,
+      payload: res.data,
+    });
+
+    loadUser();
+  } catch (e) {
+    Sentry.captureException(e);
+
+    localStorage.removeItem("token");
+    dispatch({
+      type: USER_SIGNIN_FAIL,
+      payload: e?.response?.data?.message,
+    });
+
+    setTimeout(() => {
+      dispatch({
+        type: USER_CLEAR_ERRORS,
+      });
+    }, 5000);
+  } finally {
+    transaction.finish();
+  }
+};
+
 // Logout
 export const logout = () => async (dispatch) => {
   const transaction = Sentry.startTransaction({

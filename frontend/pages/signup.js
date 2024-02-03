@@ -4,15 +4,16 @@ import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import axios from "axios";
-import { signUp } from "../redux/actions/userActions";
+import { signUp, googleLogin } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
-import GoogleLogin from "react-google-login";
+import { useGoogleLogin } from "@react-oauth/google";
 import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 import * as Sentry from "@sentry/nextjs";
 
 const SignUp = ({
   user: { isAuthenticated, error, token },
   signUp,
+  googleLogin,
   setActiveLink,
   setAlert,
 }) => {
@@ -64,9 +65,9 @@ const SignUp = ({
     }
   };
 
-  const responseGoogle = (response) => {
+  const responseGoogle = (accessToken) => {
     const transaction = Sentry.startTransaction({
-      name: "signup.responseGoogle",
+      name: "signin.responseGoogle",
     });
 
     Sentry.configureScope((scope) => {
@@ -74,12 +75,8 @@ const SignUp = ({
     });
 
     try {
-      signUp({
-        name: response.profileObj.name,
-        email: response.profileObj.email,
-        password: "Google" + response.profileObj.googleId,
-        passwordConfirmation: "Google" + response.profileObj.googleId,
-        photo: response.profileObj.imageUrl,
+      googleLogin({
+        access_token: accessToken,
       });
     } catch (e) {
       Sentry.captureException(e);
@@ -87,6 +84,10 @@ const SignUp = ({
       transaction.finish();
     }
   };
+
+  const loginWithGoogle = useGoogleLogin({
+    onSuccess: (response) => responseGoogle(response.access_token),
+  });
 
   const responseFacebook = (response) => {
     const transaction = Sentry.startTransaction({
@@ -163,22 +164,12 @@ const SignUp = ({
           <h3 className="section-title-left">Daftar </h3>
           <div className="contact-grids d-grid">
             <div className="contact-left m-auto">
-              <GoogleLogin
-                clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID}
-                buttonText={"Daftar dengan Google"}
-                onSuccess={responseGoogle}
-                onFailure={responseGoogle}
-                cookiePolicy={"single_host_origin"}
-                className={"mr-3"}
-                render={(renderProps) => (
-                  <a
-                    onClick={renderProps.onClick}
-                    className="btn btn-danger btn-block btn-lg text-light"
-                  >
-                    <i className="fa fa-google"></i> Daftar dengan <b>Google</b>
-                  </a>
-                )}
-              />
+              <a
+                onClick={loginWithGoogle}
+                className="btn btn-danger btn-block btn-lg text-light"
+              >
+                <i className="fa fa-google"></i> Daftar dengan <b>Google</b>
+              </a>
 
               <FacebookLogin
                 appId={process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}
@@ -289,6 +280,7 @@ const mapStateToProps = (state) => ({
 
 export default connect(mapStateToProps, {
   signUp,
+  googleLogin,
   setActiveLink,
   setAlert,
 })(SignUp);
