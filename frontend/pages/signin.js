@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import { signIn, googleLogin } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
 import { useGoogleLogin } from "@react-oauth/google";
-import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 import * as Sentry from "@sentry/nextjs";
 
 const SignIn = ({
@@ -83,27 +82,6 @@ const SignIn = ({
     onSuccess: (response) => responseGoogle(response.access_token),
   });
 
-  const responseFacebook = (response) => {
-    const transaction = Sentry.startTransaction({
-      name: "signin.responseFacebook",
-    });
-
-    Sentry.configureScope((scope) => {
-      scope.setSpan(transaction);
-    });
-
-    try {
-      signIn({
-        email: response.email,
-        password: "Facebook" + response.id,
-      });
-    } catch (e) {
-      Sentry.captureException(e);
-    } finally {
-      transaction.finish();
-    }
-  };
-
   return (
     <>
       <Head>
@@ -161,22 +139,6 @@ const SignIn = ({
               >
                 <i className="fa fa-google"></i> Masuk dengan <b>Google</b>
               </a>
-
-              <FacebookLogin
-                appId={process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}
-                fields="name,email,picture"
-                scope="public_profile, email"
-                callback={responseFacebook}
-                render={(renderProps) => (
-                  <a
-                    onClick={renderProps.onClick}
-                    className="btn btn-primary btn-block btn-lg text-light"
-                  >
-                    <i className="fa fa-facebook"></i> Masuk dengan{" "}
-                    <b>Facebook</b>
-                  </a>
-                )}
-              />
             </div>
             <div className="contact-right">
               <form onSubmit={onSubmit} className="signin-form">
