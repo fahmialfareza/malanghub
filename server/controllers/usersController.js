@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const axios = require("axios");
 const { user, redisClient } = require("../models");
 
 const oneDay = 60 * 60 * 24;
@@ -140,6 +141,43 @@ class UsersController {
       const body = {
         user: {
           id: req.user.id,
+        },
+      };
+
+      const token = await jwt.sign(body, process.env.JWT_SECRET, {
+        expiresIn: "30d",
+      });
+
+      return res.status(200).json({ token });
+    } catch (e) {
+      console.error(e);
+      return next(e);
+    }
+  }
+
+  async google(req, res, next) {
+    try {
+      const { access_token } = req.body;
+
+      const response = await axios.get(
+        `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`
+      );
+      const { email, name, picture } = response.data;
+
+      let googleUser = await user.findOne({ email });
+      console.log(googleUser);
+      if (!googleUser) {
+        googleUser = await user.create({
+          email,
+          name,
+          role: "user",
+          photo: picture,
+        });
+      }
+
+      const body = {
+        user: {
+          id: googleUser.id,
         },
       };
 

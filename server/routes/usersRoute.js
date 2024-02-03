@@ -27,6 +27,9 @@ router.post(
   usersController.signin
 );
 
+// Google sign in
+router.post("/google", usersValidator.google, usersController.google);
+
 // Get User Profile
 router.get("/:id", usersValidator.getUser, usersController.getUser);
 

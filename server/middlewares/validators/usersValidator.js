@@ -135,3 +135,24 @@ exports.signin = (req, res, next) => {
     return next(e);
   }
 };
+
+exports.google = (req, res, next) => {
+  try {
+    let errors = [];
+
+    console.log(req.body);
+
+    if (validator.isEmpty(req.body.access_token)) {
+      errors.push("Silahkan masukkan access token yang valid");
+    }
+
+    if (errors.length > 0) {
+      return next({ message: errors.join(", "), statusCode: 400 });
+    }
+
+    next();
+  } catch (error) {
+    console.error(e);
+    return next(e);
+  }
+};
