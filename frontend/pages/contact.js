@@ -95,9 +95,9 @@ function Contact({ setActiveLink }) {
                       <a
                         target="_blank"
                         rel="noreferrer"
-                        href="https://wa.me/6287787146248"
+                        href="https://wa.me/62895424785888"
                       >
-                        087787146248
+                        0895424785888
                       </a>
                     </p>
                   </div>
