@@ -123,7 +123,7 @@ const EditNews = ({
                           value: "img-fluid rounded mx-auto my-2 d-block",
                         },
                       ],
-                      images_upload_url: "/api/upload",
+                      images_upload_url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/upload`,
                     }}
                     onEditorChange={(text) => setContent(text)}
                     required
