@@ -111,13 +111,15 @@ class NewsController {
       const userData = await user.findById(req.user.id);
 
       if (userData.role.includes("admin")) {
-        data = await news.remove({
+        data = await news.updateOne({
           _id: req.params.id,
+          deleted: true,
         });
       } else {
-        data = await news.remove({
+        data = await news.updateOne({
           _id: req.params.id,
           user: req.user.id,
+          deleted: true,
         });
       }
 
