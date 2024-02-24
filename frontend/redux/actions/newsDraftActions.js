@@ -12,6 +12,7 @@ import {
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
 import * as Sentry from "@sentry/nextjs";
+import { setAlert } from "./layoutActions";
 
 export const getAllNewsDrafts = () => async (dispatch) => {
   const transaction = Sentry.startTransaction({
@@ -357,6 +358,10 @@ export const deleteNewsDraft = (id) => async (dispatch) => {
       type: DELETE_NEWS_DRAFT,
       payload: id,
     });
+
+    dispatch(getAllNewsDrafts());
+    dispatch(getMyNewsDrafts());
+    dispatch(setAlert("Berita berhasil dihapus!", "success"));
   } catch (e) {
     Sentry.captureException(e);
 
