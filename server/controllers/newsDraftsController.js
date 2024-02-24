@@ -111,16 +111,34 @@ class NewsController {
       const userData = await user.findById(req.user.id);
 
       if (userData.role.includes("admin")) {
-        data = await news.updateOne({
-          _id: req.params.id,
-          deleted: true,
-        });
+        data = await news.findOneAndUpdate(
+          {
+            _id: req.params.id,
+          },
+          {
+            $set: {
+              deleted: true,
+            },
+          },
+          {
+            new: true,
+          }
+        );
       } else {
-        data = await news.updateOne({
-          _id: req.params.id,
-          user: req.user.id,
-          deleted: true,
-        });
+        data = await news.findOneAndUpdate(
+          {
+            _id: req.params.id,
+            user: req.user.id,
+          },
+          {
+            $set: {
+              deleted: true,
+            },
+          },
+          {
+            new: true,
+          }
+        );
       }
 
       if (data.n === 0) {
