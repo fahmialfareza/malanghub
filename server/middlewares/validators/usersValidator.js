@@ -140,8 +140,6 @@ exports.google = (req, res, next) => {
   try {
     let errors = [];
 
-    console.log(req.body);
-
     if (validator.isEmpty(req.body.access_token)) {
       errors.push("Silahkan masukkan access token yang valid");
     }

@@ -165,7 +165,6 @@ class UsersController {
       const { email, name, picture } = response.data;
 
       let googleUser = await user.findOne({ email });
-      console.log(googleUser);
       if (!googleUser) {
         googleUser = await user.create({
           email,
