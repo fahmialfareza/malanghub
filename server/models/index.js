@@ -2,12 +2,14 @@ require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
 const mongoose = require("mongoose");
 const { createClient } = require("redis");
 
+const logger = require("../utils/logger");
+
 const uri = process.env.MONGO_URI;
 
 mongoose
   .connect(uri, {})
-  .then(() => console.error("MongoDB Connected"))
-  .catch((err) => console.error(err.message));
+  .then(() => logger.error("MongoDB Connected"))
+  .catch((err) => logger.error(err.message));
 
 // function connect to redis
 async function redisClient() {
@@ -24,7 +26,7 @@ async function redisClient() {
 
     return client;
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     throw error;
   }
 }

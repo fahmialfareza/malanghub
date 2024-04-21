@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const mongoose = require("mongoose");
 const { newsCategory, newsTag } = require("../../models");
 const { uploader } = require("../../utils/cloudinary");
+const logger = require("../../utils/logger");
 
 exports.create = async (req, res, next) => {
   try {
@@ -90,7 +91,7 @@ exports.create = async (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -181,7 +182,7 @@ exports.update = async (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -200,7 +201,7 @@ exports.deleteNewsDraft = (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };

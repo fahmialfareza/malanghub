@@ -8,4 +8,7 @@ exports.config = {
       enabled: true,
     },
   },
+  distributed_tracing: {
+    enabled: true,
+  },
 };

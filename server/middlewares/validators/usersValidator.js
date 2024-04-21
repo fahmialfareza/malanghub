@@ -2,7 +2,9 @@ const path = require("path");
 const crypto = require("crypto");
 const validator = require("validator");
 const mongoose = require("mongoose");
+
 const { uploader } = require("../../utils/cloudinary");
+const logger = require("../../utils/logger");
 
 exports.updateProfile = async (req, res, next) => {
   try {
@@ -46,7 +48,7 @@ exports.updateProfile = async (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -65,7 +67,7 @@ exports.getUser = (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -104,7 +106,7 @@ exports.signup = (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -131,7 +133,7 @@ exports.signin = (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -150,7 +152,7 @@ exports.google = (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };

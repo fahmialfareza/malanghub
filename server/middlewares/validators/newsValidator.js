@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
+const logger = require("../../utils/logger");
+
 exports.update = async (req, res, next) => {
   try {
     let errors = [];
@@ -27,7 +29,7 @@ exports.update = async (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -46,7 +48,7 @@ exports.deleteNews = (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };

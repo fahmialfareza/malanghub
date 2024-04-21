@@ -15,6 +15,7 @@ const compression = require("compression");
 const PORT = process.env.PORT || 4000;
 // Import error handler
 const errorHandler = require("./middlewares/errorHandler");
+const logger = require("./utils/logger");
 
 // Import routes
 const usersRoute = require("./routes/usersRoute");
@@ -101,4 +102,4 @@ server.use("/api/upload", imageUploadRoute);
 
 server.use(errorHandler);
 
-server.listen(PORT, () => console.error(`Server started on port ${PORT}`));
+server.listen(PORT, () => logger.error(`Server started on port ${PORT}`));

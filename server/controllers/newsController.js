@@ -1,4 +1,5 @@
 const { news, redisClient } = require("../models");
+const logger = require("../utils/logger");
 
 const oneDay = 60 * 60 * 24;
 
@@ -7,7 +8,7 @@ class NewsController {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }
@@ -16,7 +17,7 @@ class NewsController {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }
@@ -25,7 +26,7 @@ class NewsController {
     try {
       res.status(200).json(res.advancedResults);
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }
@@ -63,7 +64,7 @@ class NewsController {
 
       return res.status(200).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     } finally {
       await redis.disconnect();
@@ -102,7 +103,7 @@ class NewsController {
 
       return res.status(201).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }
@@ -117,7 +118,7 @@ class NewsController {
 
       return res.status(200).json({ data: {} });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }

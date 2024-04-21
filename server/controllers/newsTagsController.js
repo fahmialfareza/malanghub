@@ -1,4 +1,5 @@
 const { newsTag } = require("../models");
+const logger = require("../utils/logger");
 
 class NewsCategoriesController {
   async getAll(req, res, next) {
@@ -11,7 +12,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }
@@ -34,7 +35,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }
@@ -45,7 +46,7 @@ class NewsCategoriesController {
 
       return res.status(201).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       if (e.code === 11000) {
         return next({
           message: "Nama Tag Berita sudah ada",
@@ -80,7 +81,7 @@ class NewsCategoriesController {
 
       return res.status(201).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       if (e.code === 11000) {
         return next({
           message: "Nama Tag Berita sudah ada",
@@ -102,7 +103,7 @@ class NewsCategoriesController {
 
       return res.status(200).json({ data: {} });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }

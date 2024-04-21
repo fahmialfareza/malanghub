@@ -1,3 +1,5 @@
+const logger = require("../../utils/logger");
+
 const advancedResults = (model) => async (req, res, next) => {
   try {
     let query;
@@ -115,7 +117,7 @@ const advancedResults = (model) => async (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };

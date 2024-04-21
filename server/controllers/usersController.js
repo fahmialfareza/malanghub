@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const axios = require("axios");
 const { user, redisClient } = require("../models");
+const logger = require("../utils/logger");
 
 const oneDay = 60 * 60 * 24;
 
@@ -42,7 +43,7 @@ class UsersController {
 
       return res.status(200).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     } finally {
       await redis.disconnect();
@@ -85,7 +86,7 @@ class UsersController {
 
       return res.status(200).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     } finally {
       await redis.disconnect();
@@ -129,7 +130,7 @@ class UsersController {
 
       return res.status(200).json({ data });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     } finally {
       await redis.disconnect();
@@ -150,7 +151,7 @@ class UsersController {
 
       return res.status(200).json({ token });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }
@@ -186,7 +187,7 @@ class UsersController {
 
       return res.status(200).json({ token });
     } catch (e) {
-      console.error(e);
+      logger.error(e);
       return next(e);
     }
   }

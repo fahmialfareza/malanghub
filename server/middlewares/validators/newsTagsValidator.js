@@ -1,6 +1,7 @@
 const validator = require("validator");
 const mongoose = require("mongoose");
-const { newsTag } = require("../../models");
+
+const logger = require("../../utils/logger");
 
 exports.create = (req, res, next) => {
   try {
@@ -18,7 +19,7 @@ exports.create = (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -43,7 +44,7 @@ exports.update = async (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };
@@ -62,7 +63,7 @@ exports.deleteTag = (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };

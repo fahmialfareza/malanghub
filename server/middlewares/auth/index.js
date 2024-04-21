@@ -6,6 +6,7 @@ const ExtractJWT = require("passport-jwt").ExtractJwt;
 const bcrypt = require("bcrypt");
 
 const { user } = require("../../models");
+const logger = require("../../utils/logger");
 
 exports.signup = async (req, res, next) => {
   passport.authenticate("signup", { session: false }, (err, user, info) => {
@@ -37,7 +38,7 @@ passport.use(
 
         return done(null, newUser);
       } catch (e) {
-        console.error(e);
+        logger.error(e);
         return done(e.message, false, {
           message: "Email sudah dipakai pengguna lain",
         });
@@ -87,7 +88,7 @@ passport.use(
           message: "Berhasil masuk",
         });
       } catch (e) {
-        console.error(e);
+        logger.error(e);
         return done(e.message, false, { message: "Gagal masuk" });
       }
     }
@@ -135,7 +136,7 @@ passport.use(
         // if user.role not includes transaksi it will not authorization
         return done(null, false, { message: "Anda tidak diizinkan" });
       } catch (e) {
-        console.error(e);
+        logger.error(e);
         return done(e.message, false, { message: "Anda tidak diizinkan" });
       }
     }
@@ -185,7 +186,7 @@ passport.use(
           message: "Anda tidak diizinkan",
         });
       } catch (e) {
-        console.error(e);
+        logger.error(e);
         return done(e.message, false, {
           message: "Anda tidak diizinkan",
         });

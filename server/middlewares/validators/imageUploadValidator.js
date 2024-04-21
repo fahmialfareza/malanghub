@@ -1,6 +1,7 @@
 const path = require("path");
 const crypto = require("crypto");
 const { uploader } = require("../../utils/cloudinary");
+const logger = require("../../utils/logger");
 
 exports.upload = async (req, res, next) => {
   try {
@@ -34,7 +35,7 @@ exports.upload = async (req, res, next) => {
 
     next();
   } catch (e) {
-    console.error(e);
+    logger.error(e);
     return next(e);
   }
 };

@@ -1,5 +1,7 @@
 const cloudinary = require("cloudinary");
 
+const logger = require("../utils/logger");
+
 /* Cloudinary config */
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -12,7 +14,7 @@ exports.uploader = (file) => {
   return new Promise(function (resolve, reject) {
     cloudinary.uploader.upload(file.tempFilePath, function (result, err) {
       if (err) {
-        console.error(err);
+        logger.error(err);
       }
 
       resolve(result);
