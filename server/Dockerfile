@@ -30,20 +30,12 @@ COPY . .
 FROM base
 
 RUN apt-get update -qq && \
-    apt-get install -y curl sudo tini redis-server
-
-# Disable protected mode in Redis configuration
-RUN echo "protected-mode no" >> /etc/redis/redis.conf
+    apt-get install -y curl tini
 
 # Copy built application
-COPY .env.production .
 COPY --from=build /app .
-
-# Copy the startup script
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
 
 # Start the server by default, this can be overwritten at runtime
 EXPOSE 3000
 ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
-CMD ["/start.sh"]
+CMD ["yarn", "start"]
