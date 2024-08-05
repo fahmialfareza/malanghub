@@ -136,49 +136,51 @@ const NewsTag = ({
 };
 
 export async function getServerSideProps({ params }) {
-  const transaction = Sentry.startTransaction({
-    name: "newsTags.[slug].getServerSideProps",
-  });
+  const result = await Sentry.startSpan(
+    {
+      name: "newsTags.[slug].getServerSideProps",
+    },
+    async () => {
+      const { slug } = params;
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      let configTrending = {
+        method: "get",
+        url: `${
+          process.env.API_ADDRESS
+        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
+          1,
+          "months"
+        )}`,
+      };
 
-  const { slug } = params;
+      let config = {
+        method: "get",
+        url: `${process.env.API_ADDRESS}/api/newsTags/${slug}`,
+      };
 
-  let configTrending = {
-    method: "get",
-    url: `${
-      process.env.API_ADDRESS
-    }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-      1,
-      "months"
-    )}`,
-  };
+      let dataTrending = {};
+      let dataNewsTag = {};
 
-  let config = {
-    method: "get",
-    url: `${process.env.API_ADDRESS}/api/newsTags/${slug}`,
-  };
+      try {
+        let response = await Promise.all([
+          axios(configTrending),
+          axios(config),
+        ]);
 
-  let dataTrending = {};
-  let dataNewsTag = {};
+        dataTrending = response[0].data.data;
+        dataNewsTag = response[1].data.data;
+      } catch (e) {
+        Sentry.captureException(e);
+        return {
+          notFound: true,
+        };
+      }
 
-  try {
-    let response = await Promise.all([axios(configTrending), axios(config)]);
+      return { props: { trendingNews: dataTrending, oneNewsTag: dataNewsTag } };
+    }
+  );
 
-    dataTrending = response[0].data.data;
-    dataNewsTag = response[1].data.data;
-  } catch (e) {
-    Sentry.captureException(e);
-    return {
-      notFound: true,
-    };
-  } finally {
-    transaction.finish();
-  }
-
-  return { props: { trendingNews: dataTrending, oneNewsTag: dataNewsTag } };
+  return result;
 }
 
 const mapStateToProps = (state) => ({

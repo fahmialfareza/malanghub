@@ -59,23 +59,15 @@ const SignIn = ({
   };
 
   const responseGoogle = (accessToken) => {
-    const transaction = Sentry.startTransaction({
-      name: "signin.responseGoogle",
+    Sentry.startSpan({ name: "signin.responseGoogle" }, () => {
+      try {
+        googleLogin({
+          access_token: accessToken,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
+      }
     });
-
-    Sentry.configureScope((scope) => {
-      scope.setSpan(transaction);
-    });
-
-    try {
-      googleLogin({
-        access_token: accessToken,
-      });
-    } catch (e) {
-      Sentry.captureException(e);
-    } finally {
-      transaction.finish();
-    }
   };
 
   const loginWithGoogle = useGoogleLogin({

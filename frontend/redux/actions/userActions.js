@@ -19,45 +19,37 @@ import * as Sentry from "@sentry/nextjs";
 
 // Load User
 export const loadUser = () => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "userActions.loadUser",
-  });
+  Sentry.startSpan({ name: "userActions.loadUser" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
+    }
 
-  setLoading();
+    try {
+      const res = await request.get("/api/users");
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
-
-  try {
-    const res = await request.get("/api/users");
-
-    dispatch({
-      type: USER_LOADED,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    localStorage.removeItem("token");
-    dispatch({
-      type: USER_AUTH_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: USER_CLEAR_ERRORS,
+        type: USER_LOADED,
+        payload: res.data.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      localStorage.removeItem("token");
+      dispatch({
+        type: USER_AUTH_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: USER_CLEAR_ERRORS,
+        });
+      }, 5000);
+    }
+  });
 };
 
 export const getUserProfile = (data) => async (dispatch) => {
@@ -68,288 +60,241 @@ export const getUserProfile = (data) => async (dispatch) => {
 };
 
 export const getUser = (id) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "userActions.getUser",
-  });
+  Sentry.startSpan({ name: "userActions.getUser" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    let config = {
+      method: "get",
+      url: `/api/users/${id}`,
+    };
 
-  setLoading();
+    try {
+      const res = await request(config);
 
-  let config = {
-    method: "get",
-    url: `/api/users/${id}`,
-  };
-
-  try {
-    const res = await request(config);
-
-    dispatch({
-      type: USER_GET_PROFILE,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: USER_GET_PROFILE_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: USER_CLEAR_ERRORS,
+        type: USER_GET_PROFILE,
+        payload: res.data.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: USER_GET_PROFILE_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: USER_CLEAR_ERRORS,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Update Profile
 export const updateProfile = (formData) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "userActions.updateProfile",
-  });
+  Sentry.startSpan({ name: "userActions.updateProfile" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
+    }
 
-  setLoading();
+    let data = new FormData();
+    data.append("name", formData.name);
+    if (formData.photo)
+      data.append("photo", formData.photo, formData.photoName);
+    if (formData.motto) data.append("motto", formData.motto);
+    if (formData.bio) data.append("bio", formData.bio);
+    if (formData.instagram) data.append("instagram", formData.instagram);
+    if (formData.facebook) data.append("facebook", formData.facebook);
+    if (formData.twitter) data.append("twitter", formData.twitter);
+    if (formData.tiktok) data.append("tiktok", formData.tiktok);
+    if (formData.linkedin) data.append("linkedin", formData.linkedin);
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+    var config = {
+      method: "put",
+      url: "/api/users",
+      data: data,
+    };
 
-  let data = new FormData();
-  data.append("name", formData.name);
-  if (formData.photo) data.append("photo", formData.photo, formData.photoName);
-  if (formData.motto) data.append("motto", formData.motto);
-  if (formData.bio) data.append("bio", formData.bio);
-  if (formData.instagram) data.append("instagram", formData.instagram);
-  if (formData.facebook) data.append("facebook", formData.facebook);
-  if (formData.twitter) data.append("twitter", formData.twitter);
-  if (formData.tiktok) data.append("tiktok", formData.tiktok);
-  if (formData.linkedin) data.append("linkedin", formData.linkedin);
+    try {
+      const res = await request(config);
 
-  var config = {
-    method: "put",
-    url: "/api/users",
-    data: data,
-  };
-
-  try {
-    const res = await request(config);
-
-    dispatch({
-      type: USER_UPDATE_PROFILE,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: USER_UPDATE_PROFILE_ERRORS,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: USER_CLEAR_ERRORS,
+        type: USER_UPDATE_PROFILE,
+        payload: res.data.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: USER_UPDATE_PROFILE_ERRORS,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: USER_CLEAR_ERRORS,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Sign Up
 export const signUp = (formData) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "userActions.signUp",
-  });
+  Sentry.startSpan({ name: "userActions.signUp" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    const config = {
+      method: "post",
+      url: "/api/signup",
+      data: formData,
+    };
 
-  setLoading();
+    try {
+      const res = await requestNextApi(config);
 
-  const config = {
-    method: "post",
-    url: "/api/signup",
-    data: formData,
-  };
+      localStorage.setItem("token", res.data.token);
 
-  try {
-    const res = await requestNextApi(config);
-
-    localStorage.setItem("token", res.data.token);
-
-    dispatch({
-      type: USER_SIGNUP_SUCCESS,
-      payload: res.data,
-    });
-
-    loadUser();
-  } catch (e) {
-    Sentry.captureException(e);
-
-    localStorage.removeItem("token");
-    dispatch({
-      type: USER_SIGNUP_FAIL,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: USER_CLEAR_ERRORS,
+        type: USER_SIGNUP_SUCCESS,
+        payload: res.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+
+      loadUser();
+    } catch (e) {
+      Sentry.captureException(e);
+
+      localStorage.removeItem("token");
+      dispatch({
+        type: USER_SIGNUP_FAIL,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: USER_CLEAR_ERRORS,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Login user
 export const signIn = (formData) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "userActions.signIn",
-  });
+  Sentry.startSpan({ name: "userActions.signIn" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    const config = {
+      method: "post",
+      url: "/api/signin",
+      data: formData,
+    };
 
-  setLoading();
+    try {
+      const res = await requestNextApi(config);
 
-  const config = {
-    method: "post",
-    url: "/api/signin",
-    data: formData,
-  };
+      localStorage.setItem("token", res.data.token);
 
-  try {
-    const res = await requestNextApi(config);
-
-    localStorage.setItem("token", res.data.token);
-
-    dispatch({
-      type: USER_SIGNIN_SUCCESS,
-      payload: res.data,
-    });
-
-    loadUser();
-  } catch (e) {
-    Sentry.captureException(e);
-
-    localStorage.removeItem("token");
-    dispatch({
-      type: USER_SIGNIN_FAIL,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: USER_CLEAR_ERRORS,
+        type: USER_SIGNIN_SUCCESS,
+        payload: res.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+
+      loadUser();
+    } catch (e) {
+      Sentry.captureException(e);
+
+      localStorage.removeItem("token");
+      dispatch({
+        type: USER_SIGNIN_FAIL,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: USER_CLEAR_ERRORS,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Google Login
 export const googleLogin = (formData) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "userActions.googleLogin",
-  });
+  Sentry.startSpan({ name: "userActions.googleLogin" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    const config = {
+      method: "post",
+      url: "/api/google",
+      data: formData,
+    };
 
-  setLoading();
+    try {
+      const res = await requestNextApi(config);
 
-  const config = {
-    method: "post",
-    url: "/api/google",
-    data: formData,
-  };
+      localStorage.setItem("token", res.data.token);
 
-  try {
-    const res = await requestNextApi(config);
-
-    localStorage.setItem("token", res.data.token);
-
-    dispatch({
-      type: USER_SIGNIN_SUCCESS,
-      payload: res.data,
-    });
-
-    loadUser();
-  } catch (e) {
-    Sentry.captureException(e);
-
-    localStorage.removeItem("token");
-    dispatch({
-      type: USER_SIGNIN_FAIL,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: USER_CLEAR_ERRORS,
+        type: USER_SIGNIN_SUCCESS,
+        payload: res.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+
+      loadUser();
+    } catch (e) {
+      Sentry.captureException(e);
+
+      localStorage.removeItem("token");
+      dispatch({
+        type: USER_SIGNIN_FAIL,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: USER_CLEAR_ERRORS,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Logout
 export const logout = () => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "userActions.logout",
-  });
+  Sentry.startSpan({ name: "userActions.logout" }, async () => {
+    try {
+      localStorage.removeItem("token");
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      var config = {
+        method: "post",
+        url: "/api/signout",
+        headers: {},
+      };
 
-  try {
-    localStorage.removeItem("token");
+      await requestNextApi(config);
 
-    var config = {
-      method: "post",
-      url: "/api/signout",
-      headers: {},
-    };
+      dispatch({ type: USER_LOGOUT });
+    } catch (e) {
+      Sentry.captureException(e);
 
-    await requestNextApi(config);
-
-    dispatch({ type: USER_LOGOUT });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    localStorage.removeItem("token");
-    dispatch({
-      type: USER_SIGNIN_FAIL,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
+      localStorage.removeItem("token");
       dispatch({
-        type: USER_CLEAR_ERRORS,
+        type: USER_SIGNIN_FAIL,
+        payload: e?.response?.data?.message,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+
+      setTimeout(() => {
+        dispatch({
+          type: USER_CLEAR_ERRORS,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Set loading to true

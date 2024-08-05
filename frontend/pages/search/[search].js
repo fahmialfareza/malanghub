@@ -131,39 +131,38 @@ const SearchNews = ({
 };
 
 export async function getServerSideProps({ params }) {
-  const transaction = Sentry.startTransaction({
-    name: "search.[search].getServerSideProps",
-  });
+  const result = await Sentry.startSpan(
+    {
+      name: "search.[search].getServerSideProps",
+    },
+    async () => {
+      const { slug } = params;
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      let config = {
+        method: "get",
+        url: `${
+          process.env.API_ADDRESS
+        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
+          1,
+          "months"
+        )}`,
+      };
 
-  const { slug } = params;
+      let data = {};
+      try {
+        const res = await axios(config);
 
-  let config = {
-    method: "get",
-    url: `${
-      process.env.API_ADDRESS
-    }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-      1,
-      "months"
-    )}`,
-  };
+        data = res.data.data;
+      } catch (e) {
+        Sentry.captureException(e);
+        return { trendingNews: data };
+      }
 
-  let data = {};
-  try {
-    const res = await axios(config);
+      return { props: { trendingNews: data } };
+    }
+  );
 
-    data = res.data.data;
-  } catch (e) {
-    Sentry.captureException(e);
-    return { trendingNews: data };
-  } finally {
-    transaction.finish();
-  }
-
-  return { props: { trendingNews: data } };
+  return result;
 }
 
 const mapStateToProps = (state) => ({

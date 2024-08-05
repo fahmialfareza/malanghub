@@ -105,40 +105,39 @@ const News = ({
 };
 
 export async function getServerSideProps() {
-  const transaction = Sentry.startTransaction({
-    name: "news.index.getServerSideProps",
-  });
+  const result = await Sentry.startSpan(
+    {
+      name: "news.index.getServerSideProps",
+    },
+    async () => {
+      let configTrending = {
+        method: "get",
+        url: `${
+          process.env.API_ADDRESS
+        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
+          1,
+          "months"
+        )}`,
+      };
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      let dataTrending = {};
 
-  let configTrending = {
-    method: "get",
-    url: `${
-      process.env.API_ADDRESS
-    }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-      1,
-      "months"
-    )}`,
-  };
+      try {
+        let response = await axios(configTrending);
 
-  let dataTrending = {};
+        dataTrending = response.data.data;
+      } catch (e) {
+        Sentry.captureException(e);
+        return {
+          notFound: true,
+        };
+      }
 
-  try {
-    let response = await axios(configTrending);
+      return { props: { trendingNews: dataTrending } };
+    }
+  );
 
-    dataTrending = response.data.data;
-  } catch (e) {
-    Sentry.captureException(e);
-    return {
-      notFound: true,
-    };
-  } finally {
-    transaction.finish();
-  }
-
-  return { props: { trendingNews: dataTrending } };
+  return result;
 }
 
 const mapStateToProps = (state) => ({

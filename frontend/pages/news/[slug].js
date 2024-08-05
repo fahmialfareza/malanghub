@@ -380,52 +380,49 @@ const SingleNews = ({
 };
 
 export async function getServerSideProps({ params }) {
-  const transaction = Sentry.startTransaction({
-    name: "news.[slug].getServerSideProps",
-  });
+  const result = await Sentry.startSpan(
+    {
+      name: "news.[slug].getServerSideProps",
+    },
+    async () => {
+      const { slug } = params;
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      let config = {
+        method: "get",
+        url: `${process.env.API_ADDRESS}/api/news/${slug}`,
+      };
 
-  const { slug } = params;
+      let data = [];
+      try {
+        let res = await axios(config);
 
-  let config = {
-    method: "get",
-    url: `${process.env.API_ADDRESS}/api/news/${slug}`,
-  };
+        data.push(res.data.data);
 
-  let data = [];
-  try {
-    let res = await axios(config);
+        config = {
+          method: "get",
+          url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&category=${data[0].category._id}&_id[ne]=${data[0]._id}`,
+        };
 
-    data.push(res.data.data);
+        try {
+          res = await axios(config);
 
-    config = {
-      method: "get",
-      url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&category=${data[0].category._id}&_id[ne]=${data[0]._id}`,
-    };
+          data.push(res.data.data);
+        } catch (e) {
+          Sentry.captureException(e);
+          return { props: { currentNews: data[0], relatedNews: null } };
+        }
+      } catch (e) {
+        Sentry.captureException(e);
+        return {
+          notFound: true,
+        };
+      }
 
-    try {
-      res = await axios(config);
-
-      data.push(res.data.data);
-    } catch (e) {
-      Sentry.captureException(e);
-      return { props: { currentNews: data[0], relatedNews: null } };
-    } finally {
-      transaction.finish();
+      return { props: { currentNews: data[0], relatedNews: data[1] } };
     }
-  } catch (e) {
-    Sentry.captureException(e);
-    return {
-      notFound: true,
-    };
-  } finally {
-    transaction.finish();
-  }
+  );
 
-  return { props: { currentNews: data[0], relatedNews: data[1] } };
+  return result;
 }
 
 const mapStateToProps = (state) => ({

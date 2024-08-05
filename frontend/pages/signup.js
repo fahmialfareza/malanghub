@@ -65,23 +65,15 @@ const SignUp = ({
   };
 
   const responseGoogle = (accessToken) => {
-    const transaction = Sentry.startTransaction({
-      name: "signin.responseGoogle",
+    Sentry.startSpan({ name: "signup.responseGoogle" }, () => {
+      try {
+        googleLogin({
+          access_token: accessToken,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
+      }
     });
-
-    Sentry.configureScope((scope) => {
-      scope.setSpan(transaction);
-    });
-
-    try {
-      googleLogin({
-        access_token: accessToken,
-      });
-    } catch (e) {
-      Sentry.captureException(e);
-    } finally {
-      transaction.finish();
-    }
   };
 
   const loginWithGoogle = useGoogleLogin({
@@ -203,34 +195,34 @@ const SignUp = ({
 };
 
 export async function getServerSideProps({ req }) {
-  const transaction = Sentry.startTransaction({
-    name: "signup.getServerSideProps",
-  });
+  const result = await Sentry.startSpan(
+    { name: "signup.getServerSideProps" },
+    async () => {
+      try {
+        const response = await axios.get(
+          `${process.env.API_ADDRESS}/api/user`,
+          {
+            headers: {
+              Cookie: req.headers.cookie,
+            },
+          }
+        );
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+        return {
+          redirect: {
+            permanent: false,
+            destination: "/users",
+          },
+          props: {},
+        };
+      } catch (e) {
+        Sentry.captureException(e);
+        return { props: {} };
+      }
+    }
+  );
 
-  try {
-    const response = await axios.get(`${process.env.API_ADDRESS}/api/user`, {
-      headers: {
-        Cookie: req.headers.cookie,
-      },
-    });
-
-    return {
-      redirect: {
-        permanent: false,
-        destination: "/users",
-      },
-      props: {},
-    };
-  } catch (e) {
-    Sentry.captureException(e);
-    return { props: {} };
-  } finally {
-    transaction.finish();
-  }
+  return result;
 }
 
 const mapStateToProps = (state) => ({

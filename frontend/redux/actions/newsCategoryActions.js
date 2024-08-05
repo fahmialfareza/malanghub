@@ -13,217 +13,189 @@ import * as Sentry from "@sentry/nextjs";
 
 // Get All News Category
 export const getNewsCategories = () => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCategoryActions.getNewsCategories",
-  });
+  Sentry.startSpan(
+    { name: "newsCategoryActions.getNewsCategories" },
+    async () => {
+      setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      let config = {
+        method: "get",
+        url: `/api/newsCategories`,
+      };
+      try {
+        let response = await request(config);
 
-  setLoading();
+        dispatch({
+          type: GET_ALL_NEWS_CATEGORIES,
+          payload: response.data.data,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
 
-  let config = {
-    method: "get",
-    url: `/api/newsCategories`,
-  };
-  try {
-    let response = await request(config);
+        dispatch({
+          type: NEWS_CATEGORIES_ERROR,
+          payload: e?.response?.data?.message,
+        });
 
-    dispatch({
-      type: GET_ALL_NEWS_CATEGORIES,
-      payload: response.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_CATEGORIES_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
-      });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+        setTimeout(() => {
+          dispatch({
+            type: NEWS_CATEGORIES_CLEAR_ERROR,
+          });
+        }, 5000);
+      }
+    }
+  );
 };
 
 export const createNewsCategory = (formData) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCategoryActions.createNewsCategory",
-  });
+  Sentry.startSpan(
+    { name: "newsCategoryActions.createNewsCategory" },
+    async () => {
+      setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      const token = localStorage.getItem("token");
+      if (token) {
+        setAuthToken(token);
+      }
 
-  setLoading();
+      let data = formData;
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+      let config = {
+        method: "post",
+        url: "/api/newsCategories",
+        data: data,
+      };
 
-  let data = formData;
+      try {
+        const res = await request(config);
 
-  let config = {
-    method: "post",
-    url: "/api/newsCategories",
-    data: data,
-  };
+        dispatch({
+          type: ADD_NEWS_CATEGORY,
+          payload: res.data.data,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
 
-  try {
-    const res = await request(config);
+        dispatch({
+          type: NEWS_CATEGORIES_ERROR,
+          payload: e?.response?.data?.message,
+        });
 
-    dispatch({
-      type: ADD_NEWS_CATEGORY,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_CATEGORIES_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
-      });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+        setTimeout(() => {
+          dispatch({
+            type: NEWS_CATEGORIES_CLEAR_ERROR,
+          });
+        }, 5000);
+      }
+    }
+  );
 };
 
 export const selectNewsCategory = (newsCategory) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCategoryActions.selectNewsCategory",
-  });
-
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
-
-  try {
-    dispatch({
-      type: SELECT_NEWS_CATEGORY,
-      payload: newsCategory,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_CATEGORIES_ERROR,
-      payload: e,
-    });
-
-    setTimeout(() => {
+  Sentry.startSpan({ name: "newsCategoryActions.selectNewsCategory" }, () => {
+    try {
       dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
+        type: SELECT_NEWS_CATEGORY,
+        payload: newsCategory,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_CATEGORIES_ERROR,
+        payload: e,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CATEGORIES_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 export const updateNewsCategory = (formData, id) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCategoryActions.updateNewsCategory",
-  });
+  Sentry.startSpan(
+    { name: "newsCategoryActions.updateNewsCategory" },
+    async () => {
+      setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      const token = localStorage.getItem("token");
+      if (token) {
+        setAuthToken(token);
+      }
 
-  setLoading();
+      let config = {
+        method: "put",
+        url: `/api/newsCategories/${id}`,
+        data: formData,
+      };
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+      try {
+        const res = await request(config);
 
-  let config = {
-    method: "put",
-    url: `/api/newsCategories/${id}`,
-    data: formData,
-  };
+        dispatch({
+          type: UPDATE_NEWS_CATEGORY,
+          payload: res.data.data,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
 
-  try {
-    const res = await request(config);
+        dispatch({
+          type: NEWS_CATEGORIES_ERROR,
+          payload: e?.response?.data?.message,
+        });
 
-    dispatch({
-      type: UPDATE_NEWS_CATEGORY,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_CATEGORIES_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
-      });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+        setTimeout(() => {
+          dispatch({
+            type: NEWS_CATEGORIES_CLEAR_ERROR,
+          });
+        }, 5000);
+      }
+    }
+  );
 };
 
 export const deleteNewsCategory = (id) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCategoryActions.deleteNewsCategory",
-  });
+  Sentry.startSpan(
+    { name: "newsCategoryActions.deleteNewsCategory" },
+    async () => {
+      setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      const token = localStorage.getItem("token");
+      if (token) {
+        setAuthToken(token);
+      }
 
-  setLoading();
+      let config = {
+        method: "delete",
+        url: `/api/newsCategories/${id}`,
+      };
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+      try {
+        await request(config);
 
-  let config = {
-    method: "delete",
-    url: `/api/newsCategories/${id}`,
-  };
+        dispatch({
+          type: DELETE_NEWS_CATEGORY,
+          payload: id,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
 
-  try {
-    await request(config);
+        dispatch({
+          type: NEWS_CATEGORIES_ERROR,
+          payload: e?.response?.data?.message,
+        });
 
-    dispatch({
-      type: DELETE_NEWS_CATEGORY,
-      payload: id,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_CATEGORIES_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: NEWS_CATEGORIES_CLEAR_ERROR,
-      });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+        setTimeout(() => {
+          dispatch({
+            type: NEWS_CATEGORIES_CLEAR_ERROR,
+          });
+        }, 5000);
+      }
+    }
+  );
 };
 
 // Set loading to true

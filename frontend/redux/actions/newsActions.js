@@ -11,318 +11,262 @@ import * as Sentry from "@sentry/nextjs";
 
 // Get All News
 export const getAllNews = (page) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsActions.getAllNews",
-  });
+  Sentry.startSpan({ name: "newsActions.getAllNews" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    let configAll = {
+      method: "get",
+      url: `/api/news?page=${page}&sort=-created_at&limit=5`,
+    };
 
-  setLoading();
+    try {
+      let response = await Promise.all([request(configAll)]);
 
-  let configAll = {
-    method: "get",
-    url: `/api/news?page=${page}&sort=-created_at&limit=5`,
-  };
+      let dataAll = response[0].data;
 
-  try {
-    let response = await Promise.all([request(configAll)]);
-
-    let dataAll = response[0].data;
-
-    dispatch({
-      type: GET_ALL_NEWS,
-      payload: {
-        allNews: dataAll,
-      },
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_CLEAR_ERROR,
+        type: GET_ALL_NEWS,
+        payload: {
+          allNews: dataAll,
+        },
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+      dispatch({
+        type: NEWS_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Search News
 export const getNewsBySearch = (search, page) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsActions.getNewsBySearch",
-  });
+  Sentry.startSpan({ name: "newsActions.getNewsBySearch" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    let configSearch = {
+      method: "get",
+      url: `/api/news/search?page=${page}&sort=-vews&limit=5&search=${search}`,
+    };
 
-  setLoading();
+    try {
+      let response = await Promise.all([request(configSearch)]);
 
-  let configSearch = {
-    method: "get",
-    url: `/api/news/search?page=${page}&sort=-vews&limit=5&search=${search}`,
-  };
+      let dataSearch = response[0].data;
 
-  try {
-    let response = await Promise.all([request(configSearch)]);
-
-    let dataSearch = response[0].data;
-
-    dispatch({
-      type: GET_ALL_NEWS,
-      payload: {
-        newsBySearch: dataSearch,
-      },
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_CLEAR_ERROR,
+        type: GET_ALL_NEWS,
+        payload: {
+          newsBySearch: dataSearch,
+        },
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+      dispatch({
+        type: NEWS_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Get News by Category
 export const getNewsByCategory = (id, page) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsActions.getNewsByCategory",
-  });
+  Sentry.startSpan({ name: "newsActions.getNewsByCategory" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    let configCategory = {
+      method: "get",
+      url: `/api/news?page=${page}&sort=-created_at&limit=5&category=${id}`,
+    };
 
-  setLoading();
+    try {
+      let response = await Promise.all([request(configCategory)]);
 
-  let configCategory = {
-    method: "get",
-    url: `/api/news?page=${page}&sort=-created_at&limit=5&category=${id}`,
-  };
+      let dataCategory = response[0].data;
 
-  try {
-    let response = await Promise.all([request(configCategory)]);
-
-    let dataCategory = response[0].data;
-
-    dispatch({
-      type: GET_ALL_NEWS,
-      payload: {
-        newsByCategory: dataCategory,
-      },
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_CLEAR_ERROR,
+        type: GET_ALL_NEWS,
+        payload: {
+          newsByCategory: dataCategory,
+        },
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 export const getNewsByTag = (id, page) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsActions.getNewsByTag",
-  });
+  Sentry.startSpan({ name: "newsActions.getNewsByTag" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    let configTag = {
+      method: "get",
+      url: `/api/news?page=${page}&sort=-created_at&limit=5&tags=${id}`,
+      headers: {},
+    };
 
-  setLoading();
+    try {
+      let response = await Promise.all([request(configTag)]);
 
-  let configTag = {
-    method: "get",
-    url: `/api/news?page=${page}&sort=-created_at&limit=5&tags=${id}`,
-    headers: {},
-  };
+      let dataTag = response[0].data;
 
-  try {
-    let response = await Promise.all([request(configTag)]);
-
-    let dataTag = response[0].data;
-
-    dispatch({
-      type: GET_ALL_NEWS,
-      payload: {
-        newsByTag: dataTag,
-      },
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_CLEAR_ERROR,
+        type: GET_ALL_NEWS,
+        payload: {
+          newsByTag: dataTag,
+        },
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Get News by User
 export const getNewsByUser = (userQuery, page) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsActions.getNewsByUser",
-  });
+  Sentry.startSpan({ name: "newsActions.getNewsByUser" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    let configUser = {
+      method: "get",
+      url: `/api/news?page=${page}&sort=-created_at&limit=4&user=${userQuery}`,
+    };
 
-  setLoading();
+    try {
+      let response = await Promise.all([request(configUser)]);
 
-  let configUser = {
-    method: "get",
-    url: `/api/news?page=${page}&sort=-created_at&limit=4&user=${userQuery}`,
-  };
+      let dataUser = response[0].data;
 
-  try {
-    let response = await Promise.all([request(configUser)]);
-
-    let dataUser = response[0].data;
-
-    dispatch({
-      type: GET_ALL_NEWS,
-      payload: {
-        newsByUser: dataUser,
-      },
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_CLEAR_ERROR,
+        type: GET_ALL_NEWS,
+        payload: {
+          newsByUser: dataUser,
+        },
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 export const getMyNews = () => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsActions.getMyNews",
-  });
+  Sentry.startSpan({ name: "newsActions.getMyNews" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
+    }
 
-  setLoading();
+    let config = {
+      method: "get",
+      url: "/api/news/myNews",
+    };
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+    try {
+      const res = await request(config);
 
-  let config = {
-    method: "get",
-    url: "/api/news/myNews",
-  };
-
-  try {
-    const res = await request(config);
-
-    dispatch({
-      type: GET_MY_NEWS,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_CLEAR_ERROR,
+        type: GET_MY_NEWS,
+        payload: res.data.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Get One
 export const getOne = (id) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsActions.getOne",
-  });
+  Sentry.startSpan({ name: "newsActions.getOne" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    let config = {
+      method: "get",
+      url: `/api/news/${id}`,
+    };
 
-  setLoading();
+    try {
+      const res = await request(config);
 
-  let config = {
-    method: "get",
-    url: `/api/news/${id}`,
-  };
-
-  try {
-    const res = await request(config);
-
-    dispatch({
-      type: GET_ONE_NEWS,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_CLEAR_ERROR,
+        type: GET_ONE_NEWS,
+        payload: res.data.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 // Set loading to true

@@ -413,52 +413,53 @@ const GetUserProfile = ({
 };
 
 export async function getServerSideProps({ params }) {
-  const transaction = Sentry.startTransaction({
-    name: "users.[id].getServerSideProps",
-  });
+  const result = await Sentry.startSpan(
+    {
+      name: "users.[id].getServerSideProps",
+    },
+    async () => {
+      const { id } = params;
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      let configTrending = {
+        method: "get",
+        url: `${
+          process.env.API_ADDRESS
+        }/api/news?page=1&sort=-views&limit=4&user=${id}&created_at[gte]=${moment().subtract(
+          3,
+          "months"
+        )}`,
+      };
 
-  const { id } = params;
+      let configUser = {
+        method: "get",
+        url: `${process.env.API_ADDRESS}/api/users/${id}`,
+      };
 
-  let configTrending = {
-    method: "get",
-    url: `${
-      process.env.API_ADDRESS
-    }/api/news?page=1&sort=-views&limit=4&user=${id}&created_at[gte]=${moment().subtract(
-      3,
-      "months"
-    )}`,
-  };
+      let dataTrending = {};
+      let dataUser = {};
 
-  let configUser = {
-    method: "get",
-    url: `${process.env.API_ADDRESS}/api/users/${id}`,
-  };
+      try {
+        let response = await Promise.all([
+          axios(configTrending),
+          axios(configUser),
+        ]);
 
-  let dataTrending = {};
-  let dataUser = {};
+        dataTrending = response[0].data.data;
+        dataUser = response[1].data.data;
+      } catch (e) {
+        Sentry.captureException(e);
+        return {
+          notFound: true,
+        };
+      }
 
-  try {
-    let response = await Promise.all([
-      axios(configTrending),
-      axios(configUser),
-    ]);
+      return {
+        props: { trendingNewsByUser: dataTrending, userProfile: dataUser },
+      };
+    }
+  );
 
-    dataTrending = response[0].data.data;
-    dataUser = response[1].data.data;
-  } catch (e) {
-    Sentry.captureException(e);
-    return {
-      notFound: true,
-    };
-  } finally {
-    transaction.finish();
-  }
-
-  return { props: { trendingNewsByUser: dataTrending, userProfile: dataUser } };
+  return result;
 }
 
 const mapStateToProps = (state) => ({

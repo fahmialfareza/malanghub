@@ -12,170 +12,144 @@ import * as Sentry from "@sentry/nextjs";
 
 // Get Comment By News
 export const getCommentByNews = (id) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCommentActions.getCommentByNews",
-  });
+  Sentry.startSpan(
+    { name: "newsCommentActions.getCommentByNews" },
+    async () => {
+      setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      let config = {
+        method: "get",
+        url: `/api/newsComments/${id}`,
+      };
 
-  setLoading();
+      try {
+        const res = await request(config);
 
-  let config = {
-    method: "get",
-    url: `/api/newsComments/${id}`,
-  };
+        dispatch({
+          type: GET_NEWS_COMMENTS_BY_NEWS,
+          payload: res.data.data,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
 
-  try {
-    const res = await request(config);
+        dispatch({
+          type: NEWS_COMMENT_ERROR,
+          payload: e?.response?.data?.message,
+        });
 
-    dispatch({
-      type: GET_NEWS_COMMENTS_BY_NEWS,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_COMMENT_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: NEWS_COMMENT_CLEAR_ERROR,
-      });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+        setTimeout(() => {
+          dispatch({
+            type: NEWS_COMMENT_CLEAR_ERROR,
+          });
+        }, 5000);
+      }
+    }
+  );
 };
 
 export const createComment = (id, comment) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCommentActions.createComment",
-  });
+  Sentry.startSpan({ name: "newsCommentActions.createComment" }, async () => {
+    setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
+    }
 
-  setLoading();
+    let config = {
+      method: "post",
+      url: `/api/newsComments/${id}`,
+      data: { comment },
+    };
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+    try {
+      const res = await request(config);
 
-  let config = {
-    method: "post",
-    url: `/api/newsComments/${id}`,
-    data: { comment },
-  };
-
-  try {
-    const res = await request(config);
-
-    dispatch({
-      type: CREATE_NEWS_COMMENT,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_COMMENT_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
       dispatch({
-        type: NEWS_COMMENT_CLEAR_ERROR,
+        type: CREATE_NEWS_COMMENT,
+        payload: res.data.data,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_COMMENT_ERROR,
+        payload: e?.response?.data?.message,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_COMMENT_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 export const selectNewsComment = (newsComment) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCommentActions.selectNewsComment",
-  });
-
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
-
-  try {
-    dispatch({
-      type: SELECT_NEWS_COMMENT,
-      payload: newsComment,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_COMMENT_ERROR,
-      payload: e,
-    });
-
-    setTimeout(() => {
+  Sentry.startSpan({ name: "newsCommentActions.selectNewsComment" }, () => {
+    try {
       dispatch({
-        type: NEWS_COMMENT_CLEAR_ERROR,
+        type: SELECT_NEWS_COMMENT,
+        payload: newsComment,
       });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+    } catch (e) {
+      Sentry.captureException(e);
+
+      dispatch({
+        type: NEWS_COMMENT_ERROR,
+        payload: e,
+      });
+
+      setTimeout(() => {
+        dispatch({
+          type: NEWS_COMMENT_CLEAR_ERROR,
+        });
+      }, 5000);
+    }
+  });
 };
 
 export const createCommentByComment = (id, comment) => async (dispatch) => {
-  const transaction = Sentry.startTransaction({
-    name: "newsCommentActions.createCommentByComment",
-  });
+  Sentry.startSpan(
+    { name: "newsCommentActions.createCommentByComment" },
+    async () => {
+      setLoading();
 
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
+      const token = localStorage.getItem("token");
+      if (token) {
+        setAuthToken(token);
+      }
 
-  setLoading();
+      let config = {
+        method: "post",
+        url: `/api/newsComments/commentReply/${id}`,
+        data: { comment },
+      };
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    setAuthToken(token);
-  }
+      try {
+        const res = await request(config);
 
-  let config = {
-    method: "post",
-    url: `/api/newsComments/commentReply/${id}`,
-    data: { comment },
-  };
+        dispatch({
+          type: CREATE_NEWS_COMMENT_BY_COMMENT,
+          payload: res.data.data,
+        });
+      } catch (e) {
+        Sentry.captureException(e);
 
-  try {
-    const res = await request(config);
+        dispatch({
+          type: NEWS_COMMENT_ERROR,
+          payload: e?.response?.data?.message,
+        });
 
-    dispatch({
-      type: CREATE_NEWS_COMMENT_BY_COMMENT,
-      payload: res.data.data,
-    });
-  } catch (e) {
-    Sentry.captureException(e);
-
-    dispatch({
-      type: NEWS_COMMENT_ERROR,
-      payload: e?.response?.data?.message,
-    });
-
-    setTimeout(() => {
-      dispatch({
-        type: NEWS_COMMENT_CLEAR_ERROR,
-      });
-    }, 5000);
-  } finally {
-    transaction.finish();
-  }
+        setTimeout(() => {
+          dispatch({
+            type: NEWS_COMMENT_CLEAR_ERROR,
+          });
+        }, 5000);
+      }
+    }
+  );
 };
 
 // Set loading to true

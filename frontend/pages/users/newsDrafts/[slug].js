@@ -488,71 +488,68 @@ const NewsDraft = ({
 };
 
 export async function getServerSideProps({ req, params }) {
-  const transaction = Sentry.startTransaction({
-    name: "newsDrafts.[slug].getServerSideProps",
-  });
-
-  Sentry.configureScope((scope) => {
-    scope.setSpan(transaction);
-  });
-
-  if (!req.headers.cookie) {
-    return {
-      redirect: {
-        permanent: false,
-        destination: "/signin",
-      },
-      props: {},
-    };
-  }
-
-  const { token } = cookie.parse(req.headers.cookie);
-
-  let config = {
-    method: "get",
-    url: `${process.env.API_ADDRESS}/api/users`,
-    headers: {
-      Authorization: `Bearer ${token}`,
+  const result = await Sentry.startSpan(
+    {
+      name: "newsDrafts.[slug].getServerSideProps",
     },
-  };
+    async () => {
+      if (!req.headers.cookie) {
+        return {
+          redirect: {
+            permanent: false,
+            destination: "/signin",
+          },
+          props: {},
+        };
+      }
 
-  try {
-    const response = await axios(config);
+      const { token } = cookie.parse(req.headers.cookie);
 
-    const { slug } = params;
-
-    config = {
-      method: "get",
-      url: `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`,
-    };
-
-    let data = {};
-    try {
-      const res = await axios(config);
-
-      data = res.data.data;
-    } catch (e) {
-      Sentry.captureException(e);
-      return {
-        notFound: true,
+      let config = {
+        method: "get",
+        url: `${process.env.API_ADDRESS}/api/users`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       };
-    } finally {
-      transaction.finish();
-    }
 
-    return { props: { currentNewsDraft: data } };
-  } catch (e) {
-    Sentry.captureException(e);
-    return {
-      redirect: {
-        permanent: false,
-        destination: "/signin",
-      },
-      props: {},
-    };
-  } finally {
-    transaction.finish();
-  }
+      try {
+        const response = await axios(config);
+
+        const { slug } = params;
+
+        config = {
+          method: "get",
+          url: `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`,
+        };
+
+        let data = {};
+        try {
+          const res = await axios(config);
+
+          data = res.data.data;
+        } catch (e) {
+          Sentry.captureException(e);
+          return {
+            notFound: true,
+          };
+        }
+
+        return { props: { currentNewsDraft: data } };
+      } catch (e) {
+        Sentry.captureException(e);
+        return {
+          redirect: {
+            permanent: false,
+            destination: "/signin",
+          },
+          props: {},
+        };
+      }
+    }
+  );
+
+  return result;
 }
 
 const mapStateToProps = (state) => ({

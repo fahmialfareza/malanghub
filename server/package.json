@@ -7,34 +7,34 @@
     "start": "NODE_ENV=production node -r newrelic index.js"
   },
   "dependencies": {
-    "@newrelic/native-metrics": "^10.1.1",
+    "@newrelic/native-metrics": "^11.0.0",
     "@newrelic/pino-enricher": "^1.1.1",
     "bcrypt": "^5.1.1",
-    "cloudinary": "^1.41.2",
+    "cloudinary": "^2.4.0",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-fileupload": "^1.4.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-fileupload": "^1.5.1",
     "express-mongo-sanitize": "^2.2.0",
-    "express-rate-limit": "^7.1.5",
+    "express-rate-limit": "^7.4.0",
     "hpp": "^0.2.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.4",
-    "mongoose-delete": "^1.0.1",
+    "mongoose": "^8.5.2",
+    "mongoose-delete": "^1.0.2",
     "morgan": "^1.10.0",
-    "newrelic": "^11.9.0",
+    "newrelic": "^12.0.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
-    "pino": "^8.20.0",
-    "redis": "^4.6.12",
+    "pino": "^9.3.2",
+    "redis": "^4.7.0",
     "slugify": "^1.6.6",
-    "validator": "^13.11.0",
+    "validator": "^13.12.0",
     "xss-clean": "^0.1.4"
   },
   "devDependencies": {
-    "@flydotio/dockerfile": "^0.5.0",
-    "nodemon": "^3.0.2"
+    "@flydotio/dockerfile": "^0.5.8",
+    "nodemon": "^3.1.4"
   }
 }
