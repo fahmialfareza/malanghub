@@ -68,11 +68,14 @@ jobs:
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
+      - name: Get kubeconfig for DigitalOcean Kubernetes
+        run: doctl kubernetes cluster kubeconfig save ${{ secrets.KUBERNETES_CLUSTER_NAME }}
+
       - name: Apply the infra deployment
-        run: kubectl apply -f infra/server/k8s --validate=false
+        run: kubectl apply -f infra/server/k8s
 
       - name: Apply the infra ingress
-        run: kubectl apply -f infra/server/k8s-prod --validate=false
+        run: kubectl apply -f infra/server/k8s-prod
 
       - name: Restart Kubernetes deployment
         run: kubectl rollout restart deployment malanghub-api-depl
