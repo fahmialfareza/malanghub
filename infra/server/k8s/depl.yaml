@@ -15,16 +15,16 @@ spec:
       containers:
         - name: malanghub-api
           image: registry.digitalocean.com/fahmialfareza/malanghub-api:latest
-          imagePullPolicy: Always # Or use "Never"
+          imagePullPolicy: Always
           ports:
             - containerPort: 4000
           resources:
             limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+            requests:
               memory: "512Mi"
               cpu: "500m"
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
           livenessProbe:
             tcpSocket:
               port: 4000 # The port to check
