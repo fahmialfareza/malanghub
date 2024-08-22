@@ -1,0 +1,141 @@
+name: Deploy to Digital Ocean
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t registry.digitalocean.com/fahmialfareza/malanghub-api:latest .
+
+      - name: Log in to Digital Ocean Container Registry
+        run: echo "${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
+
+      - name: Push Docker image to Digital Ocean Container Registry
+        run: docker push registry.digitalocean.com/fahmialfareza/malanghub-api:latest
+
+      - uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Get kubeconfig for DigitalOcean Kubernetes
+        run: doctl kubernetes cluster kubeconfig save ${{ secrets.KUBERNETES_CLUSTER_NAME }}
+
+      - name: Delete the env mongo uri
+        run: kubectl delete secrets malanghub-api-mongo-uri
+        continue-on-error: true
+
+      - name: Set the env mongo uri
+        run: kubectl create secret generic malanghub-api-mongo-uri --from-literal=MONGO_URI=${{ secrets.MONGO_URI }}
+        continue-on-error: true
+
+      - name: Delete the env redis
+        run: kubectl delete secrets malanghub-api-redis-uri
+        continue-on-error: true
+
+      - name: Set the env redis
+        run: kubectl create secret generic malanghub-api-redis-uri --from-literal=REDIS_URI=${{ secrets.REDIS_URI }}
+        continue-on-error: true
+
+      - name: Delete the env jwt secret
+        run: kubectl delete secrets malanghub-api-jwt-secret
+        continue-on-error: true
+
+      - name: Set the env jwt secret
+        run: kubectl create secret generic malanghub-api-jwt-secret --from-literal=JWT_SECRET=${{ secrets.JWT_SECRET }}
+        continue-on-error: true
+
+      - name: Delete the env google client id
+        run: kubectl delete secrets malanghub-api-google-client-id
+        continue-on-error: true
+
+      - name: Set the env google client id
+        run: kubectl create secret generic malanghub-api-google-client-id --from-literal=GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+        continue-on-error: true
+
+      - name: Delete the env cloudinary
+        run: kubectl delete secrets malanghub-api-cloudinary-cloud-name
+        continue-on-error: true
+
+      - name: Set the env cloudinary
+        run: kubectl create secret generic malanghub-api-cloudinary-cloud-name --from-literal=CLOUDINARY_CLOUD_NAME=${{ secrets.CLOUDINARY_CLOUD_NAME }}
+        continue-on-error: true
+
+      - name: Delete the env cloudinary api key
+        run: kubectl delete secrets malanghub-api-cloudinary-api-key
+        continue-on-error: true
+
+      - name: Set the env cloudinary api key
+        run: kubectl create secret generic malanghub-api-cloudinary-api-key --from-literal=CLOUDINARY_API_KEY=${{ secrets.CLOUDINARY_API_KEY }}
+        continue-on-error: true
+
+      - name: Delete the env cloudinary api secret
+        run: kubectl delete secrets malanghub-api-cloudinary-api-secret
+        continue-on-error: true
+
+      - name: Set the env cloudinary api secret
+        run: kubectl create secret generic malanghub-api-cloudinary-api-secret --from-literal=CLOUDINARY_API_SECRET=${{ secrets.CLOUDINARY_API_SECRET }}
+        continue-on-error: true
+
+      - name: Delete the env new relic app name
+        run: kubectl delete secrets malanghub-api-new-relic-app-name
+        continue-on-error: true
+
+      - name: Set the env new relic app name
+        run: kubectl create secret generic malanghub-api-new-relic-app-name --from-literal=NEW_RELIC_APP_NAME=${{ secrets.NEW_RELIC_APP_NAME }}
+        continue-on-error: true
+
+      - name: Delete the env new relic license key
+        run: kubectl delete secrets malanghub-api-new-relic-license-key
+        continue-on-error: true
+
+      - name: Set the env new relic license key
+        run: kubectl create secret generic malanghub-api-new-relic-license-key --from-literal=NEW_RELIC_LICENSE_KEY=${{ secrets.NEW_RELIC_LICENSE_KEY }}
+        continue-on-error: true
+
+      - name: Delete the env new relic tracing
+        run: kubectl delete secrets malanghub-api-new-relic-distributed-tracing-enabled
+        continue-on-error: true
+
+      - name: Set the env new relic tracing
+        run: kubectl create secret generic malanghub-api-new-relic-distributed-tracing-enabled --from-literal=NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=${{ secrets.NEW_RELIC_DISTRIBUTED_TRACING_ENABLED }}
+        continue-on-error: true
+
+      - name: Delete the env new relic log
+        run: kubectl delete secrets malanghub-api-new-relic-log
+        continue-on-error: true
+
+      - name: Set the env new relic log
+        run: kubectl create secret generic malanghub-api-new-relic-log --from-literal=NEW_RELIC_LOG=${{ secrets.NEW_RELIC_LOG }}
+        continue-on-error: true
+
+      - name: Delete the env new relic forwarding
+        run: kubectl delete secrets malanghub-api-new-relic-application-logging-forwarding-enabled
+        continue-on-error: true
+
+      - name: Set the env new relic forwarding
+        run: kubectl create secret generic malanghub-api-new-relic-application-logging-forwarding-enabled --from-literal=NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED=${{ secrets.NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED }}
+        continue-on-error: true
+
+      - name: Delete the env new relic forwarding max stored
+        run: kubectl delete secrets malanghub-api-new-relic-application-logging-forwarding-max-samples-stored
+        continue-on-error: true
+
+      - name: Set the env new relic forwarding max stored
+        run: kubectl create secret generic malanghub-api-new-relic-application-logging-forwarding-max-samples-stored --from-literal=NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED=${{ secrets.NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED }}
+        continue-on-error: true
+
+      - name: Apply the infra deployment
+        run: kubectl apply -f infra/k8s
+
+      - name: Apply the infra ingress
+        run: kubectl apply -f infra/k8s-prod
+
+      - name: Restart Kubernetes deployment
+        run: kubectl rollout restart deployment malanghub-api-depl

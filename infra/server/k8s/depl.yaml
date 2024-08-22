@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: malanghub-api-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: malanghub-api
+  template:
+    metadata:
+      labels:
+        app: malanghub-api
+    spec:
+      containers:
+        - name: malanghub-api
+          image: registry.digitalocean.com/fahmialfareza/malanghub-api:latest
+          imagePullPolicy: IfNotPresent # Or use "Never"
+          ports:
+            - containerPort: 4000
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-mongo-uri
+                  key: MONGO_URI
+            - name: REDIS_URI
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-redis-uri
+                  key: REDIS_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-jwt-secret
+                  key: JWT_SECRET
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-google-client-id
+                  key: GOOGLE_CLIENT_ID
+            - name: CLOUDINARY_CLOUD_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-cloudinary-cloud-name
+                  key: CLOUDINARY_CLOUD_NAME
+            - name: CLOUDINARY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-cloudinary-api-key
+                  key: CLOUDINARY_API_KEY
+            - name: CLOUDINARY_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-cloudinary-api-secret
+                  key: CLOUDINARY_API_SECRET
+            - name: NEW_RELIC_APP_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-new-relic-app-name
+                  key: NEW_RELIC_APP_NAME
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-new-relic-license-key
+                  key: NEW_RELIC_LICENSE_KEY
+            - name: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-new-relic-distributed-tracing-enabled
+                  key: NEW_RELIC_DISTRIBUTED_TRACING_ENABLED
+            - name: NEW_RELIC_LOG
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-new-relic-log
+                  key: NEW_RELIC_LOG
+            - name: NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-new-relic-application-logging-forwarding-enabled
+                  key: NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED
+            - name: NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED
+              valueFrom:
+                secretKeyRef:
+                  name: malanghub-api-new-relic-application-logging-forwarding-max-samples-stored
+                  key: NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "500"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+          livenessProbe:
+            tcpSocket:
+              port: 4000 # The port to check
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          readinessProbe:
+            tcpSocket:
+              port: 4000 # The port to check
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: malanghub-api-srv
+spec:
+  selector:
+    app: malanghub-api
+  ports:
+    - name: malanghub-api
+      protocol: TCP
+      port: 4000
+      targetPort: 4000
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: malanghub-api-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: malanghub-api-deployment
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 80 # Target 80% CPU utilization
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 70 # Target 70% Memory utilization
