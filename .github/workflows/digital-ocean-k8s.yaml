@@ -69,10 +69,10 @@ jobs:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
 
       - name: Apply the infra deployment
-        run: kubectl apply -f infra/server/k8s
+        run: kubectl apply -f infra/server/k8s --validate=false
 
       - name: Apply the infra ingress
-        run: kubectl apply -f infra/server/k8s-prod
+        run: kubectl apply -f infra/server/k8s-prod --validate=false
 
       - name: Restart Kubernetes deployment
         run: kubectl rollout restart deployment malanghub-api-depl
