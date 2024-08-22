@@ -81,11 +81,11 @@ jobs:
         run: doctl kubernetes cluster kubeconfig save ${{ secrets.KUBERNETES_CLUSTER_NAME }}
 
       - name: Apply the infra deployment
-        run: kubectl apply -f infra/k8s
+        run: kubectl apply -f infra/server/k8s
         continue-on-error: true
 
       - name: Apply the infra ingress
-        run: kubectl apply -f infra/k8s-prod
+        run: kubectl apply -f infra/server/k8s-prod
         continue-on-error: true
 
       # Update Kubernetes deployment with the new image
