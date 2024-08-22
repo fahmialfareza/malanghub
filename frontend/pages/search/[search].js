@@ -3,7 +3,6 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import Link from "next/link";
-import axios from "axios";
 import moment from "moment";
 import { getNewsBySearch } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
@@ -138,25 +137,25 @@ export async function getServerSideProps({ params }) {
     async () => {
       const { slug } = params;
 
-      let config = {
-        method: "get",
-        url: `${
-          process.env.API_ADDRESS
-        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-          1,
-          "months"
-        )}`,
-      };
+      const url = `${
+        process.env.API_ADDRESS
+      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
+        .subtract(1, "months")
+        .toISOString()}`;
 
       let data = {};
       try {
-        const res = await axios(config);
+        const res = await fetch(url);
 
-        data = res.data.data;
+        if (!res.ok) {
+          throw new Error("Failed to fetch trending news");
+        }
+
+        const jsonData = await res.json();
+        data = jsonData.data;
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
-        return { trendingNews: data };
+        return { props: { trendingNews: data } }; // Return empty or partial data if an error occurs
       }
 
       return { props: { trendingNews: data } };

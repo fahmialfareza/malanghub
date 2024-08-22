@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
-import axios from "axios";
 import cookie from "cookie";
 import { loadUser } from "../../../redux/actions/userActions";
 import { setActiveLink } from "../../../redux/actions/layoutActions";
@@ -493,6 +492,7 @@ export async function getServerSideProps({ req, params }) {
       name: "newsDrafts.[slug].getServerSideProps",
     },
     async () => {
+      // Check if there is a cookie present
       if (!req.headers.cookie) {
         return {
           redirect: {
@@ -505,32 +505,35 @@ export async function getServerSideProps({ req, params }) {
 
       const { token } = cookie.parse(req.headers.cookie);
 
-      let config = {
-        method: "get",
-        url: `${process.env.API_ADDRESS}/api/users`,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
+      // Fetch user information using the token
+      const userUrl = `${process.env.API_ADDRESS}/api/users`;
       try {
-        const response = await axios(config);
+        const userResponse = await fetch(userUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
+        if (!userResponse.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
+        // If user is authenticated, fetch the news draft
         const { slug } = params;
-
-        config = {
-          method: "get",
-          url: `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`,
-        };
-
+        const newsDraftUrl = `${process.env.API_ADDRESS}/api/newsDrafts/${slug}`;
         let data = {};
-        try {
-          const res = await axios(config);
 
-          data = res.data.data;
+        try {
+          const draftResponse = await fetch(newsDraftUrl);
+
+          if (!draftResponse.ok) {
+            throw new Error("Failed to fetch news draft");
+          }
+
+          const draftJson = await draftResponse.json();
+          data = draftJson.data;
         } catch (e) {
           Sentry.captureException(e);
-          console.log(e);
           return {
             notFound: true,
           };
@@ -539,7 +542,6 @@ export async function getServerSideProps({ req, params }) {
         return { props: { currentNewsDraft: data } };
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
         return {
           redirect: {
             permanent: false,

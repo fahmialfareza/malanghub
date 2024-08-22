@@ -33,8 +33,6 @@ export const getNewsTags = () => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_TAGS_ERROR,
         payload: e?.response?.data?.message,
@@ -73,8 +71,6 @@ export const createNewsTag = (formData) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_TAGS_ERROR,
         payload: e?.response?.data?.message,
@@ -98,8 +94,6 @@ export const selectNewsTag = (newsTag) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_TAGS_ERROR,
         payload: e,
@@ -138,8 +132,6 @@ export const updateNewsTag = (formData, id) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_TAGS_ERROR,
         payload: e?.response?.data?.message,
@@ -177,8 +169,6 @@ export const deleteNewsTag = (id) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_TAGS_ERROR,
         payload: e?.response?.data?.message,

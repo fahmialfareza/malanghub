@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
-import axios from "axios";
 import {
   getCommentByNews,
   createComment,
@@ -386,40 +385,44 @@ export async function getServerSideProps({ params }) {
     },
     async () => {
       const { slug } = params;
-
-      let config = {
-        method: "get",
-        url: `${process.env.API_ADDRESS}/api/news/${slug}`,
-      };
-
       let data = [];
+
       try {
-        let res = await axios(config);
+        // Fetch the current news item based on the slug
+        const currentNewsResponse = await fetch(
+          `${process.env.API_ADDRESS}/api/news/${slug}`
+        );
 
-        data.push(res.data.data);
+        if (!currentNewsResponse.ok) {
+          throw new Error("Failed to fetch current news");
+        }
 
-        config = {
-          method: "get",
-          url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&category=${data[0].category._id}&_id[ne]=${data[0]._id}`,
-        };
+        const currentNewsJson = await currentNewsResponse.json();
+        data.push(currentNewsJson.data);
 
-        try {
-          res = await axios(config);
+        // Fetch related news items
+        const relatedNewsUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&category=${data[0].category._id}&_id[ne]=${data[0]._id}`;
+        const relatedNewsResponse = await fetch(relatedNewsUrl);
 
-          data.push(res.data.data);
-        } catch (e) {
-          Sentry.captureException(e);
-          console.log(e);
-          return { props: { currentNews: data[0], relatedNews: null } };
+        if (relatedNewsResponse.ok) {
+          const relatedNewsJson = await relatedNewsResponse.json();
+          data.push(relatedNewsJson.data);
+        } else {
+          throw new Error("Failed to fetch related news");
         }
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
-        return {
-          notFound: true,
-        };
+
+        if (data.length > 0) {
+          // Return the current news with null related news if fetching related news fails
+          return { props: { currentNews: data[0], relatedNews: null } };
+        } else {
+          // If fetching the current news fails, return a 404 page
+          return { notFound: true };
+        }
       }
 
+      // Return the current news and related news as props
       return { props: { currentNews: data[0], relatedNews: data[1] } };
     }
   );

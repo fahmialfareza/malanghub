@@ -3,7 +3,6 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import axios from "axios";
 import moment from "moment";
 import { getNewsByTag } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
@@ -143,35 +142,35 @@ export async function getServerSideProps({ params }) {
     async () => {
       const { slug } = params;
 
-      let configTrending = {
-        method: "get",
-        url: `${
-          process.env.API_ADDRESS
-        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-          1,
-          "months"
-        )}`,
-      };
-
-      let config = {
-        method: "get",
-        url: `${process.env.API_ADDRESS}/api/newsTags/${slug}`,
-      };
+      const trendingNewsUrl = `${
+        process.env.API_ADDRESS
+      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
+        .subtract(1, "months")
+        .toISOString()}`;
+      const newsTagUrl = `${process.env.API_ADDRESS}/api/newsTags/${slug}`;
 
       let dataTrending = {};
       let dataNewsTag = {};
 
       try {
-        let response = await Promise.all([
-          axios(configTrending),
-          axios(config),
+        // Fetch both trending news and news tag data concurrently
+        const [trendingNewsResponse, newsTagResponse] = await Promise.all([
+          fetch(trendingNewsUrl),
+          fetch(newsTagUrl),
         ]);
 
-        dataTrending = response[0].data.data;
-        dataNewsTag = response[1].data.data;
+        // Check if both responses are successful
+        if (!trendingNewsResponse.ok || !newsTagResponse.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const trendingNewsJson = await trendingNewsResponse.json();
+        const newsTagJson = await newsTagResponse.json();
+
+        dataTrending = trendingNewsJson.data;
+        dataNewsTag = newsTagJson.data;
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
         return {
           notFound: true,
         };

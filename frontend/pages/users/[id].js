@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
-import axios from "axios";
 import moment from "moment";
 import ReactPaginate from "react-paginate";
 import { getNewsByUser } from "../../redux/actions/newsActions";
@@ -420,35 +419,35 @@ export async function getServerSideProps({ params }) {
     async () => {
       const { id } = params;
 
-      let configTrending = {
-        method: "get",
-        url: `${
-          process.env.API_ADDRESS
-        }/api/news?page=1&sort=-views&limit=4&user=${id}&created_at[gte]=${moment().subtract(
-          3,
-          "months"
-        )}`,
-      };
-
-      let configUser = {
-        method: "get",
-        url: `${process.env.API_ADDRESS}/api/users/${id}`,
-      };
+      const trendingNewsUrl = `${
+        process.env.API_ADDRESS
+      }/api/news?page=1&sort=-views&limit=4&user=${id}&created_at[gte]=${moment()
+        .subtract(3, "months")
+        .toISOString()}`;
+      const userUrl = `${process.env.API_ADDRESS}/api/users/${id}`;
 
       let dataTrending = {};
       let dataUser = {};
 
       try {
-        let response = await Promise.all([
-          axios(configTrending),
-          axios(configUser),
+        // Fetch both trending news by user and user profile data concurrently
+        const [trendingNewsResponse, userResponse] = await Promise.all([
+          fetch(trendingNewsUrl),
+          fetch(userUrl),
         ]);
 
-        dataTrending = response[0].data.data;
-        dataUser = response[1].data.data;
+        // Check if both responses are successful
+        if (!trendingNewsResponse.ok || !userResponse.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const trendingNewsJson = await trendingNewsResponse.json();
+        const userJson = await userResponse.json();
+
+        dataTrending = trendingNewsJson.data;
+        dataUser = userJson.data;
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
         return {
           notFound: true,
         };

@@ -32,7 +32,6 @@ export const getAllNews = (page) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
       dispatch({
         type: NEWS_ERROR,
         payload: e?.response?.data?.message,
@@ -70,7 +69,6 @@ export const getNewsBySearch = (search, page) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
       dispatch({
         type: NEWS_ERROR,
         payload: e?.response?.data?.message,
@@ -108,8 +106,6 @@ export const getNewsByCategory = (id, page) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_ERROR,
         payload: e?.response?.data?.message,
@@ -147,8 +143,6 @@ export const getNewsByTag = (id, page) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_ERROR,
         payload: e?.response?.data?.message,
@@ -186,8 +180,6 @@ export const getNewsByUser = (userQuery, page) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_ERROR,
         payload: e?.response?.data?.message,
@@ -225,8 +217,6 @@ export const getMyNews = () => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_ERROR,
         payload: e?.response?.data?.message,
@@ -260,8 +250,6 @@ export const getOne = (id) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_ERROR,
         payload: e?.response?.data?.message,

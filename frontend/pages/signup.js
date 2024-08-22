@@ -3,7 +3,6 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import axios from "axios";
 import { signUp, googleLogin } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
 import { useGoogleLogin } from "@react-oauth/google";
@@ -72,7 +71,6 @@ const SignUp = ({
         });
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
       }
     });
   };
@@ -200,25 +198,25 @@ export async function getServerSideProps({ req }) {
     { name: "signup.getServerSideProps" },
     async () => {
       try {
-        const response = await axios.get(
-          `${process.env.API_ADDRESS}/api/user`,
-          {
-            headers: {
-              Cookie: req.headers.cookie,
-            },
-          }
-        );
-
-        return {
-          redirect: {
-            permanent: false,
-            destination: "/users",
+        const response = await fetch(`${process.env.API_ADDRESS}/api/user`, {
+          headers: {
+            Cookie: req.headers.cookie || "",
           },
-          props: {},
-        };
+        });
+
+        if (response.ok) {
+          return {
+            redirect: {
+              permanent: false,
+              destination: "/users",
+            },
+            props: {},
+          };
+        } else {
+          throw new Error("Failed to fetch user data");
+        }
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
         return { props: {} };
       }
     }

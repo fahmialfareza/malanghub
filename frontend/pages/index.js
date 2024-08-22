@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import Head from "next/head";
 import { connect } from "react-redux";
-import axios from "axios";
 import moment from "moment";
 import { setActiveLink } from "../redux/actions/layoutActions";
 import Spinner from "../components/layouts/Spinner";
@@ -122,7 +121,6 @@ export async function getServerSideProps() {
         dataTrending = trendingNewsJson.data;
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
         return {
           notFound: true,
         };

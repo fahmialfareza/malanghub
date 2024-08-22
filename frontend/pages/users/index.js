@@ -3,7 +3,6 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import axios from "axios";
 import { loadUser, logout } from "../../redux/actions/userActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import assetsPath from "../../components/layouts/Assets";

@@ -3,7 +3,6 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import axios from "axios";
 import moment from "moment";
 import { getNewsByCategory } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
@@ -139,35 +138,35 @@ export async function getServerSideProps({ params }) {
     async () => {
       const { slug } = params;
 
-      let configTrending = {
-        method: "get",
-        url: `${
-          process.env.API_ADDRESS
-        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-          1,
-          "months"
-        )}`,
-      };
-
-      let config = {
-        method: "get",
-        url: `${process.env.API_ADDRESS}/api/newsCategories/${slug}`,
-      };
+      const trendingNewsUrl = `${
+        process.env.API_ADDRESS
+      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
+        .subtract(1, "months")
+        .toISOString()}`;
+      const newsCategoryUrl = `${process.env.API_ADDRESS}/api/newsCategories/${slug}`;
 
       let dataTrending = {};
       let dataNewsCategory = {};
 
       try {
-        let response = await Promise.all([
-          axios(configTrending),
-          axios(config),
+        // Fetch both trending news and news category data concurrently
+        const [trendingNewsResponse, newsCategoryResponse] = await Promise.all([
+          fetch(trendingNewsUrl),
+          fetch(newsCategoryUrl),
         ]);
 
-        dataTrending = response[0].data.data;
-        dataNewsCategory = response[1].data.data;
+        // Check if both responses are successful
+        if (!trendingNewsResponse.ok || !newsCategoryResponse.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const trendingNewsJson = await trendingNewsResponse.json();
+        const newsCategoryJson = await newsCategoryResponse.json();
+
+        dataTrending = trendingNewsJson.data;
+        dataNewsCategory = newsCategoryJson.data;
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
         return {
           notFound: true,
         };

@@ -1,5 +1,4 @@
 import cookie from "cookie";
-import axios from "axios";
 
 export default async (req, res) => {
   if (req.method === "GET") {
@@ -10,28 +9,30 @@ export default async (req, res) => {
 
     const { token } = cookie.parse(req.headers.cookie);
 
-    const config = {
-      method: "get",
-      url: `${process.env.API_ADDRESS}/api/users`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    };
+    const url = `${process.env.API_ADDRESS}/api/users`;
 
     try {
-      const response = await axios(config);
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      res.status(response.status).json(response.data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        return res.status(response.status).json({ message: errorData.message });
+      }
+
+      const responseData = await response.json();
+      res.status(response.status).json(responseData);
     } catch (e) {
-      console.log(e);
-      res
-        .status(e.response.status)
-        .json({ message: e?.response?.data?.message });
+      res.status(500).json({ message: "Internal Server Error" });
     }
   } else {
     // Destroy cookie
     res.setHeader(
-      "Set-cookie",
+      "Set-Cookie",
       cookie.serialize("token", "", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

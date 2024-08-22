@@ -31,8 +31,6 @@ export const getCommentByNews = (id) => async (dispatch) => {
         });
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
-
         dispatch({
           type: NEWS_COMMENT_ERROR,
           payload: e?.response?.data?.message,
@@ -72,8 +70,6 @@ export const createComment = (id, comment) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_COMMENT_ERROR,
         payload: e?.response?.data?.message,
@@ -97,8 +93,6 @@ export const selectNewsComment = (newsComment) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
-      console.log(e);
-
       dispatch({
         type: NEWS_COMMENT_ERROR,
         payload: e,
@@ -139,8 +133,6 @@ export const createCommentByComment = (id, comment) => async (dispatch) => {
         });
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
-
         dispatch({
           type: NEWS_COMMENT_ERROR,
           payload: e?.response?.data?.message,

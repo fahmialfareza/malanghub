@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
-import axios from "axios";
 import moment from "moment";
 import { getAllNews } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
@@ -110,25 +109,25 @@ export async function getServerSideProps() {
       name: "news.index.getServerSideProps",
     },
     async () => {
-      let configTrending = {
-        method: "get",
-        url: `${
-          process.env.API_ADDRESS
-        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-          1,
-          "months"
-        )}`,
-      };
+      const trendingNewsUrl = `${
+        process.env.API_ADDRESS
+      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
+        .subtract(1, "months")
+        .toISOString()}`;
 
       let dataTrending = {};
 
       try {
-        let response = await axios(configTrending);
+        const response = await fetch(trendingNewsUrl);
 
-        dataTrending = response.data.data;
+        if (!response.ok) {
+          throw new Error("Failed to fetch trending news");
+        }
+
+        const jsonData = await response.json();
+        dataTrending = jsonData.data;
       } catch (e) {
         Sentry.captureException(e);
-        console.log(e);
         return {
           notFound: true,
         };
