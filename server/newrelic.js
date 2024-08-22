@@ -1,4 +1,8 @@
-require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+if (process.env.NODE_ENV === "production") {
+  require("dotenv").config();
+} else {
+  require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+}
 
 exports.config = {
   app_name: process.env.NEW_RELIC_APP_NAME,
