@@ -21,10 +21,10 @@ spec:
           resources:
             limits:
               memory: "512Mi"
-              cpu: "500m"
+              cpu: "256m"
             requests:
               memory: "256Mi"
-              cpu: "250m"
+              cpu: "128m"
           livenessProbe:
             tcpSocket:
               port: 4000 # The port to check
