@@ -95,32 +95,31 @@ export async function getServerSideProps() {
   const result = await Sentry.startSpan(
     { name: "index.getServerSideProps" },
     async () => {
-      let configTrending = {
-        method: "get",
-        url: `${
-          process.env.API_ADDRESS
-        }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment().subtract(
-          1,
-          "months"
-        )}`,
-      };
-
-      let configRecent = {
-        method: "get",
-        url: `${process.env.API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4`,
-      };
+      const configTrendingUrl = `${
+        process.env.API_ADDRESS
+      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
+        .subtract(1, "months")
+        .toISOString()}`;
+      const configRecentUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4`;
 
       let dataRecent = {};
       let dataTrending = {};
 
       try {
-        let response = await Promise.all([
-          axios(configRecent),
-          axios(configTrending),
+        const [responseRecent, responseTrending] = await Promise.all([
+          fetch(configRecentUrl),
+          fetch(configTrendingUrl),
         ]);
 
-        dataRecent = response[0].data.data;
-        dataTrending = response[1].data.data;
+        if (!responseRecent.ok || !responseTrending.ok) {
+          throw new Error("Failed to fetch data");
+        }
+
+        const recentNewsJson = await responseRecent.json();
+        const trendingNewsJson = await responseTrending.json();
+
+        dataRecent = recentNewsJson.data;
+        dataTrending = trendingNewsJson.data;
       } catch (e) {
         Sentry.captureException(e);
         console.log(e);
