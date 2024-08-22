@@ -23,9 +23,6 @@ jobs:
       - run: echo "GOOGLE_CLIENT_ID"=$GOOGLE_CLIENT_ID >> server/.env.production
         env:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      - run: echo "PORT"=$PORT >> server/.env.production
-        env:
-          PORT: ${{ secrets.PORT }}
       - run: echo "CLOUDINARY_CLOUD_NAME"=$CLOUDINARY_CLOUD_NAME >> server/.env.production
         env:
           CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
