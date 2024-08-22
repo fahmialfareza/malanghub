@@ -54,9 +54,14 @@ jobs:
         env:
           NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED: ${{ secrets.NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED }}
 
-      # Build Docker image
+      # Generate a timestamp
+      - name: Generate timestamp
+        id: vars
+        run: echo "::set-output name=timestamp::$(date +'%Y%m%d%H%M%S')"
+
+      # Build Docker image with timestamp tag
       - name: Build Docker image
-        run: docker build -t registry.digitalocean.com/fahmialfareza/malanghub-api:latest .
+        run: docker build -t registry.digitalocean.com/fahmialfareza/malanghub-api:${{ steps.vars.outputs.timestamp }} .
         working-directory: server
 
       # Log in to Digital Ocean Container Registry
@@ -65,12 +70,7 @@ jobs:
 
       # Push Docker image to Digital Ocean Container Registry
       - name: Push Docker image to Digital Ocean Container Registry
-        run: docker push registry.digitalocean.com/fahmialfareza/malanghub-api:latest
-
-      # Get image digest
-      - name: Get image digest
-        id: digest
-        run: echo "::set-output name=digest::$(docker inspect --format='{{index .RepoDigests 0}}' registry.digitalocean.com/fahmialfareza/malanghub-api:latest)"
+        run: docker push registry.digitalocean.com/fahmialfareza/malanghub-api:${{ steps.vars.outputs.timestamp }}
 
       # Set up DigitalOcean CLI (doctl) and get kubeconfig
       - uses: digitalocean/action-doctl@v2
@@ -80,10 +80,18 @@ jobs:
       - name: Get kubeconfig for DigitalOcean Kubernetes
         run: doctl kubernetes cluster kubeconfig save ${{ secrets.KUBERNETES_CLUSTER_NAME }}
 
-      # Update Kubernetes deployment
+      - name: Apply the infra deployment
+        run: kubectl apply -f infra/k8s
+        continue-on-error: true
+
+      - name: Apply the infra ingress
+        run: kubectl apply -f infra/k8s-prod
+        continue-on-error: true
+
+      # Update Kubernetes deployment with the new image
       - name: Update Kubernetes deployment with new image
         run: |
-          kubectl set image deployment/malanghub-api-depl malanghub-api=${{ steps.digest.outputs.digest }}
+          kubectl set image deployment/malanghub-api-depl malanghub-api=registry.digitalocean.com/fahmialfareza/malanghub-api:${{ steps.vars.outputs.timestamp }}
 
       # Optionally restart the deployment to apply changes
       - name: Restart Kubernetes deployment
