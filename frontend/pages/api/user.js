@@ -23,6 +23,7 @@ export default async (req, res) => {
 
       res.status(response.status).json(response.data);
     } catch (e) {
+      console.log(e);
       res
         .status(e.response.status)
         .json({ message: e?.response?.data?.message });
