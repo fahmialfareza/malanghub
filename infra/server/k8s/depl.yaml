@@ -20,11 +20,11 @@ spec:
             - containerPort: 4000
           resources:
             limits:
-              memory: "1024Mi"
-              cpu: "1000m"
-            requests:
               memory: "512Mi"
               cpu: "500m"
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
           livenessProbe:
             tcpSocket:
               port: 4000 # The port to check
@@ -73,4 +73,4 @@ spec:
         name: memory
         target:
           type: Utilization
-          averageUtilization: 70 # Target 70% Memory utilization
+          averageUtilization: 80 # Target 70% Memory utilization
