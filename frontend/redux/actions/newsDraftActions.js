@@ -33,6 +33,7 @@ export const getAllNewsDrafts = () => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_DRAFTS_ERROR,
@@ -71,6 +72,7 @@ export const getMyNewsDrafts = () => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_DRAFTS_ERROR,
@@ -104,6 +106,7 @@ export const getOneByUser = (id) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_DRAFTS_ERROR,
@@ -150,6 +153,7 @@ export const createNewsDraft = (formData) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_DRAFTS_ERROR,
@@ -196,6 +200,7 @@ export const updateNewsDraft = (formData, id) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_DRAFTS_ERROR,
@@ -237,6 +242,7 @@ export const updateNewsDraftApproved = (formData, id) => async (dispatch) => {
         });
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
 
         dispatch({
           type: NEWS_DRAFTS_ERROR,
@@ -262,6 +268,7 @@ export const selectNewsDraft = (newsDraft) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_DRAFTS_ERROR,
@@ -304,6 +311,7 @@ export const deleteNewsDraft = (id) => async (dispatch) => {
       dispatch(setAlert("Berita berhasil dihapus!", "success"));
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_DRAFTS_ERROR,

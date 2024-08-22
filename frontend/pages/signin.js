@@ -66,6 +66,7 @@ const SignIn = ({
         });
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
       }
     });
   };

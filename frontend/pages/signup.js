@@ -72,6 +72,7 @@ const SignUp = ({
         });
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
       }
     });
   };
@@ -217,6 +218,7 @@ export async function getServerSideProps({ req }) {
         };
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
         return { props: {} };
       }
     }

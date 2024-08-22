@@ -171,6 +171,7 @@ export async function getServerSideProps({ params }) {
         dataNewsTag = response[1].data.data;
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
         return {
           notFound: true,
         };

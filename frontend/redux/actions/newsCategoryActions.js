@@ -31,6 +31,7 @@ export const getNewsCategories = () => async (dispatch) => {
         });
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
 
         dispatch({
           type: NEWS_CATEGORIES_ERROR,
@@ -75,6 +76,7 @@ export const createNewsCategory = (formData) => async (dispatch) => {
         });
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
 
         dispatch({
           type: NEWS_CATEGORIES_ERROR,
@@ -100,6 +102,7 @@ export const selectNewsCategory = (newsCategory) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: NEWS_CATEGORIES_ERROR,
@@ -141,6 +144,7 @@ export const updateNewsCategory = (formData, id) => async (dispatch) => {
         });
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
 
         dispatch({
           type: NEWS_CATEGORIES_ERROR,
@@ -182,6 +186,7 @@ export const deleteNewsCategory = (id) => async (dispatch) => {
         });
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
 
         dispatch({
           type: NEWS_CATEGORIES_ERROR,

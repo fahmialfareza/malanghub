@@ -530,6 +530,7 @@ export async function getServerSideProps({ req, params }) {
           data = res.data.data;
         } catch (e) {
           Sentry.captureException(e);
+          console.log(e);
           return {
             notFound: true,
           };
@@ -538,6 +539,7 @@ export async function getServerSideProps({ req, params }) {
         return { props: { currentNewsDraft: data } };
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
         return {
           redirect: {
             permanent: false,

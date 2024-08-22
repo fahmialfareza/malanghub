@@ -36,6 +36,7 @@ export const loadUser = () => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       localStorage.removeItem("token");
       dispatch({
@@ -77,6 +78,7 @@ export const getUser = (id) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: USER_GET_PROFILE_ERROR,
@@ -129,6 +131,7 @@ export const updateProfile = (formData) => async (dispatch) => {
       });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       dispatch({
         type: USER_UPDATE_PROFILE_ERRORS,
@@ -168,6 +171,7 @@ export const signUp = (formData) => async (dispatch) => {
       loadUser();
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       localStorage.removeItem("token");
       dispatch({
@@ -208,6 +212,7 @@ export const signIn = (formData) => async (dispatch) => {
       loadUser();
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       localStorage.removeItem("token");
       dispatch({
@@ -248,6 +253,7 @@ export const googleLogin = (formData) => async (dispatch) => {
       loadUser();
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       localStorage.removeItem("token");
       dispatch({
@@ -281,6 +287,7 @@ export const logout = () => async (dispatch) => {
       dispatch({ type: USER_LOGOUT });
     } catch (e) {
       Sentry.captureException(e);
+      console.log(e);
 
       localStorage.removeItem("token");
       dispatch({

@@ -409,10 +409,12 @@ export async function getServerSideProps({ params }) {
           data.push(res.data.data);
         } catch (e) {
           Sentry.captureException(e);
+          console.log(e);
           return { props: { currentNews: data[0], relatedNews: null } };
         }
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
         return {
           notFound: true,
         };

@@ -155,6 +155,7 @@ export async function getServerSideProps({ params }) {
         data = res.data.data;
       } catch (e) {
         Sentry.captureException(e);
+        console.log(e);
         return { trendingNews: data };
       }
 
