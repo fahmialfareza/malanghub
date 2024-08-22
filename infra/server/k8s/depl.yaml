@@ -15,7 +15,7 @@ spec:
       containers:
         - name: malanghub-api
           image: registry.digitalocean.com/fahmialfareza/malanghub-api:latest
-          imagePullPolicy: IfNotPresent # Or use "Never"
+          imagePullPolicy: Always # Or use "Never"
           ports:
             - containerPort: 4000
           env:
