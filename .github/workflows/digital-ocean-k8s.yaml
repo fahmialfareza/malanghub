@@ -54,16 +54,25 @@ jobs:
         env:
           NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED: ${{ secrets.NEW_RELIC_APPLICATION_LOGGING_FORWARDING_MAX_SAMPLES_STORED }}
 
+      # Build Docker image
       - name: Build Docker image
         run: docker build -t registry.digitalocean.com/fahmialfareza/malanghub-api:latest .
         working-directory: server
 
+      # Log in to Digital Ocean Container Registry
       - name: Log in to Digital Ocean Container Registry
         run: echo "${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}" | docker login registry.digitalocean.com -u doctl --password-stdin
 
+      # Push Docker image to Digital Ocean Container Registry
       - name: Push Docker image to Digital Ocean Container Registry
         run: docker push registry.digitalocean.com/fahmialfareza/malanghub-api:latest
 
+      # Get image digest
+      - name: Get image digest
+        id: digest
+        run: echo "::set-output name=digest::$(docker inspect --format='{{index .RepoDigests 0}}' registry.digitalocean.com/fahmialfareza/malanghub-api:latest)"
+
+      # Set up DigitalOcean CLI (doctl) and get kubeconfig
       - uses: digitalocean/action-doctl@v2
         with:
           token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
@@ -71,11 +80,11 @@ jobs:
       - name: Get kubeconfig for DigitalOcean Kubernetes
         run: doctl kubernetes cluster kubeconfig save ${{ secrets.KUBERNETES_CLUSTER_NAME }}
 
-      - name: Apply the infra deployment
-        run: kubectl apply -f infra/server/k8s
+      # Update Kubernetes deployment
+      - name: Update Kubernetes deployment with new image
+        run: |
+          kubectl set image deployment/malanghub-api-depl malanghub-api=${{ steps.digest.outputs.digest }}
 
-      - name: Apply the infra ingress
-        run: kubectl apply -f infra/server/k8s-prod
-
+      # Optionally restart the deployment to apply changes
       - name: Restart Kubernetes deployment
         run: kubectl rollout restart deployment malanghub-api-depl
