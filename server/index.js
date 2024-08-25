@@ -53,7 +53,7 @@ server.use(mongoSanitize());
 server.use(xss());
 
 // Trust the proxy
-app.set("trust proxy", true);
+server.set("trust proxy", true);
 
 // Rate limiting
 const limiter = rateLimit({
