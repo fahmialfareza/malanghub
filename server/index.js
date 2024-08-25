@@ -52,6 +52,9 @@ server.use(mongoSanitize());
 // Prevent XSS attact
 server.use(xss());
 
+// Trust the proxy
+app.set("trust proxy", true);
+
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 60 * 1000, // 1 min
