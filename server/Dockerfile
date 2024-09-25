@@ -1,48 +1,41 @@
-# Stage 1: Build base image
-FROM node:20-slim AS base
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+# Adjust NODE_VERSION as desired
+ARG NODE_VERSION=20
+FROM node:${NODE_VERSION}-slim as base
 
+LABEL fly_launch_runtime="Node.js"
+
+# Node.js app lives here
 WORKDIR /app
 
-# Create a non-root user and group
-RUN groupadd -r nonroot && useradd -r -g nonroot -u 777 nonroot
+# Set production environment
+ENV NODE_ENV=production
+ENV NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true \
+    NEW_RELIC_LOG=stdout
 
-# Copy only the necessary files to install dependencies
-COPY package.json pnpm-lock.yaml ./
+# Throw-away build stage to reduce size of final image
+FROM base as build
 
-# Stage 2: Install production dependencies
-FROM base AS prod-deps
-RUN pnpm install --prod --frozen-lockfile
+# Install packages needed to build node modules
+RUN apt-get update -qq && \
+    apt-get install -y python-is-python3 pkg-config build-essential 
 
-# Stage 3: Install build dependencies and build the application
-FROM base AS builder
-# Re-use pnpm cache and install all dependencies (including dev dependencies)
-RUN pnpm install --frozen-lockfile
+# Install node modules
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
 
-# Copy source files for building
+# Copy application code
 COPY . .
 
-# Build the application
-RUN pnpm run build
+# Final stage for app image
+FROM base
 
-# Stage 4: Create a minimal production image
-FROM base AS runner
-ENV NODE_ENV=production
+RUN apt-get update -qq && \
+    apt-get install -y curl tini
 
-# Copy the built application and required files
-COPY --from=prod-deps /app/node_modules /app/node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/newrelic.cjs /app/newrelic.cjs
-COPY --from=builder /app/package.json /app/package.json
-COPY --from=builder /app/tmp /app/tmp
+# Copy built application
+COPY --from=build /app .
 
-# Set the ownership of the application files to the non-root user
-RUN chown -R nonroot:nonroot /app
-RUN chown -R nonroot:nonroot /app/tmp
-
-# Switch to non-root user
-USER nonroot
-
-CMD [ "node", "--enable-source-maps", "-r", "newrelic", "./dist" ]
+# Start the server by default, this can be overwritten at runtime
+EXPOSE 3000
+ENTRYPOINT ["/usr/bin/tini", "-s", "--"]
+CMD ["yarn", "start"]
