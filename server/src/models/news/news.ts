@@ -100,6 +100,6 @@ function setSlug(slug: string): string {
 NewsSchema.plugin(mongoose_delete, { overrideMethods: "all" });
 
 /* Model Definition */
-const News = mongoose.model<INews>("News", NewsSchema);
+const News = mongoose.model<INews>("news", NewsSchema);
 
 export default News;

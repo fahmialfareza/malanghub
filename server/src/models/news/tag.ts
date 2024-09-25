@@ -52,6 +52,6 @@ NewsTagSchema.virtual("news", {
 NewsTagSchema.plugin(mongoose_delete, { overrideMethods: "all" });
 
 /* Model Definition */
-const NewsTag = mongoose.model<INewsTag>("NewsTag", NewsTagSchema);
+const NewsTag = mongoose.model<INewsTag>("newsTag", NewsTagSchema);
 
 export default NewsTag;

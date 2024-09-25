@@ -105,6 +105,6 @@ UserSchema.virtual("news", {
 UserSchema.plugin(mongoose_delete, { overrideMethods: "all" });
 
 /* Model Definition */
-const User = mongoose.model<IUser>("User", UserSchema);
+const User = mongoose.model<IUser>("user", UserSchema);
 
 export default User;

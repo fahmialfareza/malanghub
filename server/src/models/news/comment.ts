@@ -74,7 +74,7 @@ NewsCommentSchema.plugin(mongoose_delete, { overrideMethods: "all" });
 
 /* Model Definition */
 const NewsComment = mongoose.model<INewsComment>(
-  "NewsComment",
+  "newsComment",
   NewsCommentSchema
 );
 

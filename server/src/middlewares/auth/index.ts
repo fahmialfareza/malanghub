@@ -29,7 +29,7 @@ export const signup = async (
       info: { message: any }
     ) => {
       if (err) {
-        return next({ message: "Email sudah dipakai pengguna lain" });
+        return next({ message: err.message });
       }
 
       if (err || !user) {
@@ -67,7 +67,7 @@ passport.use(
         if (e instanceof Error) {
           logger.error(e);
           return done(e.message, false, {
-            message: "Email sudah dipakai pengguna lain",
+            message: e.message,
           });
         }
         return done("Unknown error", false);
@@ -85,9 +85,13 @@ export const signin = async (
   passport.authenticate(
     "signin",
     { session: false },
-    (err: any, user: Express.User | undefined, info: { message: any }) => {
+    (
+      err: CustomError,
+      user: Express.User | undefined,
+      info: { message: any }
+    ) => {
       if (err) {
-        return next({ message: "Email sudah dipakai pengguna lain" });
+        return next({ message: err.message });
       }
 
       if (!user) {
