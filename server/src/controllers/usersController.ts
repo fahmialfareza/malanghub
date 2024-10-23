@@ -135,12 +135,12 @@ class UsersController {
         return next({ message: "Pengguna tidak ditemukan", statusCode: 404 });
       }
 
-      const dataByteSize = Buffer.from(JSON.stringify(data)).length;
+      const dataByteSize = Buffer.from(JSON.stringify(dbData)).length;
       if (dataByteSize < 1048576) {
-        await redis.set(key, JSON.stringify(data), { EX: oneDay });
+        await redis.set(key, JSON.stringify(dbData), { EX: oneDay });
       }
 
-      return res.status(200).json({ data });
+      return res.status(200).json({ data: dbData });
     } catch (e) {
       logger.error(e);
       return next(e);
