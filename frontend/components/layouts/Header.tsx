@@ -307,9 +307,12 @@ const mapStateToProps = (state: RootState) => ({
   layout: state.layout,
 });
 
-export default connect(mapStateToProps, {
+const mapActionToProps = {
   getNewsCategories,
   loadUser,
   logout,
   setTheme,
-})(Header);
+};
+
+// @ts-ignore
+export default connect(mapStateToProps, mapActionToProps)(Header);
