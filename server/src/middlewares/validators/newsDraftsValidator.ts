@@ -32,14 +32,7 @@ export const create = async (
       errors.push("Foto Utama tidak boleh kosong");
     }
 
-    const tags: { _id: mongoose.Types.ObjectId }[] = [];
-
-    req.body.tags.split(",").map((id: string) => {
-      if (!mongoose.Types.ObjectId.isValid(id)) {
-        errors.push("Silahkan masukkan id yang benar");
-      }
-      tags.push({ _id: new mongoose.Types.ObjectId(id) });
-    });
+    const tags: mongoose.Types.ObjectId[] = JSON.parse(req.body?.tags);
 
     if (errors.length > 0) {
       return next({ message: errors.join(", "), statusCode: 400 });
@@ -47,7 +40,7 @@ export const create = async (
 
     const findData = await Promise.all([
       newsCategory.findById(req.body.category),
-      newsTag.find({ _id: { $in: tags.map((tag) => tag._id) } }),
+      newsTag.find({ _id: { $in: tags.map((tag) => tag) } }),
     ]);
 
     if (!findData[0]) {
