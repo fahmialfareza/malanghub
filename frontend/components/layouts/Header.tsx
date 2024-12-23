@@ -133,7 +133,9 @@ const Header = ({
           <h5>{user && user.name}</h5>
         </Link>
         <span>
-          {user && user.role.includes("admin") ? "Admin" : "Pengguna"}
+          {user && user?.role && user?.role?.includes("admin")
+            ? "Admin"
+            : "Pengguna"}
         </span>
       </div>
     </div>

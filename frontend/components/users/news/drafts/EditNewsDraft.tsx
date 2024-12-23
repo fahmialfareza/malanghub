@@ -255,7 +255,7 @@ const EditNewsDraft = ({
                           className="custom-control-input"
                           id={tag._id + "editDraft"}
                           onChange={(event) => {}}
-                          defaultChecked={tags.includes(tag._id)}
+                          defaultChecked={tags?.includes(tag._id)}
                         />
                         <label
                           className="custom-control-label"

@@ -51,7 +51,7 @@ const News = ({
   return (
     <section
       id="news"
-      className={"collapse mb-5 " + (!user.role.includes("admin") && "show")}
+      className={"collapse mb-5 " + (!user?.role?.includes("admin") && "show")}
     >
       <section id="actions" className="py-4 mb-1">
         <div className="container">
@@ -99,7 +99,7 @@ const News = ({
                 Antrian Berita
               </a>
             </div>
-            {user.role.includes("admin") && (
+            {user?.role?.includes("admin") && (
               <div className="col-md-3">
                 <a
                   href="#"
@@ -233,7 +233,7 @@ const News = ({
                 </a>
               </div>
             </div>
-            {user.role.includes("admin") && (
+            {user?.role?.includes("admin") && (
               <div className="card text-center bg-primary text-light mb-3">
                 <div className="card-body">
                   <h3 style={{ color: "#f8f9fa" }}>Persetujuan Berita</h3>

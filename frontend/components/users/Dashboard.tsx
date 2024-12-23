@@ -34,8 +34,8 @@ const Dashboard = ({
               <Spinner />
             ) : (
               user &&
-              user.role &&
-              user.role.includes("admin") && (
+              user?.role &&
+              user?.role?.includes("admin") && (
                 <div className="col">
                   <a
                     href="#"
@@ -57,8 +57,8 @@ const Dashboard = ({
               <Spinner />
             ) : (
               user &&
-              user.role &&
-              user.role.includes("admin") && (
+              user?.role &&
+              user?.role?.includes("admin") && (
                 <div className="col">
                   <a
                     href="#"
@@ -96,13 +96,13 @@ const Dashboard = ({
       {userLoading ? (
         <Spinner />
       ) : (
-        user && user.role && user.role.includes("admin") && <Categories />
+        user && user?.role && user?.role?.includes("admin") && <Categories />
       )}
 
       {userLoading ? (
         <Spinner />
       ) : (
-        user && user.role && user.role.includes("admin") && <Tags />
+        user && user?.role && user?.role?.includes("admin") && <Tags />
       )}
 
       {userLoading ? <Spinner /> : user && <News user={user} />}
