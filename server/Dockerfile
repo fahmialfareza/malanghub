@@ -7,6 +7,9 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install --global corepack@latest
 RUN corepack enable
 
+# Install specific version of pnpm (version 8)
+RUN corepack prepare pnpm@8 --activate
+
 WORKDIR /app
 
 # Create a non-root user and group
