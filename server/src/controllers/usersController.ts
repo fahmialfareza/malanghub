@@ -120,12 +120,12 @@ class UsersController {
 
       const dbData = await user
         .findById(req.params.id)
-        .select("-role -password")
+        .select("-password")
         .populate({
           path: "news",
           match: { approved: true },
           populate: [
-            { path: "user", select: "-password -role" },
+            { path: "user", select: "-password" },
             { path: "tags" },
             { path: "category" },
           ],
@@ -139,6 +139,7 @@ class UsersController {
       if (dataByteSize < 1048576) {
         await redis.set(key, JSON.stringify(dbData), { EX: oneDay });
       }
+      dbData.role = "";
 
       return res.status(200).json({ data: dbData });
     } catch (e) {
