@@ -1,5 +1,4 @@
 const withImages = require("next-images");
-const { withNetlify } = require("@netlify/next");
 const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
   cacheOnFrontEndNav: true,
@@ -31,5 +30,4 @@ const sentryWrappedConfig = withSentryConfig(
   }
 );
 
-// Final export
-module.exports = withNetlify(withPWA(sentryWrappedConfig));
+module.exports = withPWA(sentryWrappedConfig);
