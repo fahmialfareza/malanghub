@@ -2,6 +2,3 @@
   base = "frontend"
   command = "pnpm run build"
   publish = "frontend/.next"
-
-[[plugins]]
-  package = "@netlify/next"
