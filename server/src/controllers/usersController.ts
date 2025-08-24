@@ -51,11 +51,6 @@ class UsersController {
     } catch (e) {
       logger.error(e);
       return next(e);
-    } finally {
-      // Ensure redis is defined before disconnecting
-      if (redis) {
-        await redis.disconnect();
-      }
     }
   }
 
@@ -97,11 +92,6 @@ class UsersController {
     } catch (e) {
       logger.error(e);
       return next(e);
-    } finally {
-      // Ensure redis is defined before disconnecting
-      if (redis) {
-        await redis.disconnect();
-      }
     }
   }
 
@@ -145,11 +135,6 @@ class UsersController {
     } catch (e) {
       logger.error(e);
       return next(e);
-    } finally {
-      // Ensure redis is defined before disconnecting
-      if (redis) {
-        await redis.disconnect();
-      }
     }
   }
 

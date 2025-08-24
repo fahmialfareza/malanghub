@@ -5,7 +5,6 @@ import "newrelic";
 import path from "path";
 import fs from "fs";
 import express from "express";
-import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import hpp from "hpp";
 import cors from "cors";
@@ -36,11 +35,8 @@ server.use(cors());
 server.use(compression());
 
 // Body Parser
-server.use(express.json({ limit: "100mb" }));
-server.use(express.urlencoded({ extended: true, limit: "100mb" }));
-
-// Sanitize data
-server.use(mongoSanitize());
+server.use(express.json({ limit: "10mb" }));
+server.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Trust the proxy
 server.set("trust proxy", 10);
