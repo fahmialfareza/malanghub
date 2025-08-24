@@ -1,4 +1,4 @@
-import cookie from "cookie";
+import { serialize } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -24,7 +24,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       // Set cookie with the token
       res.setHeader(
         "Set-Cookie",
-        cookie.serialize("token", responseData.token, {
+        serialize("token", responseData.token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           maxAge: 60 * 60 * 24 * 30, // 30 days

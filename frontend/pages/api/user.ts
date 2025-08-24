@@ -1,4 +1,4 @@
-import cookie from "cookie";
+import { serialize, parse } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -8,7 +8,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       return;
     }
 
-    const { token } = cookie.parse(req.headers.cookie);
+    const { token } = parse(req.headers.cookie);
 
     const url = `${process.env.API_ADDRESS}/api/users`;
 
@@ -34,7 +34,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     // Destroy cookie
     res.setHeader(
       "Set-Cookie",
-      cookie.serialize("token", "", {
+      serialize("token", "", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         expires: new Date(0),

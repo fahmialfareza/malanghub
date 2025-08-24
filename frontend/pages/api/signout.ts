@@ -1,4 +1,4 @@
-import cookie from "cookie";
+import { serialize } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -6,7 +6,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     // Destroy cookie
     res.setHeader(
       "Set-cookie",
-      cookie.serialize("token", "", {
+      serialize("token", "", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         expires: new Date(0),
