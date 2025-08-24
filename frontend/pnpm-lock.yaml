@@ -38,6 +38,9 @@ importers:
       html-react-parser:
         specifier: ^5.2.6
         version: 5.2.6(@types/react@19.0.2)(react@19.0.0)
+      import-in-the-middle:
+        specifier: ^1.14.2
+        version: 1.14.2
       js-cookie:
         specifier: ^3.0.5
         version: 3.0.5

@@ -13,21 +13,21 @@ const baseConfig = withImages({
   compress: true,
 });
 
-const sentryWrappedConfig = withSentryConfig(
-  baseConfig,
-  {
-    silent: true,
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    authToken: process.env.SENTRY_AUTH_TOKEN,
+const sentryWrappedConfig = withSentryConfig(baseConfig, {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  widenClientFileUpload: true,
+  tunnelRoute: "/monitoring",
+  automaticVercelMonitors: true,
+  reactComponentAnnotation: {
+    enabled: true,
   },
-  {
-    widenClientFileUpload: true,
-    transpileClientSDK: true,
-    tunnelRoute: "/monitoring",
-    hideSourceMaps: true,
-    disableLogger: true,
-  }
-);
+  disableLogger: true,
+  sourcemaps: {
+    disable: false,
+  },
+});
 
 module.exports = withPWA(sentryWrappedConfig);
