@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, ObjectId } from "mongoose";
 import mongoose_delete from "mongoose-delete";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 
 /* Interface for User */
 export interface IUser extends Document {

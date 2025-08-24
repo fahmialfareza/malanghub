@@ -5,7 +5,7 @@ import {
   Strategy as JWTStrategy,
   ExtractJwt as ExtractJWT,
 } from "passport-jwt";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import { Request, Response, NextFunction } from "express";
 import { user } from "@/models";
 import logger from "@/utils/logger";
