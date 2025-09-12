@@ -1,0 +1,9 @@
+{
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "typescript.experimental.useTsgo": true,
+  "cSpell.words": ["dgrijalva"]
+}
