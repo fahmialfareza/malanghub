@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
-import cookie from "cookie";
+import * as cookie from "cookie";
 import { loadUser } from "../../../redux/actions/userActions";
 import { setActiveLink } from "../../../redux/actions/layoutActions";
 import Spinner from "../../../components/layouts/Spinner";
