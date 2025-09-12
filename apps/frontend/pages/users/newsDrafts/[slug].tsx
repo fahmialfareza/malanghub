@@ -502,7 +502,6 @@ export async function getServerSideProps({
       name: "newsDrafts.[slug].getServerSideProps",
     },
     async () => {
-      // Check if there is a cookie present
       if (!req.headers.cookie) {
         return {
           redirect: {

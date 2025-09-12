@@ -9,6 +9,7 @@ import { useGoogleLogin } from "@react-oauth/google";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../redux/store";
 import { GetServerSidePropsContext } from "next";
+import * as cookie from "cookie";
 import { UserReducerState } from "../redux/types";
 import { GoogleLoginRequest, SignUpRequest } from "../redux/actions/types/user";
 
@@ -213,9 +214,21 @@ export async function getServerSideProps({ req }: GetServerSidePropsContext) {
     { name: "signup.getServerSideProps" },
     async () => {
       try {
+        if (!req.headers.cookie) {
+          return {
+            redirect: {
+              permanent: false,
+              destination: "/signin",
+            },
+            props: {},
+          };
+        }
+
+        const { token } = cookie.parse(req.headers.cookie);
+
         const response = await fetch(`${process.env.API_ADDRESS}/api/user`, {
           headers: {
-            Cookie: req.headers.cookie || "",
+            Authorization: `Bearer ${token}`,
           },
         });
 
