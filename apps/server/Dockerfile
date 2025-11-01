@@ -1,5 +1,5 @@
 # Stage 1: Build base image
-FROM node:22-slim AS base
+FROM node:24-slim AS base
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
@@ -7,8 +7,8 @@ ENV PATH="$PNPM_HOME:$PATH"
 RUN npm install --global corepack@latest
 RUN corepack enable
 
-# Install specific version of pnpm (version 8)
-RUN corepack prepare pnpm@9 --activate
+# Install specific version of pnpm (version 10)
+RUN corepack prepare pnpm@10 --activate
 
 WORKDIR /app
 
