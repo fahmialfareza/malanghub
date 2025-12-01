@@ -17,9 +17,11 @@ import (
 )
 
 func main() {
-	// Load .env file if present
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using environment variables")
+	// Load .env file if present — only attempt when the file exists.
+	if _, err := os.Stat(".env"); err == nil {
+		if err := godotenv.Load(); err != nil {
+			log.Printf("warning: failed to load .env: %v", err)
+		}
 	}
 
 	// load env vars if present (user can use dir environment)
