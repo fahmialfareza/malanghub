@@ -154,13 +154,16 @@ const SearchNewsItem = ({
         })}
 
       <div className="pagination-wrapper mt-5">
-        {news?.pagination && (
+        {news?.meta && (
           <ReactPaginate
             previousLabel={"<"}
             nextLabel={">"}
             breakLabel={"..."}
-            initialPage={Math.max((news.pagination.currentPage || 1) - 1, 0)}
-            pageCount={Math.max(news.pagination.totalPages || 1, 1)}
+            initialPage={Math.max((news.meta.page || 1) - 1, 0)}
+            pageCount={Math.max(
+              Math.ceil(news.meta.total / news.meta.limit) || 1,
+              1
+            )}
             marginPagesDisplayed={2}
             pageRangeDisplayed={5}
             onPageChange={handlePageClick}

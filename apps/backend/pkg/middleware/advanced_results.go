@@ -134,11 +134,15 @@ func AdvancedResults(collection string) gin.HandlerFunc {
 			}
 		}
 
-		// search q param -> regex on title and content
-		if q := c.Query("q"); q != "" {
+		// search param -> alias support: use `q` or `search` for regex on title and content
+		searchQuery := c.Query("q")
+		if searchQuery == "" {
+			searchQuery = c.Query("search")
+		}
+		if searchQuery != "" {
 			filter["$or"] = bson.A{
-				bson.M{"title": bson.M{"$regex": q, "$options": "i"}},
-				bson.M{"content": bson.M{"$regex": q, "$options": "i"}},
+				bson.M{"title": bson.M{"$regex": searchQuery, "$options": "i"}},
+				bson.M{"content": bson.M{"$regex": searchQuery, "$options": "i"}},
 			}
 		}
 

@@ -28,10 +28,6 @@ export interface NewsWithPagination {
     page: number;
     total: number;
   };
-  pagination?: {
-    currentPage: number;
-    totalPages: number;
-  };
   data: News[];
 }
 

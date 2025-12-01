@@ -47,6 +47,8 @@ const Header = ({
   const router = useRouter();
   const themeSwitcher = useRef<HTMLInputElement>(null);
 
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -86,21 +88,27 @@ const Header = ({
     event: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>
   ) => {
     event.preventDefault();
-
-    // @ts-ignore
-    window.$(".pop-overlay").show();
+    setSearchOpen(true);
   };
 
   const onSearch = (event: FormEvent<HTMLFormElement>) => {
-    if (!router.isReady) return;
     event.preventDefault();
+    setSearchOpen(false);
 
-    // @ts-ignore
-    window.$(".pop-overlay").hide();
-    // router.push("#close");
-
+    // Navigate to search page
     router.push(`/search/${search}`);
   };
+
+  // focus input when overlay opens
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      try {
+        searchInputRef.current.focus();
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [searchOpen]);
 
   const guestHeader = (
     <>
@@ -241,14 +249,28 @@ const Header = ({
               <a href="#search" title="search" onClick={onClickSearch}>
                 <span className="fa fa-search" aria-hidden="true"></span>
               </a>
-              <div id="search" className="pop-overlay">
+              <div
+                id="search"
+                className={`pop-overlay ${searchOpen ? "open" : ""}`}
+                onClick={(e) => {
+                  if (e.target === e.currentTarget) setSearchOpen(false);
+                }}
+                style={{
+                  display: searchOpen ? "block" : "none",
+                  visibility: searchOpen ? "visible" : "hidden",
+                  opacity: searchOpen ? 1 : 0,
+                }}
+              >
                 <div className="popup">
                   <h3 className="hny-title two">Cari disini</h3>
-                  <form className="search-box" onSubmit={(event) => {}}>
+                  <form className="search-box" onSubmit={onSearch}>
                     <input
                       type="search"
                       placeholder="Cari Berita...."
                       name="search"
+                      ref={(el) => {
+                        searchInputRef.current = el;
+                      }}
                       onChange={(event) => setSearch(event.target.value)}
                       value={search}
                       required
@@ -258,7 +280,14 @@ const Header = ({
                       Cari
                     </button>
                   </form>
-                  <a className="close" href="#close">
+                  <a
+                    className="close"
+                    href="#close"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSearchOpen(false);
+                    }}
+                  >
                     ×
                   </a>
                 </div>
