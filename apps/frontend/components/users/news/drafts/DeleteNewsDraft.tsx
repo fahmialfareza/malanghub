@@ -27,7 +27,7 @@ const DeleteNewsDraft = ({
     event.preventDefault();
 
     if (currentNewsDraft) {
-      deleteNewsDraft(currentNewsDraft._id);
+      deleteNewsDraft(currentNewsDraft.id || currentNewsDraft._id);
     }
 
     hideModal();

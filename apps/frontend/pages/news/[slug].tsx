@@ -1,29 +1,28 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
-import { setAlert, setActiveLink } from "../../redux/actions/layoutActions";
+import { setActiveLink } from "../../redux/actions/layoutActions";
 import RelatedNews from "../../components/news/RelatedNews";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../../redux/store";
-import { GetServerSidePropsContext, GetServerSidePropsResult } from "next";
+import { GetServerSidePropsContext } from "next";
 import { UserReducerState } from "../../redux/types";
-import { News } from "../../models/news";
+import { News, NewsCategory, NewsTag } from "../../models/news";
+import { User } from "../../models/user";
 
 interface SingleNewsProps {
   currentNews: News;
   relatedNews: News[];
-  user: UserReducerState;
   setActiveLink: (link: string) => void;
 }
 
 const SingleNews = ({
   currentNews,
   relatedNews,
-  user: { isAuthenticated, token, user },
   setActiveLink,
 }: SingleNewsProps) => {
   const router = useRouter();
@@ -37,11 +36,11 @@ const SingleNews = ({
 
   useEffect(() => {
     if (contentRef && contentRef.current) {
-      contentRef.current
-        .querySelectorAll("*")
-        .forEach(function (node: Element) {
-          node.removeAttribute("style");
-        });
+      contentRef.current.querySelectorAll("*").forEach(function (
+        node: Element
+      ) {
+        node.removeAttribute("style");
+      });
     }
   }, [contentRef, currentNews]);
 
@@ -76,7 +75,6 @@ const SingleNews = ({
             .slice(0, 255)}
         />
         <meta property="og:image" content={currentNews?.mainImage} />
-
         <meta property="twitter:card" content="summary_large_image" />
         <meta
           property="twitter:url"
@@ -117,11 +115,11 @@ const SingleNews = ({
                     <div className="blog-post-img embed-responsive embed-responsive-1by1">
                       {currentNews?.user && (
                         <Link
-                          href={`/users/${currentNews.user._id}`}
-                          legacyBehavior
+                          href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
                         >
                           <img
                             src={
+                              currentNews &&
                               currentNews &&
                               currentNews.user &&
                               currentNews.user.photo
@@ -137,17 +135,15 @@ const SingleNews = ({
                       <div className="author align-items-center mb-1">
                         {currentNews?.user && (
                           <Link
-                            href={`/users/${currentNews.user._id}`}
-                            legacyBehavior
+                            href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
                           >
                             {currentNews?.user?.name}
                           </Link>
                         )}{" "}
-                        in{" "}
+                        di{" "}
                         {currentNews?.category && (
                           <Link
                             href={`/newsCategories/${currentNews?.category?.slug}`}
-                            legacyBehavior
                           >
                             {currentNews?.category?.name}
                           </Link>
@@ -199,11 +195,10 @@ const SingleNews = ({
                         <div className="buttons-singles tags">
                           <h4>Tag :</h4>
                           {currentNews?.tags &&
-                            currentNews.tags.map((tag) => (
+                            currentNews?.tags.map((tag) => (
                               <Link
                                 key={tag._id}
                                 href={`/newsTags/${tag.slug}`}
-                                legacyBehavior
                               >
                                 {tag.name}
                               </Link>

@@ -17,13 +17,21 @@ const TrendingNews = ({ news, index }: TrendingNewsProps) => {
           {news.title}
         </Link>
         <div className="author align-items-center mt-2 mb-1">
-          <Link href={`/users/${news.user._id}`} legacyBehavior>
-            {news.user.name}
-          </Link>{" "}
-          in{" "}
-          <Link href={`/newsCategories/${news.category?.slug}`} legacyBehavior>
-            {news.category?.name}
-          </Link>
+          {news.user && news.user._id ? (
+            <Link href={`/users/${news.user._id}`} legacyBehavior>
+              {news.user.name ?? "Penulis"}
+            </Link>
+          ) : (
+            <span>{news.user?.name ?? "Penulis"}</span>
+          )}{" "}
+          di{" "}
+          {news.category && news.category.slug ? (
+            <Link href={`/newsCategories/${news.category.slug}`} legacyBehavior>
+              {news.category.name ?? "Kategori"}
+            </Link>
+          ) : (
+            <span>{news.category?.name ?? "Kategori"}</span>
+          )}
         </div>
         <ul className="blog-meta">
           <li className="meta-item blog-lesson">

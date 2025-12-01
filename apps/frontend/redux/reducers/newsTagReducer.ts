@@ -16,6 +16,7 @@ const initialState: NewsTagReducerState = {
   newsTags: [],
   currentNewsTag: {
     _id: "",
+    id: "",
     created_at: new Date(),
     name: "",
     slug: "",
@@ -52,7 +53,7 @@ const newsTagReducer = (state = initialState, action: PayloadAction<any>) => {
         loading: false,
         currentNewsTag: { name: "" },
         newsTags: state.newsTags.map((tag) =>
-          tag._id === action.payload._id ? action.payload : tag
+          tag.id === action.payload.id ? action.payload : tag
         ),
       };
     case DELETE_NEWS_TAG:
@@ -60,7 +61,7 @@ const newsTagReducer = (state = initialState, action: PayloadAction<any>) => {
         ...state,
         loading: false,
         currentNewsTag: { name: "" },
-        newsTags: state.newsTags.filter((tag) => tag._id !== action.payload),
+        newsTags: state.newsTags.filter((tag) => tag.id !== action.payload),
       };
     case CLEAR_ALL_NEWS_TAGS:
       return {

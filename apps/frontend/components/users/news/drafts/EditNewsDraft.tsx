@@ -38,7 +38,9 @@ const EditNewsDraft = ({
   setAlert,
 }: EditNewsDraftProps) => {
   const [title, setTitle] = useState(currentNewsDraft?.title);
-  const [category, setCategory] = useState(currentNewsDraft?.category._id);
+  const [category, setCategory] = useState(
+    currentNewsDraft?.category as string
+  );
   const [mainImage, setMainImage] = useState<File>();
   const [mainImageName, setMainImageName] = useState("");
   const [content, setContent] = useState(currentNewsDraft?.content);
@@ -52,13 +54,13 @@ const EditNewsDraft = ({
 
   useEffect(() => {
     setTitle(currentNewsDraft?.title);
-    setCategory(currentNewsDraft?.category._id);
+    setCategory(currentNewsDraft?.category as string);
     setContent(currentNewsDraft?.content);
     setMainImageName("");
     setMainImage(undefined);
     if (currentNewsDraft?.tags && currentNewsDraft?.tags?.length > 0) {
-      const selectedTags = currentNewsDraft?.tags?.map((tag) => tag._id);
-      setTags(selectedTags);
+      const selectedTags = currentNewsDraft?.tags;
+      setTags(selectedTags as string[]);
     }
 
     clearNewsTags();
@@ -118,7 +120,7 @@ const EditNewsDraft = ({
       if (mainImageName) data.mainImageName = mainImageName;
 
       if (data && currentNewsDraft) {
-        updateNewsDraft(data, currentNewsDraft._id);
+        updateNewsDraft(data, currentNewsDraft.id || currentNewsDraft._id);
       }
 
       setSubmitTrigger(true);
@@ -175,7 +177,10 @@ const EditNewsDraft = ({
                     </option>
                     {newsCategories &&
                       newsCategories.map((category) => (
-                        <option key={category._id} value={category._id}>
+                        <option
+                          key={category.id || category._id}
+                          value={category.id || category._id}
+                        >
                           {category.name}
                         </option>
                       ))}
@@ -247,19 +252,23 @@ const EditNewsDraft = ({
                   {newsTags &&
                     newsTags.map((tag) => (
                       <div
-                        key={tag._id + "editDraft"}
+                        key={tag.id + "editDraft"}
                         className="custom-control custom-switch custom-control-inline"
                       >
                         <input
                           type="checkbox"
                           className="custom-control-input"
-                          id={tag._id + "editDraft"}
-                          onChange={(event) => {}}
-                          defaultChecked={tags?.includes(tag._id)}
+                          id={tag.id + "editDraft"}
+                          onChange={(event) => {
+                            handleTags(event);
+                          }}
+                          defaultChecked={tags?.includes(
+                            (tag.id || tag._id || "") as string
+                          )}
                         />
                         <label
                           className="custom-control-label"
-                          htmlFor={tag._id + "editDraft"}
+                          htmlFor={tag.id + "editDraft"}
                         >
                           {tag.name}
                         </label>

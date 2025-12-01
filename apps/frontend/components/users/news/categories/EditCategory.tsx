@@ -47,7 +47,7 @@ const EditCategory = ({
         {
           name,
         },
-        currentNewsCategory?._id
+        currentNewsCategory?.id || currentNewsCategory?._id
       );
     }
 

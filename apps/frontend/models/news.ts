@@ -6,11 +6,13 @@ export interface News {
   user: User;
   slug: string;
   title: string;
-  category: NewsCategory;
+  // category may be populated object or just an id string depending on API
+  category: NewsCategory | string | any;
   time_read: number;
   mainImage: string;
   content: string;
-  tags: NewsTag[];
+  // tags may be array of objects or array of id strings
+  tags: NewsTag[] | string[] | any[];
   views: number;
   status: string;
   message?: string;
@@ -20,14 +22,15 @@ export interface News {
 }
 
 export interface NewsWithPagination {
-  count: number;
-  pagination: {
+  // older endpoints use `meta`, some components expect `pagination`.
+  meta?: {
+    limit: number;
+    page: number;
+    total: number;
+  };
+  pagination?: {
     currentPage: number;
     totalPages: number;
-    next: {
-      page: number;
-      limit: number;
-    };
   };
   data: News[];
 }
@@ -53,10 +56,10 @@ export interface NewsCommentReply {
 }
 
 export interface NewsTag {
-  _id: string;
+  _id?: string;
   id?: string;
-  name: string;
-  slug: string;
+  name?: string;
+  slug?: string;
   created_at?: Date;
   updated_at?: Date;
 }

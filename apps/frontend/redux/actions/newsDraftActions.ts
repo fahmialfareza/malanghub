@@ -335,6 +335,7 @@ export const deleteNewsDraft =
         dispatch(getMyNewsDrafts());
         dispatch(setAlert("Berita berhasil dihapus!", "success"));
       } catch (e) {
+        console.log(e);
         Sentry.captureException(e);
 
         if (e instanceof AxiosError) {

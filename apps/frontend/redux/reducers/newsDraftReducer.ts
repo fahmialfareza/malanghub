@@ -51,10 +51,10 @@ const newsDraftReducer = (state = initialState, action: PayloadAction<any>) => {
         ...state,
         loading: false,
         myNewsDrafts: state.myNewsDrafts.map((draft) =>
-          draft._id === action.payload._id ? action.payload : draft
+          draft.id === action.payload.id ? action.payload : draft
         ),
         allNewsDrafts: state.allNewsDrafts.map((draft) =>
-          draft._id === action.payload._id ? action.payload : draft
+          draft.id === action.payload.id ? action.payload : draft
         ),
       };
     case UPDATE_NEWS_DRAFT_APPROVED:
@@ -62,26 +62,29 @@ const newsDraftReducer = (state = initialState, action: PayloadAction<any>) => {
         ...state,
         loading: false,
         myNewsDrafts: action.payload.approved
-          ? state.myNewsDrafts.filter(
-              (draft) => draft._id !== action.payload._id
+          ? state.myNewsDrafts?.filter(
+              (draft) => draft.id !== action.payload.id
             )
-          : state.myNewsDrafts.map((draft) =>
-              draft._id === action.payload._id ? action.payload : draft
+          : state.myNewsDrafts?.map((draft) =>
+              draft.id === action.payload.id ? action.payload : draft
             ),
         allNewsDrafts: action.payload.approved
-          ? state.allNewsDrafts.filter(
-              (draft) => draft._id !== action.payload._id
+          ? state.allNewsDrafts?.filter(
+              (draft) => draft.id !== action.payload.id
             )
-          : state.allNewsDrafts.map((draft) =>
-              draft._id === action.payload._id ? action.payload : draft
+          : state.allNewsDrafts?.map((draft) =>
+              draft.id === action.payload.id ? action.payload : draft
             ),
       };
     case DELETE_NEWS_DRAFT:
       return {
         ...state,
         loading: false,
-        myNewsDrafts: state.myNewsDrafts.filter(
-          (draft) => draft._id !== action.payload
+        myNewsDrafts: state.myNewsDrafts?.filter(
+          (draft) => draft.id !== action.payload
+        ),
+        allNewsDrafts: state.allNewsDrafts?.filter(
+          (draft) => draft.id !== action.payload
         ),
       };
     case NEWS_DRAFTS_ERROR:

@@ -45,7 +45,7 @@ const NewsDraft = ({
     }
 
     setActiveLink("");
-  }, [user, router.isReady]);
+  }, [router.isReady]); // Only depend on router.isReady, not user or loadUser
 
   useEffect(() => {
     if (contentRef.current) {
@@ -156,7 +156,7 @@ const NewsDraft = ({
                         currentNewsDraft &&
                         currentNewsDraft.user && (
                           <Link
-                            href={`/users/${currentNewsDraft.user._id}`}
+                            href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
                             legacyBehavior
                           >
                             <img
@@ -181,7 +181,7 @@ const NewsDraft = ({
                           currentNewsDraft &&
                           currentNewsDraft.user && (
                             <Link
-                              href={`/users/${currentNewsDraft.user._id}`}
+                              href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
                               legacyBehavior
                             >
                               {newsDraftLoading ? (
@@ -194,12 +194,13 @@ const NewsDraft = ({
                             </Link>
                           )
                         )}{" "}
-                        in{" "}
+                        di{" "}
                         {currentNewsDraft &&
                           currentNewsDraft.category &&
-                          currentNewsDraft.category._id && (
+                          (currentNewsDraft.category.id ||
+                            currentNewsDraft.category._id) && (
                             <Link
-                              href={`/newsCategories/${currentNewsDraft.category._id}`}
+                              href={`/newsCategories/${currentNewsDraft.category.id || currentNewsDraft.category._id}`}
                               legacyBehavior
                             >
                               {newsDraftLoading ? (
@@ -285,8 +286,8 @@ const NewsDraft = ({
                             currentNewsDraft.tags.length > 0 &&
                             currentNewsDraft.tags.map((tag) => (
                               <Link
-                                key={tag._id}
-                                href={`/newsTags/${tag._id}`}
+                                key={tag.id || tag._id}
+                                href={`/newsTags/${tag.slug}`}
                                 legacyBehavior
                               >
                                 {tag.name}

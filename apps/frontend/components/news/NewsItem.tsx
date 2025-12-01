@@ -38,7 +38,7 @@ const NewsItem = ({ news }: NewsItemProps) => {
                 <Link href={`/users/${news[0].user._id}`} legacyBehavior>
                   {news[0].user.name}
                 </Link>{" "}
-                in{" "}
+                di{" "}
                 <Link
                   href={`/newsCategories/${news[0].category?.slug}`}
                   legacyBehavior
@@ -100,7 +100,7 @@ const NewsItem = ({ news }: NewsItemProps) => {
                           <Link href={`/users/${item.user._id}`} legacyBehavior>
                             {item.user.name}
                           </Link>{" "}
-                          in{" "}
+                          di{" "}
                           <Link
                             href={`/newsCategories/${item.category?.slug}`}
                             legacyBehavior

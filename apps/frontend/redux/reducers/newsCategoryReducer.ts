@@ -43,13 +43,15 @@ const newsCategoryReducer = (
         currentNewsCategory: action.payload,
       };
     case UPDATE_NEWS_CATEGORY:
+      console.log(action.payload);
+      console.log(state.newsCategories);
       return {
         ...state,
         loading: false,
         currentNewsCategory: { name: "" },
-        newsCategories: state.newsCategories.map((category) =>
-          category._id === action.payload._id ? action.payload : category
-        ),
+        newsCategories: state.newsCategories.map((category) => {
+          return category.id === action.payload.id ? action.payload : category;
+        }),
       };
     case DELETE_NEWS_CATEGORY:
       return {
@@ -57,7 +59,7 @@ const newsCategoryReducer = (
         loading: false,
         currentNewsCategory: { name: "" },
         newsCategories: state.newsCategories.filter(
-          (category) => category._id !== action.payload
+          (category) => category.id !== action.payload
         ),
       };
     case NEWS_CATEGORIES_ERROR:

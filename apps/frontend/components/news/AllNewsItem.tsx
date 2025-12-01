@@ -41,16 +41,30 @@ const AllNewsItem = ({ news, getAllNews }: AllNewsItemProps) => {
               {parse(news.data[0].content.replace(/<(.|\n)*?>/g, ""))}
             </div>
             <div className="author align-items-center mt-3 mb-1">
-              <Link href={`/users/${news.data[0].user._id}`} legacyBehavior>
-                {news.data[0].user.name}
-              </Link>{" "}
-              in{" "}
-              <Link
-                href={`/newsCategories/${news.data[0].category.slug}`}
-                legacyBehavior
-              >
-                {news.data[0].category.name}
-              </Link>
+              {news.data[0].user && news.data[0].user._id ? (
+                <Link href={`/users/${news.data[0].user._id}`} legacyBehavior>
+                  {news.data[0].user.name ?? "Penulis"}
+                </Link>
+              ) : (
+                <span>{news.data[0].user?.name ?? "Penulis"}</span>
+              )}{" "}
+              di{" "}
+              {news.data[0].category &&
+              typeof news.data[0].category !== "string" &&
+              news.data[0].category.slug ? (
+                <Link
+                  href={`/newsCategories/${news.data[0].category.slug}`}
+                  legacyBehavior
+                >
+                  {news.data[0].category.name ?? "Kategori"}
+                </Link>
+              ) : (
+                <span>
+                  {typeof news.data[0].category === "string"
+                    ? news.data[0].category
+                    : (news.data[0].category?.name ?? "Kategori")}
+                </span>
+              )}
             </div>
             <ul className="blog-meta">
               <li className="meta-item blog-lesson">
@@ -96,19 +110,32 @@ const AllNewsItem = ({ news, getAllNews }: AllNewsItemProps) => {
                       {item.title}
                     </Link>
                     <div className="text-truncate">
-                      {parse(item.content.replace(/<(.|\n)*?>/g, ""))}
-                    </div>
-                    <div className="author align-items-center mt-3 mb-1">
-                      <Link href={`/users/${item.user._id}`} legacyBehavior>
-                        {item.user.name}
-                      </Link>{" "}
-                      in{" "}
-                      <Link
-                        href={`/newsCategories/${item.category.slug}`}
-                        legacyBehavior
-                      >
-                        {item.category.name}
-                      </Link>
+                      <div className="author align-items-center mt-3 mb-1">
+                        {item.user && item.user._id ? (
+                          <Link href={`/users/${item.user._id}`} legacyBehavior>
+                            {item.user.name ?? "Penulis"}
+                          </Link>
+                        ) : (
+                          <span>{item.user?.name ?? "Penulis"}</span>
+                        )}{" "}
+                        di{" "}
+                        {item.category &&
+                        typeof item.category !== "string" &&
+                        item.category.slug ? (
+                          <Link
+                            href={`/newsCategories/${item.category.slug}`}
+                            legacyBehavior
+                          >
+                            {item.category.name ?? "Kategori"}
+                          </Link>
+                        ) : (
+                          <span>
+                            {typeof item.category === "string"
+                              ? item.category
+                              : (item.category?.name ?? "Kategori")}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     <ul className="blog-meta">
                       <li className="meta-item blog-lesson">
@@ -133,19 +160,24 @@ const AllNewsItem = ({ news, getAllNews }: AllNewsItemProps) => {
         })}
 
       <div className="pagination-wrapper mt-5">
-        <ReactPaginate
-          previousLabel={"<"}
-          nextLabel={">"}
-          breakLabel={"..."}
-          initialPage={news.pagination.currentPage - 1}
-          pageCount={news.pagination.totalPages}
-          marginPagesDisplayed={2}
-          pageRangeDisplayed={5}
-          onPageChange={handlePageClick}
-          containerClassName={"page-pagination"}
-          pageLinkClassName={"page-numbers"}
-          activeLinkClassName={"active"}
-        />
+        {news?.meta && (
+          <ReactPaginate
+            previousLabel={"<"}
+            nextLabel={">"}
+            breakLabel={"..."}
+            initialPage={Math.max((news.meta.page || 1) - 1, 0)}
+            pageCount={Math.max(
+              Math.ceil((news.meta.total || 0) / (news.meta.limit || 1)),
+              1
+            )}
+            marginPagesDisplayed={2}
+            pageRangeDisplayed={5}
+            onPageChange={handlePageClick}
+            containerClassName={"page-pagination"}
+            pageLinkClassName={"page-numbers"}
+            activeLinkClassName={"active"}
+          />
+        )}
       </div>
     </div>
   );

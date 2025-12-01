@@ -60,7 +60,10 @@ const EditNews = ({
     };
 
     if (currentNewsDraft) {
-      updateNewsDraftApproved(data, currentNewsDraft._id);
+      updateNewsDraftApproved(
+        data,
+        currentNewsDraft.id || currentNewsDraft._id
+      );
     }
 
     if (error) {

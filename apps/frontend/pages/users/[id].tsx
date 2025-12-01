@@ -269,7 +269,11 @@ const GetUserProfile = ({
               <div className="col-lg-9 most-recent">
                 <h3 className="section-title-left">
                   Pengguna Terbaru dari{" "}
-                  {userLoading ? <Spinner /> : userProfile && userProfile.name}{" "}
+                  {userLoading ? (
+                    <Spinner />
+                  ) : (
+                    userProfile && userProfile.name
+                  )}{" "}
                 </h3>
                 <div className="list-view ">
                   {newsLoading ? (
@@ -294,19 +298,27 @@ const GetUserProfile = ({
                             {parse(news.content.replace(/<(.|\n)*?>/g, ""))}
                           </div>
                           <div className="author align-items-center mt-3 mb-1">
-                            <Link
-                              href={`/users/${news.user._id}`}
-                              legacyBehavior
-                            >
-                              {news && news.user.name}
-                            </Link>{" "}
-                            in{" "}
-                            <Link
-                              href={`/newsCategories/${news.category.slug}`}
-                              legacyBehavior
-                            >
-                              {news.category.name}
-                            </Link>
+                            {news.user && news.user._id ? (
+                              <Link
+                                href={`/users/${news.user._id}`}
+                                legacyBehavior
+                              >
+                                {news.user.name ?? "Penulis"}
+                              </Link>
+                            ) : (
+                              <span>{news.user?.name ?? "Penulis"}</span>
+                            )}{" "}
+                            di{" "}
+                            {news.category && news.category.slug ? (
+                              <Link
+                                href={`/newsCategories/${news.category.slug}`}
+                                legacyBehavior
+                              >
+                                {news.category.name ?? "Kategori"}
+                              </Link>
+                            ) : (
+                              <span>{news.category?.name ?? "Kategori"}</span>
+                            )}
                           </div>
                           <ul className="blog-meta">
                             <li className="meta-item blog-lesson">
@@ -343,25 +355,26 @@ const GetUserProfile = ({
 
                 {newsLoading ? (
                   <Spinner />
-                ) : (
-                  newsByUser && (
-                    <div className="pagination-wrapper mt-5">
-                      <ReactPaginate
-                        previousLabel={"<"}
-                        nextLabel={">"}
-                        breakLabel={"..."}
-                        initialPage={newsByUser.pagination.currentPage - 1}
-                        pageCount={newsByUser.pagination.totalPages}
-                        marginPagesDisplayed={2}
-                        pageRangeDisplayed={5}
-                        onPageChange={handlePageClick}
-                        containerClassName={"page-pagination"}
-                        pageLinkClassName={"page-numbers"}
-                        activeLinkClassName={"active"}
-                      />
-                    </div>
-                  )
-                )}
+                ) : newsByUser && newsByUser.meta ? (
+                  <div className="pagination-wrapper mt-5">
+                    <ReactPaginate
+                      previousLabel={"<"}
+                      nextLabel={">"}
+                      breakLabel={"..."}
+                      initialPage={(newsByUser.meta?.page || 1) - 1}
+                      pageCount={Math.ceil(
+                        (newsByUser.meta?.total || 0) /
+                          (newsByUser.meta?.limit || 10)
+                      )}
+                      marginPagesDisplayed={2}
+                      pageRangeDisplayed={5}
+                      onPageChange={handlePageClick}
+                      containerClassName={"page-pagination"}
+                      pageLinkClassName={"page-numbers"}
+                      activeLinkClassName={"active"}
+                    />
+                  </div>
+                ) : null}
               </div>
 
               <div className="col-lg-3 trending mb-5 mt-lg-0 mt-5">
@@ -386,13 +399,17 @@ const GetUserProfile = ({
                             {news.title}
                           </Link>
                           <div className="author align-items-center mt-2 mb-1">
-                            <Link
-                              href={`/users/${news.user._id}`}
-                              legacyBehavior
-                            >
-                              {news.user.name}
-                            </Link>{" "}
-                            in{" "}
+                            {news.user && news.user._id ? (
+                              <Link
+                                href={`/users/${news.user._id}`}
+                                legacyBehavior
+                              >
+                                {news.user.name ?? "Penulis"}
+                              </Link>
+                            ) : (
+                              <span>{news.user?.name ?? "Penulis"}</span>
+                            )}{" "}
+                            di{" "}
                             <Link
                               href={`/newsCategories/${news.category.slug}`}
                               legacyBehavior

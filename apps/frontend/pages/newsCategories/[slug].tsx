@@ -17,7 +17,7 @@ import { NewsReducerState } from "../../redux/types";
 
 interface NewsCategoryProps {
   trendingNews: News[];
-  oneNewsCategory: NewsCtg;
+  oneNewsCategory: { category: NewsCtg };
   news: NewsReducerState;
   getNewsByCategory: (id: string, page: number) => void;
   setActiveLink: (link: string) => void;
@@ -37,34 +37,36 @@ const NewsCategory = ({
   }, []);
 
   useEffect(() => {
-    getNewsByCategory(oneNewsCategory?._id, 1);
+    getNewsByCategory(oneNewsCategory?.category?.id || "", 1);
   }, [oneNewsCategory]);
 
   return (
     <>
       <Head>
-        <title>Malanghub - Kategori Berita - {oneNewsCategory?.name}</title>
+        <title>
+          Malanghub - Kategori Berita - {oneNewsCategory?.category?.name}
+        </title>
         <meta
           name="title"
-          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.name}`}
+          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.category?.name}`}
         />
         <meta
           name="description"
-          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.category?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
         />
 
         <meta property="og:type" content="website" />
         <meta
           property="og:url"
-          content={`https://www.malanghub.com/newsCategories/${oneNewsCategory?.slug}`}
+          content={`https://www.malanghub.com/newsCategories/${oneNewsCategory?.category?.slug}`}
         />
         <meta
           property="og:title"
-          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.name}`}
+          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.category?.name}`}
         />
         <meta
           property="og:description"
-          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.category?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
         />
         <meta
           property="og:image"
@@ -74,15 +76,15 @@ const NewsCategory = ({
         <meta property="twitter:card" content="summary_large_image" />
         <meta
           property="twitter:url"
-          content={`https://www.malanghub.com/newsCategories/${oneNewsCategory?.slug}`}
+          content={`https://www.malanghub.com/newsCategories/${oneNewsCategory?.category?.slug}`}
         />
         <meta
           property="twitter:title"
-          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.name}`}
+          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.category?.name}`}
         />
         <meta
           property="twitter:description"
-          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+          content={`Malanghub - Kategori Berita - ${oneNewsCategory?.category?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
         />
         <meta
           property="twitter:image"
@@ -94,7 +96,7 @@ const NewsCategory = ({
         <div className="container page-wrapper">
           <Link href="/">Beranda</Link> / Kategori Berita /
           <span className="breadcrumb_last" aria-current="page">
-            {!newsLoading && oneNewsCategory?.name}
+            {!newsLoading && oneNewsCategory?.category?.name}
           </span>
         </div>
       </nav>
@@ -103,7 +105,7 @@ const NewsCategory = ({
           <div className="row">
             <div className="col-lg-8 most-recent">
               <h3 className="section-title-left">
-                {!newsLoading && oneNewsCategory?.name}
+                {!newsLoading && oneNewsCategory?.category?.name}
               </h3>
 
               {newsLoading || newsByCategory === null ? (
@@ -111,7 +113,7 @@ const NewsCategory = ({
               ) : !newsLoading && newsByCategory?.data?.length > 0 ? (
                 <NewsByCategoryItem
                   news={newsByCategory}
-                  paramsId={oneNewsCategory?._id}
+                  paramsId={oneNewsCategory?.category?.id || ""}
                 />
               ) : (
                 <h1>Belum Ada Berita</h1>

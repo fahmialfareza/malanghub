@@ -17,7 +17,7 @@ import { NewsReducerState } from "../../redux/types";
 
 interface NewsTagProps {
   trendingNews: News[];
-  oneNewsTag: NewsTg;
+  oneNewsTag: { tag: NewsTg };
   news: NewsReducerState;
   getNewsByTag: (id: string, page: number) => void;
   setActiveLink: (link: string) => void;
@@ -37,34 +37,34 @@ const NewsTag = ({
   }, []);
 
   useEffect(() => {
-    getNewsByTag(oneNewsTag?._id, 1);
+    getNewsByTag(oneNewsTag?.tag.id || "", 1);
   }, [oneNewsTag]);
 
   return (
     <>
       <Head>
-        <title>Malanghub - Tag Berita - {oneNewsTag?.name}</title>
+        <title>Malanghub - Tag Berita - {oneNewsTag?.tag.name}</title>
         <meta
           name="title"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.name}`}
+          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name}`}
         />
         <meta
           name="description"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
         />
 
         <meta property="og:type" content="website" />
         <meta
           property="og:url"
-          content={`https://www.malanghub.com/newsTags/${oneNewsTag?.slug}`}
+          content={`https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`}
         />
         <meta
           property="og:title"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.name}`}
+          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name}`}
         />
         <meta
           property="og:description"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
         />
         <meta
           property="og:image"
@@ -74,15 +74,15 @@ const NewsTag = ({
         <meta property="twitter:card" content="summary_large_image" />
         <meta
           property="twitter:url"
-          content={`https://www.malanghub.com/newsTags/${oneNewsTag?.slug}`}
+          content={`https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`}
         />
         <meta
           property="twitter:title"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.name}`}
+          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name}`}
         />
         <meta
           property="twitter:description"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
         />
         <meta
           property="twitter:image"
@@ -94,7 +94,7 @@ const NewsTag = ({
         <div className="container page-wrapper">
           <Link href="/">Beranda</Link> / Tag Berita /
           <span className="breadcrumb_last" aria-current="page">
-            {oneNewsTag && oneNewsTag.name}
+            {oneNewsTag && oneNewsTag?.tag.name}
           </span>
         </div>
       </nav>
@@ -103,7 +103,7 @@ const NewsTag = ({
           <div className="row">
             <div className="col-lg-8 most-recent">
               <h3 className="section-title-left">
-                {oneNewsTag && oneNewsTag.name}
+                {oneNewsTag && oneNewsTag?.tag.name}
               </h3>
 
               {newsLoading || newsByTag === null ? (
@@ -112,7 +112,10 @@ const NewsTag = ({
                 newsByTag &&
                 newsByTag.data &&
                 newsByTag.data.length > 0 ? (
-                <NewsByTagItem paramsId={oneNewsTag?._id} news={newsByTag} />
+                <NewsByTagItem
+                  paramsId={oneNewsTag?.tag?.id || ""}
+                  news={newsByTag}
+                />
               ) : (
                 <h1>Belum Ada Berita</h1>
               )}

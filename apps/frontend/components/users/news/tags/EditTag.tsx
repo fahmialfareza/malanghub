@@ -41,7 +41,7 @@ const EditTag = ({
         {
           name,
         },
-        currentNewsTag._id
+        (currentNewsTag.id || currentNewsTag._id || "") as string
       );
     }
 

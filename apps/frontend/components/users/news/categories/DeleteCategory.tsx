@@ -29,7 +29,7 @@ const DeleteCategory = ({
     event.preventDefault();
 
     if (currentNewsCategory) {
-      deleteNewsCategory(currentNewsCategory._id);
+      deleteNewsCategory(currentNewsCategory.id || currentNewsCategory._id);
     }
 
     hideModal();

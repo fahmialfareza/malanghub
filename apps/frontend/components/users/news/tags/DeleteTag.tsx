@@ -27,7 +27,7 @@ const DeleteTag = ({
     event.preventDefault();
 
     if (currentNewsTag) {
-      deleteNewsTag(currentNewsTag._id);
+      deleteNewsTag((currentNewsTag.id || currentNewsTag._id || "") as string);
     }
 
     hideModal();

@@ -12,7 +12,6 @@ import {
   NewsTagReducerState,
 } from "../../../redux/types";
 import { CreateUpdateNewsDraft } from "../../../redux/actions/types/newsDraft";
-import { NewsTag } from "../../../models/news";
 
 interface AddNewsProps {
   layout: LayoutReducerState;
@@ -164,7 +163,7 @@ const AddNews = ({
                     </option>
                     {newsCategories &&
                       newsCategories.map((category) => (
-                        <option key={category._id} value={category._id}>
+                        <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
                       ))}
@@ -205,9 +204,26 @@ const AddNews = ({
                       height: 500,
                       menubar: true,
                       plugins: [
-                        "advlist autolink lists link image charmap print preview anchor",
-                        "searchreplace visualblocks code fullscreen",
-                        "insertdatetime media table paste code help wordcount",
+                        "advlist",
+                        "autolink",
+                        "lists",
+                        "link",
+                        "image",
+                        "charmap",
+                        "print",
+                        "preview",
+                        "anchor",
+                        "searchreplace",
+                        "visualblocks",
+                        "code",
+                        "fullscreen",
+                        "insertdatetime",
+                        "media",
+                        "table",
+                        "paste",
+                        "code",
+                        "help",
+                        "wordcount",
                         "directionality",
                       ],
                       toolbar:
@@ -237,18 +253,18 @@ const AddNews = ({
                   {newsTags &&
                     newsTags.map((tag) => (
                       <div
-                        key={tag._id}
+                        key={tag.id}
                         className="custom-control custom-switch custom-control-inline"
                       >
                         <input
                           type="checkbox"
                           className="custom-control-input"
-                          id={tag._id}
+                          id={tag.id}
                           onChange={handleTags}
                         />
                         <label
                           className="custom-control-label"
-                          htmlFor={tag._id}
+                          htmlFor={tag.id}
                         >
                           {tag.name}
                         </label>
