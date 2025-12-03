@@ -16,8 +16,6 @@ const baseConfig = withImages({
         port: "",
         pathname: "/**",
       },
-    ],
-    remotePatterns: [
       {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
