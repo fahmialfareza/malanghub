@@ -9,6 +9,14 @@ const { withSentryConfig } = require("@sentry/nextjs");
 const baseConfig = withImages({
   images: {
     disableStaticImages: true,
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
   compress: true,
 });

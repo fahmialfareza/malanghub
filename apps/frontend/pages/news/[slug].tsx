@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
@@ -117,16 +118,18 @@ const SingleNews = ({
                         <Link
                           href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
                         >
-                          <img
+                          <Image
                             src={
-                              currentNews &&
-                              currentNews &&
-                              currentNews.user &&
-                              currentNews.user.photo
+                              (currentNews &&
+                                currentNews &&
+                                currentNews.user &&
+                                currentNews.user.photo) ||
+                              ""
                             }
                             alt=""
                             className="rounded-circle img-fluid embed-responsive-item"
                             style={{ objectFit: "cover" }}
+                            fill
                           />
                         </Link>
                       )}
@@ -177,11 +180,12 @@ const SingleNews = ({
                   <div className="container pb-lg-4">
                     <div className="single-post-image">
                       <div className="post-content embed-responsive embed-responsive-4by3">
-                        <img
+                        <Image
                           src={currentNews?.mainImage}
                           className="radius-image img-fluid pb-5 embed-responsive-item"
                           style={{ objectFit: "cover" }}
                           alt=""
+                          fill
                         />
                       </div>
                     </div>
@@ -233,11 +237,12 @@ const SingleNews = ({
                         <div className="row align-items-center">
                           <div className="col-sm-3 col-6">
                             <div className="embed-responsive embed-responsive-1by1">
-                              <img
-                                src={currentNews?.user?.photo}
+                              <Image
+                                src={currentNews?.user?.photo || ""}
                                 alt=""
                                 className="rounded-circle img-fluid embed-responsive-item"
                                 style={{ objectFit: "cover" }}
+                                fill
                               />
                             </div>
                           </div>

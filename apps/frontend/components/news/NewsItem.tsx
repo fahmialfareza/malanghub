@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import Moment from "react-moment";
 import "moment/locale/id";
 import parse from "html-react-parser";
@@ -19,11 +20,12 @@ const NewsItem = ({ news }: NewsItemProps) => {
                 href={`/news/${news[0].slug}`}
                 className="embed-responsive embed-responsive-1by1"
               >
-                <img
+                <Image
                   className="card-img-bottom d-block radius-image embed-responsive-item"
                   style={{ objectFit: "cover" }}
                   src={news[0].mainImage}
                   alt={news[0].mainImage}
+                  fill
                 />
               </Link>
             </div>
@@ -82,11 +84,12 @@ const NewsItem = ({ news }: NewsItemProps) => {
                         href={`/news/${item.slug}`}
                         className="d-block zoom embed-responsive embed-responsive-1by1"
                       >
-                        <img
+                        <Image
                           src={item.mainImage}
                           alt={item.mainImage}
                           style={{ objectFit: "cover" }}
                           className="img-fluid radius-image news-image embed-responsive-item"
+                          fill
                         />
                       </Link>
                       <div className="blog-info align-self">

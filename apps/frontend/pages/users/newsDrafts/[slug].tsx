@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
@@ -159,15 +160,17 @@ const NewsDraft = ({
                             href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
                             legacyBehavior
                           >
-                            <img
+                            <Image
                               src={
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.photo
+                                (currentNewsDraft &&
+                                  currentNewsDraft.user &&
+                                  currentNewsDraft.user.photo) ||
+                                ""
                               }
                               alt=""
                               className="rounded-circle img-fluid embed-responsive-item"
                               style={{ objectFit: "cover" }}
+                              fill
                             />
                           </Link>
                         )
@@ -253,11 +256,12 @@ const NewsDraft = ({
                         {newsDraftLoading ? (
                           <Spinner />
                         ) : (
-                          <img
+                          <Image
                             src={currentNewsDraft && currentNewsDraft.mainImage}
                             className="radius-image img-fluid pb-5 embed-responsive-item"
                             style={{ objectFit: "cover" }}
                             alt=""
+                            fill
                           />
                         )}
                       </div>
@@ -316,15 +320,17 @@ const NewsDraft = ({
                         <div className="row align-items-center">
                           <div className="col-sm-3 col-6">
                             <div className="embed-responsive embed-responsive-1by1">
-                              <img
+                              <Image
                                 src={
-                                  currentNewsDraft &&
-                                  currentNewsDraft.user &&
-                                  currentNewsDraft.user.photo
+                                  (currentNewsDraft &&
+                                    currentNewsDraft.user &&
+                                    currentNewsDraft.user.photo) ||
+                                  ""
                                 }
                                 alt=""
                                 className="rounded-circle img-fluid embed-responsive-item"
                                 style={{ objectFit: "cover" }}
+                                fill
                               />
                             </div>
                           </div>

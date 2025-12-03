@@ -3,6 +3,7 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
 import { loadUser, logout } from "../../redux/actions/userActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import assetsPath from "../../components/layouts/Assets";
@@ -104,7 +105,7 @@ const UserProfile = ({
           <div className="row align-items-center">
             <div className="col-md-3 col-sm-4 col-7 order-first">
               <div className="embed-responsive embed-responsive-1by1">
-                <img
+                <Image
                   src={
                     user && user.photo
                       ? user.photo
@@ -113,6 +114,7 @@ const UserProfile = ({
                   alt=""
                   className="rounded-circle img-fluid embed-responsive-item"
                   style={{ objectFit: "cover" }}
+                  fill
                 />
               </div>
             </div>

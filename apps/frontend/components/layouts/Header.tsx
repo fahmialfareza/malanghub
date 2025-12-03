@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, MouseEvent, FormEvent } from "react";
 import { connect } from "react-redux";
 import Link from "next/link";
+import Image from "next/image";
 import Router, { useRouter } from "next/router";
 import { getNewsCategories } from "../../redux/actions/newsCategoryActions";
 import { loadUser, logout } from "../../redux/actions/userActions";
@@ -128,7 +129,7 @@ const Header = ({
   const authHeader = (
     <div className="header-author d-flex ml-lg-4 pl-2 mt-lg-0 mt-3">
       <Link href="/users" className="img-circle img-circle-sm">
-        <img
+        <Image
           src={
             user && user.photo ? user.photo : assetsPath("images/author.jpg")
           }
@@ -163,7 +164,7 @@ const Header = ({
         <div className="container">
           <Link href="/" className="navbar-brand">
             <span aria-hidden>
-              <img src={logo} height="35" alt="" />
+              <Image src={logo} height="35" alt="" />
             </span>
           </Link>
           <button

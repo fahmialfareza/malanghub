@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
@@ -117,7 +118,7 @@ const GetUserProfile = ({
           <div className="row align-items-center">
             <div className="col-md-3 col-sm-4 col-7 order-first">
               <div className="embed-responsive embed-responsive-1by1">
-                <img
+                <Image
                   src={
                     userProfile && userProfile.photo
                       ? userProfile.photo
@@ -126,6 +127,7 @@ const GetUserProfile = ({
                   alt=""
                   className="rounded-circle img-fluid embed-responsive-item"
                   style={{ objectFit: "cover" }}
+                  fill
                 />
               </div>
             </div>
@@ -341,11 +343,12 @@ const GetUserProfile = ({
                           href={`/news/${news.slug}`}
                           className="d-block zoom embed-responsive embed-responsive-1by1"
                         >
-                          <img
+                          <Image
                             src={news.mainImage}
                             alt=""
                             className="img-fluid radius-image news-image mt-md-0 mt-3 embed-responsive-item"
                             style={{ objectFit: "cover" }}
+                            fill
                           />
                         </Link>
                       </div>

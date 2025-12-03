@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import "moment/locale/id";
@@ -25,11 +26,12 @@ const AllNewsItem = ({ news, getAllNews }: AllNewsItemProps) => {
         <div className="card">
           <div className="card-header p-0 position-relative embed-responsive embed-responsive-1by1">
             <Link href={`/news/${news.data[0].slug}`} legacyBehavior>
-              <img
+              <Image
                 className="card-img-bottom d-block radius-image embed-responsive-item"
                 style={{ objectFit: "cover" }}
                 src={news.data[0].mainImage}
                 alt={news.data[0].mainImage}
+                fill
               />
             </Link>
           </div>
@@ -97,11 +99,12 @@ const AllNewsItem = ({ news, getAllNews }: AllNewsItemProps) => {
                 <div className="card">
                   <div className="card-header p-0 position-relative embed-responsive embed-responsive-1by1">
                     <Link href={`/news/${item.slug}`} legacyBehavior>
-                      <img
+                      <Image
                         className="card-img-bottom d-block radius-image embed-responsive-item"
                         style={{ objectFit: "cover" }}
                         src={item.mainImage}
                         alt={item.mainImage}
+                        fill
                       />
                     </Link>
                   </div>
