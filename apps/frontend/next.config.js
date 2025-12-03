@@ -17,6 +17,14 @@ const baseConfig = withImages({
         pathname: "/**",
       },
     ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "googleusercontent.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
   compress: true,
 });
