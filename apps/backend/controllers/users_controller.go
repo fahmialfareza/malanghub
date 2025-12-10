@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -9,7 +8,6 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
-	"github.com/fahmialfareza/malanghub/backend/pkg/redisclient"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -81,18 +79,6 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
-	// try redis cache first
-	ctx := c
-	cacheKey := "user:profile:" + idStr
-	if v, err := redisclient.CacheGet(ctx, cacheKey); err == nil && v != "" {
-		var cached models.User
-		if err := json.Unmarshal([]byte(v), &cached); err == nil {
-			cached.Password = ""
-			c.JSON(http.StatusOK, gin.H{"data": cached})
-			return
-		}
-	}
-
 	coll := db.GetCollection("users")
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
@@ -106,11 +92,6 @@ func GetProfile(c *gin.Context) {
 	}
 
 	u.Password = ""
-
-	// cache result asynchronously (1 day)
-	go func() {
-		_ = redisclient.CacheSetDefault(ctx, cacheKey, u, 24*time.Hour)
-	}()
 
 	c.JSON(http.StatusOK, gin.H{"data": u})
 }

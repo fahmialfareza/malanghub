@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
-	"github.com/fahmialfareza/malanghub/backend/pkg/redisclient"
 )
 
 // GetAllCategories returns categories populated with approved news (lightweight)
@@ -53,16 +51,6 @@ func GetAllCategories(c *gin.Context) {
 // GetCategoryBySlug returns category and approved news under it
 func GetCategoryBySlug(c *gin.Context) {
 	slug := c.Param("slug")
-	key := "category:" + slug
-	ctx := c
-
-	if v, err := redisclient.CacheGet(ctx, key); err == nil && v != "" {
-		var cached bson.M
-		if err := json.Unmarshal([]byte(v), &cached); err == nil {
-			c.JSON(http.StatusOK, gin.H{"data": cached})
-			return
-		}
-	}
 
 	coll := db.GetCollection("newscategories")
 	if coll == nil {
@@ -99,7 +87,6 @@ func GetCategoryBySlug(c *gin.Context) {
 	}
 
 	resp := bson.M{"category": cat, "news": newsList}
-	_ = redisclient.CacheSetDefault(ctx, key, resp, 24*time.Hour)
 	c.JSON(http.StatusOK, gin.H{"data": resp})
 }
 

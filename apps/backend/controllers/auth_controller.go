@@ -15,7 +15,6 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/auth"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
-	"github.com/fahmialfareza/malanghub/backend/pkg/redisclient"
 )
 
 type signupPayload struct {
@@ -185,11 +184,6 @@ func GoogleSignIn(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to generate token"})
 		return
 	}
-
-	// optional: prime profile cache
-	go func() {
-		_ = redisclient.CacheSetDefault(c, "user:profile:"+u.ID.Hex(), u, 24*time.Hour)
-	}()
 
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }

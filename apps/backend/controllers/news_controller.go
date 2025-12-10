@@ -16,7 +16,6 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
-	"github.com/fahmialfareza/malanghub/backend/pkg/redisclient"
 )
 
 // ListNews returns approved news with simple pagination
@@ -74,16 +73,6 @@ func ListNews(c *gin.Context) {
 // GetNewsBySlug returns a single approved news by slug, caching in Redis
 func GetNewsBySlug(c *gin.Context) {
 	slugParam := c.Param("slug")
-	key := "news:" + slugParam
-	ctx := c
-
-	if v, err := redisclient.CacheGet(ctx, key); err == nil && v != "" {
-		var cached bson.M
-		if err := json.Unmarshal([]byte(v), &cached); err == nil {
-			c.JSON(http.StatusOK, gin.H{"data": cached})
-			return
-		}
-	}
 
 	coll := db.GetCollection("news")
 	if coll == nil {
@@ -157,9 +146,6 @@ func GetNewsBySlug(c *gin.Context) {
 	if userDoc, ok := result["user"].(bson.M); ok {
 		delete(userDoc, "password")
 	}
-
-	// cache response
-	_ = redisclient.CacheSetDefault(ctx, key, result, 24*time.Hour)
 
 	c.JSON(http.StatusOK, gin.H{"data": result})
 }

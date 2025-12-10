@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
@@ -12,7 +11,6 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
-	"github.com/fahmialfareza/malanghub/backend/pkg/redisclient"
 )
 
 func GetAllTags(c *gin.Context) {
@@ -50,16 +48,6 @@ func GetAllTags(c *gin.Context) {
 
 func GetTagBySlug(c *gin.Context) {
 	slug := c.Param("slug")
-	key := "tag:" + slug
-	ctx := c
-
-	if v, err := redisclient.CacheGet(ctx, key); err == nil && v != "" {
-		var cached bson.M
-		if err := json.Unmarshal([]byte(v), &cached); err == nil {
-			c.JSON(http.StatusOK, gin.H{"data": cached})
-			return
-		}
-	}
 
 	coll := db.GetCollection("newstags")
 	if coll == nil {
@@ -96,7 +84,6 @@ func GetTagBySlug(c *gin.Context) {
 	}
 
 	resp := bson.M{"tag": tag, "news": newsList}
-	_ = redisclient.CacheSetDefault(ctx, key, resp, 24*time.Hour)
 	c.JSON(http.StatusOK, gin.H{"data": resp})
 }
 
