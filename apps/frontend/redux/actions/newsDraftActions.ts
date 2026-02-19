@@ -280,7 +280,7 @@ export const updateNewsDraftApproved =
             });
           }, 5000);
         }
-      }
+      },
     );
   };
 

@@ -93,7 +93,7 @@ const AddNews = ({
       setTags([]);
     }
 
-    if (oldMyNewsDrafts !== myNewsDrafts) {
+    if (oldMyNewsDrafts?.length !== myNewsDrafts?.length) {
       if (submitTrigger && !error) {
         setTitle("");
         setCategory("default");
@@ -114,7 +114,7 @@ const AddNews = ({
         hideModal();
       }
     }
-  }, [myNewsDrafts, error]);
+  }, [myNewsDrafts, submitTrigger, error]);
 
   return (
     <>
@@ -283,7 +283,7 @@ const AddNews = ({
                 value="Submit"
                 className="btn btn-primary"
               >
-                Simpan
+                {submitTrigger ? "Menyimpan..." : "Simpan"}
               </button>
             </div>
           </div>
