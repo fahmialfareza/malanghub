@@ -202,36 +202,40 @@ func CreateDraft(c *gin.Context) {
 	// Upload mainImage to Cloudinary
 	var mainImage string
 	file, fileHeader, err := c.Request.FormFile("mainImage")
-	if err == nil && fileHeader != nil {
-		defer file.Close()
-		cld, err := cloudinarypkg.Init()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary init failed"})
-			return
-		}
-
-		if cld != nil {
-			// generate random filename
-			b := make([]byte, 16)
-			if _, err := rand.Read(b); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"message": "could not generate filename"})
-				return
-			}
-			publicID := hex.EncodeToString(b)
-
-			url, err := cloudinarypkg.UploadFileHeader(c, cld, fileHeader, "malanghub", publicID)
-			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary upload failed: " + err.Error()})
-				return
-			}
-			mainImage = url
-		}
-	}
-
-	if mainImage == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "mainImage upload failed"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "mainImage file is required: " + err.Error()})
 		return
 	}
+	if fileHeader == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "mainImage file header is missing"})
+		return
+	}
+	defer file.Close()
+
+	cld, err := cloudinarypkg.Init()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary init failed: " + err.Error()})
+		return
+	}
+	if cld == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary not configured"})
+		return
+	}
+
+	// generate random filename
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "could not generate filename"})
+		return
+	}
+	publicID := hex.EncodeToString(b)
+
+	url, err := cloudinarypkg.UploadFileHeader(c, cld, fileHeader, "malanghub", publicID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary upload failed: " + err.Error()})
+		return
+	}
+	mainImage = url
 
 	// Parse tags from JSON string
 	var tags []string
