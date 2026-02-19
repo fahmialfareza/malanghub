@@ -21,7 +21,16 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "esbuild"
+      "@newrelic/fn-inspect",
+      "@newrelic/native-metrics",
+      "@parcel/watcher",
+      "@sentry/cli",
+      "bcrypt",
+      "es5-ext",
+      "esbuild",
+      "less",
+      "protobufjs",
+      "sharp"
     ]
   },
   "packageManager": "pnpm@10.20.0",
