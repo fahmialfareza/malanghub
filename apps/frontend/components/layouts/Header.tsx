@@ -135,10 +135,16 @@ const Header = ({
           }
           className="img-fluid"
           alt="..."
+          objectFit="cover"
+          fill={false}
+          width={400}
+          height={400}
         />
       </Link>
       <div className="align-self ml-3">
-        <Link href="/users" legacyBehavior>
+        <Link href="/users">
+          {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+          }
           <h5>{user && user.name}</h5>
         </Link>
         <span>
@@ -164,7 +170,7 @@ const Header = ({
         <div className="container">
           <Link href="/" className="navbar-brand">
             <span aria-hidden>
-              <Image src={logo} height="35" alt="" />
+              <Image src={logo} height={35} alt="" />
             </span>
           </Link>
           <button

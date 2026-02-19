@@ -128,7 +128,7 @@ const SingleNews = ({
                             }
                             alt=""
                             className="rounded-circle img-fluid embed-responsive-item"
-                            style={{ objectFit: "cover" }}
+                            objectFit="cover"
                             fill
                           />
                         </Link>
@@ -183,7 +183,7 @@ const SingleNews = ({
                         <Image
                           src={currentNews?.mainImage}
                           className="radius-image img-fluid pb-5 embed-responsive-item"
-                          style={{ objectFit: "cover" }}
+                          objectFit="cover"
                           alt=""
                           fill
                         />
@@ -241,7 +241,7 @@ const SingleNews = ({
                                 src={currentNews?.user?.photo || ""}
                                 alt=""
                                 className="rounded-circle img-fluid embed-responsive-item"
-                                style={{ objectFit: "cover" }}
+                                objectFit="cover"
                                 fill
                               />
                             </div>

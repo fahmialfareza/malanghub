@@ -15,12 +15,11 @@ COPY . .
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 RUN go build -ldflags='-s -w' -o /malanghub-backend ./
 
-# Final image: minimal scratch with timezone data and certificates
-FROM scratch
+# Final image: minimal alpine with filesystem structure
+FROM alpine:latest
 
-# Copy CA certificates and timezone data from the builder's runtime image
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+# Install CA certificates
+RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
 COPY --from=builder /malanghub-backend /app/malanghub-backend

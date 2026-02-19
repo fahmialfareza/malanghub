@@ -22,7 +22,7 @@ const NewsItem = ({ news }: NewsItemProps) => {
               >
                 <Image
                   className="card-img-bottom d-block radius-image embed-responsive-item"
-                  style={{ objectFit: "cover" }}
+                  objectFit="cover"
                   src={news[0].mainImage}
                   alt={news[0].mainImage}
                   fill
@@ -37,14 +37,15 @@ const NewsItem = ({ news }: NewsItemProps) => {
                 {parse(news[0].content.replace(/<(.|\n)*?>/g, ""))}
               </div>
               <div className="author align-items-center mt-3 mb-1">
-                <Link href={`/users/${news[0].user._id}`} legacyBehavior>
+                <Link href={`/users/${news[0].user._id}`}>
+                  {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                  }
                   {news[0].user.name}
                 </Link>{" "}
                 di{" "}
-                <Link
-                  href={`/newsCategories/${news[0].category?.slug}`}
-                  legacyBehavior
-                >
+                <Link href={`/newsCategories/${news[0].category?.slug}`}>
+                  {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                  }
                   {news[0].category?.name}
                 </Link>
               </div>
@@ -87,7 +88,7 @@ const NewsItem = ({ news }: NewsItemProps) => {
                         <Image
                           src={item.mainImage}
                           alt={item.mainImage}
-                          style={{ objectFit: "cover" }}
+                          objectFit="cover"
                           className="img-fluid radius-image news-image embed-responsive-item"
                           fill
                         />
@@ -100,14 +101,15 @@ const NewsItem = ({ news }: NewsItemProps) => {
                           {item.title}
                         </Link>
                         <div className="author align-items-center mt-3 mb-1">
-                          <Link href={`/users/${item.user._id}`} legacyBehavior>
+                          <Link href={`/users/${item.user._id}`}>
+                            {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                            }
                             {item.user.name}
                           </Link>{" "}
                           di{" "}
-                          <Link
-                            href={`/newsCategories/${item.category?.slug}`}
-                            legacyBehavior
-                          >
+                          <Link href={`/newsCategories/${item.category?.slug}`}>
+                            {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                            }
                             {item.category?.name}
                           </Link>
                         </div>

@@ -113,7 +113,7 @@ const UserProfile = ({
                   }
                   alt=""
                   className="rounded-circle img-fluid embed-responsive-item"
-                  style={{ objectFit: "cover" }}
+                  objectFit="cover"
                   fill
                 />
               </div>

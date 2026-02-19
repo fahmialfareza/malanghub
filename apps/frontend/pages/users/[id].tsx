@@ -103,7 +103,6 @@ const GetUserProfile = ({
         />
         <meta property="twitter:image" content={userProfile?.photo} />
       </Head>
-
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">
           <Link href="/">Beranda</Link> / Pengguna /{" "}
@@ -112,7 +111,6 @@ const GetUserProfile = ({
           </span>
         </div>
       </nav>
-
       <section id="author" className="w3l-author py-5">
         <div className="container py-md-3">
           <div className="row align-items-center">
@@ -126,7 +124,7 @@ const GetUserProfile = ({
                   }
                   alt=""
                   className="rounded-circle img-fluid embed-responsive-item"
-                  style={{ objectFit: "cover" }}
+                  objectFit="cover"
                   fill
                 />
               </div>
@@ -258,12 +256,10 @@ const GetUserProfile = ({
           </div>
         </div>
       </section>
-
       <div
         className="display-ad"
         style={{ margin: "8px auto", display: "block", textAlign: "center" }}
       ></div>
-
       <div className="w3l-authorblock2 w3l-homeblock1 mb-5 pb-5">
         <div className="container">
           <div className="item mt-4">
@@ -301,10 +297,9 @@ const GetUserProfile = ({
                           </div>
                           <div className="author align-items-center mt-3 mb-1">
                             {news.user && news.user._id ? (
-                              <Link
-                                href={`/users/${news.user._id}`}
-                                legacyBehavior
-                              >
+                              <Link href={`/users/${news.user._id}`}>
+                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                                }
                                 {news.user.name ?? "Penulis"}
                               </Link>
                             ) : (
@@ -312,10 +307,9 @@ const GetUserProfile = ({
                             )}{" "}
                             di{" "}
                             {news.category && news.category.slug ? (
-                              <Link
-                                href={`/newsCategories/${news.category.slug}`}
-                                legacyBehavior
-                              >
+                              <Link href={`/newsCategories/${news.category.slug}`}>
+                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                                }
                                 {news.category.name ?? "Kategori"}
                               </Link>
                             ) : (
@@ -347,7 +341,7 @@ const GetUserProfile = ({
                             src={news.mainImage}
                             alt=""
                             className="img-fluid radius-image news-image mt-md-0 mt-3 embed-responsive-item"
-                            style={{ objectFit: "cover" }}
+                            objectFit="cover"
                             fill
                           />
                         </Link>
@@ -403,20 +397,18 @@ const GetUserProfile = ({
                           </Link>
                           <div className="author align-items-center mt-2 mb-1">
                             {news.user && news.user._id ? (
-                              <Link
-                                href={`/users/${news.user._id}`}
-                                legacyBehavior
-                              >
+                              <Link href={`/users/${news.user._id}`}>
+                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                                }
                                 {news.user.name ?? "Penulis"}
                               </Link>
                             ) : (
                               <span>{news.user?.name ?? "Penulis"}</span>
                             )}{" "}
                             di{" "}
-                            <Link
-                              href={`/newsCategories/${news.category.slug}`}
-                              legacyBehavior
-                            >
+                            <Link href={`/newsCategories/${news.category.slug}`}>
+                              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                              }
                               {news.category.name}
                             </Link>
                           </div>
@@ -445,7 +437,6 @@ const GetUserProfile = ({
           </div>
         </div>
       </div>
-
       <div
         className="display-ad"
         style={{ margin: "8px auto", display: "block", textAlign: "center" }}

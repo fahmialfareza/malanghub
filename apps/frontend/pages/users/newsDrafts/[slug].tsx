@@ -122,7 +122,6 @@ const NewsDraft = ({
         />
         <meta property="twitter:image" content={currentNewsDraft?.mainImage} />
       </Head>
-
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">
           <Link href="/">Beranda</Link> / Antrian Berita /{" "}
@@ -135,7 +134,6 @@ const NewsDraft = ({
           </span>
         </div>
       </nav>
-
       <div className="w3l-searchblock w3l-homeblock1 py-5">
         <div className="container py-lg-4 py-md-3">
           <div className="row">
@@ -156,10 +154,9 @@ const NewsDraft = ({
                       ) : (
                         currentNewsDraft &&
                         currentNewsDraft.user && (
-                          <Link
-                            href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
-                            legacyBehavior
-                          >
+                          <Link href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}>
+                            {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                            }
                             <Image
                               src={
                                 (currentNewsDraft &&
@@ -169,7 +166,7 @@ const NewsDraft = ({
                               }
                               alt=""
                               className="rounded-circle img-fluid embed-responsive-item"
-                              style={{ objectFit: "cover" }}
+                              objectFit="cover"
                               fill
                             />
                           </Link>
@@ -183,10 +180,9 @@ const NewsDraft = ({
                         ) : (
                           currentNewsDraft &&
                           currentNewsDraft.user && (
-                            <Link
-                              href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
-                              legacyBehavior
-                            >
+                            <Link href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}>
+                              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                              }
                               {newsDraftLoading ? (
                                 <Spinner />
                               ) : (
@@ -203,9 +199,9 @@ const NewsDraft = ({
                           (currentNewsDraft.category.id ||
                             currentNewsDraft.category._id) && (
                             <Link
-                              href={`/newsCategories/${currentNewsDraft.category.id || currentNewsDraft.category._id}`}
-                              legacyBehavior
-                            >
+                              href={`/newsCategories/${currentNewsDraft.category.id || currentNewsDraft.category._id}`}>
+                              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                              }
                               {newsDraftLoading ? (
                                 <Spinner />
                               ) : (
@@ -259,7 +255,7 @@ const NewsDraft = ({
                           <Image
                             src={currentNewsDraft && currentNewsDraft.mainImage}
                             className="radius-image img-fluid pb-5 embed-responsive-item"
-                            style={{ objectFit: "cover" }}
+                            objectFit="cover"
                             alt=""
                             fill
                           />
@@ -289,11 +285,9 @@ const NewsDraft = ({
                             currentNewsDraft.tags &&
                             currentNewsDraft.tags.length > 0 &&
                             currentNewsDraft.tags.map((tag) => (
-                              <Link
-                                key={tag.id || tag._id}
-                                href={`/newsTags/${tag.slug}`}
-                                legacyBehavior
-                              >
+                              <Link key={tag.id || tag._id} href={`/newsTags/${tag.slug}`}>
+                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+                                }
                                 {tag.name}
                               </Link>
                             ))
@@ -329,7 +323,7 @@ const NewsDraft = ({
                                 }
                                 alt=""
                                 className="rounded-circle img-fluid embed-responsive-item"
-                                style={{ objectFit: "cover" }}
+                                objectFit="cover"
                                 fill
                               />
                             </div>
@@ -491,7 +485,6 @@ const NewsDraft = ({
           </div>
         </div>
       </div>
-
       <div
         className="display-ad"
         style={{ margin: "8px auto", display: "block", textAlign: "center" }}

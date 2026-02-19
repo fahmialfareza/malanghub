@@ -18,7 +18,9 @@ const RelatedNews = ({ news, index }: RelatedNewsProps) => {
         </Link>
         <div className="author align-items-center mt-2 mb-1">
           {news.user && news.user._id ? (
-            <Link href={`/users/${news.user._id}`} legacyBehavior>
+            <Link href={`/users/${news.user._id}`}>
+              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+              }
               {news.user.name ?? "Penulis"}
             </Link>
           ) : (
@@ -26,7 +28,9 @@ const RelatedNews = ({ news, index }: RelatedNewsProps) => {
           )}{" "}
           di{" "}
           {news.category && news.category.slug ? (
-            <Link href={`/newsCategories/${news.category.slug}`} legacyBehavior>
+            <Link href={`/newsCategories/${news.category.slug}`}>
+              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
+              }
               {news.category.name ?? "Kategori"}
             </Link>
           ) : (
