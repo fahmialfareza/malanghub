@@ -111,6 +111,13 @@ class MyDocument extends Document {
             href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css"
           />
           <link rel="stylesheet" href="/assets/css/style-starter.css" />
+
+          {/* Cloudflare Web Analytics */}
+          <script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "0fd44994b4f045188c4df4091265f8a6"}'
+          ></script>
         </Head>
 
         <body>
