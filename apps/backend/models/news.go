@@ -2,6 +2,7 @@ package models
 
 import (
 	"time"
+	"unicode/utf8"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -23,4 +24,12 @@ type News struct {
 	Deleted   *bool                `json:"deleted,omitempty" bson:"deleted,omitempty"`
 	CreatedAt time.Time            `json:"created_at,omitempty" bson:"created_at,omitempty"`
 	UpdatedAt time.Time            `json:"updated_at,omitempty" bson:"updated_at,omitempty"`
+}
+
+func CalculateTimeRead(content string) int {
+	length := utf8.RuneCountInString(content)
+	if length == 0 {
+		return 0
+	}
+	return (length + 99) / 100
 }

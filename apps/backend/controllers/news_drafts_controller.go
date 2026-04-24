@@ -274,6 +274,7 @@ func CreateDraft(c *gin.Context) {
 	payload.Slug = slug.Make(title)
 	payload.MainImage = mainImage
 	payload.Content = content
+	payload.TimeRead = models.CalculateTimeRead(content)
 
 	// convert category hex to ObjectID
 	if category != "" {
@@ -343,7 +344,9 @@ func UpdateDraft(c *gin.Context) {
 		body["slug"] = slug.Make(title)
 	}
 	if content := strings.TrimSpace(c.PostForm("content")); content != "" {
-		body["content"] = strings.ReplaceAll(content, "&lt;", "<")
+		normalizedContent := strings.ReplaceAll(content, "&lt;", "<")
+		body["content"] = normalizedContent
+		body["time_read"] = models.CalculateTimeRead(normalizedContent)
 	}
 	if category := strings.TrimSpace(c.PostForm("category")); category != "" {
 		if coid, err := primitive.ObjectIDFromHex(category); err == nil {

@@ -198,6 +198,7 @@ func CreateNews(c *gin.Context) {
 	payload.Slug = slug.Make(title)
 	payload.MainImage = mainImage
 	payload.Content = content
+	payload.TimeRead = models.CalculateTimeRead(content)
 
 	// convert category hex to ObjectID
 	if category != "" {
@@ -290,7 +291,9 @@ func UpdateNews(c *gin.Context) {
 	}
 
 	if content, ok := newData["content"].(string); ok {
-		newData["content"] = strings.ReplaceAll(content, "&lt;", "<")
+		normalizedContent := strings.ReplaceAll(content, "&lt;", "<")
+		newData["content"] = normalizedContent
+		newData["time_read"] = models.CalculateTimeRead(normalizedContent)
 	}
 
 	if approved, ok := newData["approved"].(bool); ok && approved {
