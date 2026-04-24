@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -13,6 +14,8 @@ import (
 // AdminMiddleware requires JWTMiddleware to run first (so `userID` is set)
 func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		defer newrelicpkg.EndSegment(c, "auth.AdminMiddleware")()
+
 		v, ok := c.Get("userID")
 		if !ok {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
@@ -32,7 +35,7 @@ func AdminMiddleware() gin.HandlerFunc {
 		}
 
 		var u bson.M
-		if err := coll.FindOne(c.Request.Context(), bson.M{"_id": oid}).Decode(&u); err != nil {
+		if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&u); err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "user not found"})
 			return
 		}

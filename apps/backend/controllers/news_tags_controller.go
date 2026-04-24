@@ -11,9 +11,12 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 func GetAllTags(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetAllTags")()
+
 	coll := db.GetCollection("newstags")
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
@@ -47,6 +50,8 @@ func GetAllTags(c *gin.Context) {
 }
 
 func GetTagBySlug(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetTagBySlug")()
+
 	slug := c.Param("slug")
 
 	coll := db.GetCollection("newstags")
@@ -88,6 +93,8 @@ func GetTagBySlug(c *gin.Context) {
 }
 
 func CreateTag(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.CreateTag")()
+
 	var payload models.Tag
 	if err := c.ShouldBind(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -113,6 +120,8 @@ func CreateTag(c *gin.Context) {
 }
 
 func UpdateTag(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.UpdateTag")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -142,6 +151,8 @@ func UpdateTag(c *gin.Context) {
 }
 
 func DeleteTag(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.DeleteTag")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

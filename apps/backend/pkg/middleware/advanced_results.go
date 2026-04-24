@@ -10,12 +10,15 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 // AdvancedResults returns a middleware that performs filtering, sorting and pagination
 // for the given collection name and stores the results in the context under "advancedResults".
 func AdvancedResults(collection string) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		defer newrelicpkg.EndSegment(c, "middleware.AdvancedResults."+collection)()
+
 		coll := db.GetCollection(collection)
 		if coll == nil {
 			c.Next()

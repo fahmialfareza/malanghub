@@ -6,11 +6,14 @@ import (
 	"io"
 	"net/http"
 
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/gin-gonic/gin"
 )
 
 func CategoryCreateValidator() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		defer newrelicpkg.EndSegment(c, "validators.CategoryCreateValidator")()
+
 		b, err := c.GetRawData()
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid body"})

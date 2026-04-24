@@ -10,6 +10,8 @@ require (
 	github.com/gosimple/slug v1.15.0
 	github.com/joho/godotenv v1.5.1
 	github.com/newrelic/go-agent/v3 v3.42.0
+	github.com/newrelic/go-agent/v3/integrations/nrmongo v1.1.5
+	github.com/newrelic/go-agent/v3/integrations/nrredis-v9 v1.1.2
 	github.com/redis/go-redis/v9 v9.17.1
 	go.mongodb.org/mongo-driver v1.17.6
 	golang.org/x/crypto v0.45.0

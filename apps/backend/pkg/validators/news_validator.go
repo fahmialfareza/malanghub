@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -11,6 +12,8 @@ import (
 // NewsCreateValidator ensures required fields for creating news
 func NewsCreateValidator() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		defer newrelicpkg.EndSegment(c, "validators.NewsCreateValidator")()
+
 		// Parse form data with file
 		if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
@@ -70,6 +73,8 @@ func NewsCreateValidator() gin.HandlerFunc {
 // NewsUpdateValidator validates partial updates to a news item
 func NewsUpdateValidator() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		defer newrelicpkg.EndSegment(c, "validators.NewsUpdateValidator")()
+
 		// Parse form data with file
 		if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})

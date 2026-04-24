@@ -16,10 +16,13 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 // ListNews returns approved news with simple pagination
 func ListNews(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.ListNews")()
+
 	// if AdvancedResults middleware ran, return its result
 	if v, ok := c.Get("advancedResults"); ok {
 		c.JSON(http.StatusOK, v)
@@ -72,6 +75,8 @@ func ListNews(c *gin.Context) {
 
 // GetNewsBySlug returns a single approved news by slug, caching in Redis
 func GetNewsBySlug(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetNewsBySlug")()
+
 	slugParam := c.Param("slug")
 
 	coll := db.GetCollection("news")
@@ -152,6 +157,8 @@ func GetNewsBySlug(c *gin.Context) {
 
 // CreateNews creates a news entry; slug is generated if not provided
 func CreateNews(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.CreateNews")()
+
 	// Parse form data
 	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
@@ -240,6 +247,8 @@ func CreateNews(c *gin.Context) {
 
 // UpdateNews updates a news item if not already approved
 func UpdateNews(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.UpdateNews")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -309,6 +318,8 @@ func UpdateNews(c *gin.Context) {
 
 // DeleteNews marks news as deleted (soft delete)
 func DeleteNews(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.DeleteNews")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -338,6 +349,8 @@ func DeleteNews(c *gin.Context) {
 
 // MyNews returns news belonging to the authenticated user (uses AdvancedResults when present)
 func MyNews(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.MyNews")()
+
 	// If AdvancedResults middleware ran, return its result
 	if v, ok := c.Get("advancedResults"); ok {
 		c.JSON(http.StatusOK, v)

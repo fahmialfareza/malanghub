@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/auth"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 type signupPayload struct {
@@ -29,6 +31,8 @@ type signinPayload struct {
 }
 
 func Signup(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.Signup")()
+
 	var p signupPayload
 	// Accept JSON or form-urlencoded payloads
 	if err := c.ShouldBind(&p); err != nil {
@@ -71,7 +75,7 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.GenerateToken(u.ID.Hex())
+	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to generate token"})
 		return
@@ -81,6 +85,8 @@ func Signup(c *gin.Context) {
 }
 
 func Signin(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.Signin")()
+
 	var p signinPayload
 	// Accept JSON or form-urlencoded payloads
 	if err := c.ShouldBind(&p); err != nil {
@@ -105,7 +111,7 @@ func Signin(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.GenerateToken(u.ID.Hex())
+	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to generate token"})
 		return
@@ -116,6 +122,8 @@ func Signin(c *gin.Context) {
 
 // GoogleSignIn accepts { "access_token": "..." }
 func GoogleSignIn(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GoogleSignIn")()
+
 	var body struct {
 		AccessToken string `form:"access_token" json:"access_token"`
 	}
@@ -130,7 +138,24 @@ func GoogleSignIn(c *gin.Context) {
 	}
 
 	// fetch google userinfo
-	resp, err := http.Get("https://www.googleapis.com/oauth2/v3/userinfo?access_token=" + body.AccessToken)
+	userInfoURL, err := url.Parse("https://www.googleapis.com/oauth2/v3/userinfo")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to build google request"})
+		return
+	}
+	query := userInfoURL.Query()
+	query.Set("access_token", body.AccessToken)
+	userInfoURL.RawQuery = query.Encode()
+
+	req, err := http.NewRequestWithContext(c, http.MethodGet, userInfoURL.String(), nil)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to build google request"})
+		return
+	}
+	req = newrelicpkg.InstrumentRequest(c, req)
+
+	client := newrelicpkg.InstrumentedHTTPClient(&http.Client{Timeout: 10 * time.Second})
+	resp, err := client.Do(req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to call google"})
 		return
@@ -179,7 +204,7 @@ func GoogleSignIn(c *gin.Context) {
 		u = newU
 	}
 
-	token, err := auth.GenerateToken(u.ID.Hex())
+	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to generate token"})
 		return

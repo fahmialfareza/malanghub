@@ -8,11 +8,14 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func CreateUser(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.CreateUser")()
+
 	var payload models.User
 	if err := c.ShouldBind(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
@@ -38,6 +41,8 @@ func CreateUser(c *gin.Context) {
 }
 
 func ListUsers(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.ListUsers")()
+
 	coll := db.GetCollection("users")
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
@@ -65,6 +70,8 @@ func ListUsers(c *gin.Context) {
 }
 
 func GetProfile(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetProfile")()
+
 	// userID set by JWT middleware
 	v, ok := c.Get("userID")
 	if !ok {
@@ -98,6 +105,8 @@ func GetProfile(c *gin.Context) {
 
 // GetUser returns a user by id (public view)
 func GetUser(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetUser")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

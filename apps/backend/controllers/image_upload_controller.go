@@ -8,10 +8,13 @@ import (
 	"github.com/gin-gonic/gin"
 
 	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 // ImageUploadController - supports multipart file uploads and Cloudinary.
 func ImageUpload(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.ImageUpload")()
+
 	// If a multipart file is provided under the "file" field, attempt Cloudinary upload
 	fh, err := c.FormFile("file")
 	if err == nil && fh != nil {
@@ -27,7 +30,7 @@ func ImageUpload(c *gin.Context) {
 			return
 		}
 
-		cld, err := cloudinarypkg.Init()
+		cld, err := cloudinarypkg.InitWithContext(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

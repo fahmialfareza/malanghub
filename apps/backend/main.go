@@ -58,9 +58,9 @@ func main() {
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 
-	r.Use(cors.New(config))
-
 	r.Use(nrgin.Middleware(nrApp))
+	r.Use(newrelicpkg.GinTransactionContextMiddleware())
+	r.Use(cors.New(config))
 
 	routes.Register(r)
 

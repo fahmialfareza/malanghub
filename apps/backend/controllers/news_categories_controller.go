@@ -11,10 +11,13 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 // GetAllCategories returns categories populated with approved news (lightweight)
 func GetAllCategories(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetAllCategories")()
+
 	coll := db.GetCollection("newscategories")
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
@@ -50,6 +53,8 @@ func GetAllCategories(c *gin.Context) {
 
 // GetCategoryBySlug returns category and approved news under it
 func GetCategoryBySlug(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetCategoryBySlug")()
+
 	slug := c.Param("slug")
 
 	coll := db.GetCollection("newscategories")
@@ -92,6 +97,8 @@ func GetCategoryBySlug(c *gin.Context) {
 
 // CreateCategory creates a new category
 func CreateCategory(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.CreateCategory")()
+
 	var payload models.Category
 	if err := c.ShouldBind(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -118,6 +125,8 @@ func CreateCategory(c *gin.Context) {
 
 // UpdateCategory updates a category
 func UpdateCategory(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.UpdateCategory")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -148,6 +157,8 @@ func UpdateCategory(c *gin.Context) {
 
 // DeleteCategory soft-deletes a category
 func DeleteCategory(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.DeleteCategory")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

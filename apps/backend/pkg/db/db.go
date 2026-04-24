@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	nrmongo "github.com/newrelic/go-agent/v3/integrations/nrmongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -21,7 +22,9 @@ func Connect(ctx context.Context, uri string) error {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
-	c, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
+	c, err := mongo.Connect(ctx, options.Client().
+		ApplyURI(uri).
+		SetMonitor(nrmongo.NewCommandMonitor(nil)))
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package auth
 import (
 	"net/http"
 
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -10,6 +11,8 @@ import (
 
 func JWTMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		defer newrelicpkg.EndSegment(c, "auth.JWTMiddleware")()
+
 		header := c.GetHeader("Authorization")
 		if header == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "missing authorization header"})
@@ -25,7 +28,7 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		tok, err := ValidateTokenString(tokenStr)
+		tok, err := ValidateTokenStringWithContext(c, tokenStr)
 		if err != nil || !tok.Valid {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid token"})
 			return

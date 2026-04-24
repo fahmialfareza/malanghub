@@ -18,10 +18,13 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 // GetAllDrafts returns drafts (approved: false) with basic pagination and filters
 func GetAllDrafts(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetAllDrafts")()
+
 	// prefer using query-based advancedResults if set
 	if v, ok := c.Get("advancedResults"); ok {
 		c.JSON(http.StatusOK, v)
@@ -70,6 +73,8 @@ func GetAllDrafts(c *gin.Context) {
 
 // MyDrafts returns drafts created by the authenticated user
 func MyDrafts(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.MyDrafts")()
+
 	v, ok := c.Get("userID")
 	if !ok {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
@@ -111,6 +116,8 @@ func MyDrafts(c *gin.Context) {
 
 // GetDraftBySlug returns a single draft by slug (not approved)
 func GetDraftBySlug(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetDraftBySlug")()
+
 	slug := c.Param("slug")
 	coll := db.GetCollection("news")
 	if coll == nil {
@@ -187,6 +194,8 @@ func GetDraftBySlug(c *gin.Context) {
 
 // CreateDraft creates a draft news (approved:false)
 func CreateDraft(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.CreateDraft")()
+
 	// Parse form data
 	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
@@ -212,7 +221,7 @@ func CreateDraft(c *gin.Context) {
 	}
 	defer file.Close()
 
-	cld, err := cloudinarypkg.Init()
+	cld, err := cloudinarypkg.InitWithContext(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary init failed: " + err.Error()})
 		return
@@ -303,6 +312,8 @@ func CreateDraft(c *gin.Context) {
 
 // UpdateDraft updates a draft owned by user (or admin) and not approved
 func UpdateDraft(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.UpdateDraft")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -366,7 +377,7 @@ func UpdateDraft(c *gin.Context) {
 	file, fileHeader, err := c.Request.FormFile("mainImage")
 	if err == nil && fileHeader != nil {
 		defer file.Close()
-		cld, err := cloudinarypkg.Init()
+		cld, err := cloudinarypkg.InitWithContext(c)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "cloudinary init failed"})
 			return
@@ -415,6 +426,8 @@ func UpdateDraft(c *gin.Context) {
 
 // DeleteDraft soft-delete a draft
 func DeleteDraft(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.DeleteDraft")()
+
 	id := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {

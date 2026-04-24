@@ -11,10 +11,13 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 // GetCommentsByNews returns comments for a news item with populated users
 func GetCommentsByNews(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.GetCommentsByNews")()
+
 	newsID := c.Param("id")
 	oid, err := primitive.ObjectIDFromHex(newsID)
 	if err != nil {
@@ -80,6 +83,8 @@ func GetCommentsByNews(c *gin.Context) {
 
 // CreateComment creates a comment for a news item
 func CreateComment(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.CreateComment")()
+
 	newsID := c.Param("id")
 	nid, err := primitive.ObjectIDFromHex(newsID)
 	if err != nil {
@@ -128,6 +133,8 @@ func CreateComment(c *gin.Context) {
 
 // CreateCommentByComment adds a reply to a comment
 func CreateCommentByComment(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.CreateCommentByComment")()
+
 	commentID := c.Param("id")
 	cid, err := primitive.ObjectIDFromHex(commentID)
 	if err != nil {
