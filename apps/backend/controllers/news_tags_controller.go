@@ -10,12 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
+	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
 func GetAllTags(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetAllTags")()
+
+	const cacheKey = "tags:all"
+	if cached, err := cache.Get(c, cacheKey); err == nil {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", cached)
+		return
+	}
 
 	coll := db.GetCollection("newstags")
 	if coll == nil {
@@ -46,13 +53,21 @@ func GetAllTags(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": tags})
+	response := gin.H{"data": tags}
+	_ = cache.Set(c, cacheKey, response, 10*time.Minute)
+	c.JSON(http.StatusOK, response)
 }
 
 func GetTagBySlug(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetTagBySlug")()
 
 	slug := c.Param("slug")
+	cacheKey := "tag:slug:" + slug
+
+	if cached, err := cache.Get(c, cacheKey); err == nil {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", cached)
+		return
+	}
 
 	coll := db.GetCollection("newstags")
 	if coll == nil {
@@ -88,8 +103,9 @@ func GetTagBySlug(c *gin.Context) {
 		}
 	}
 
-	resp := bson.M{"tag": tag, "news": newsList}
-	c.JSON(http.StatusOK, gin.H{"data": resp})
+	response := gin.H{"data": bson.M{"tag": tag, "news": newsList}}
+	_ = cache.Set(c, cacheKey, response, 10*time.Minute)
+	c.JSON(http.StatusOK, response)
 }
 
 func CreateTag(c *gin.Context) {
@@ -116,6 +132,7 @@ func CreateTag(c *gin.Context) {
 		return
 	}
 
+	_ = cache.Delete(c, "tags:all")
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
 
@@ -147,6 +164,7 @@ func UpdateTag(c *gin.Context) {
 		return
 	}
 
+	_ = cache.Delete(c, "tags:all", "tag:slug:"+updated.Slug)
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
 
@@ -163,6 +181,12 @@ func DeleteTag(c *gin.Context) {
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db not initialized"})
 		return
+	}
+
+	// fetch slug before soft-delete to invalidate the per-slug cache key
+	var existing models.Tag
+	if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&existing); err == nil {
+		_ = cache.Delete(c, "tags:all", "tag:slug:"+existing.Slug)
 	}
 
 	res, err := coll.UpdateOne(c, bson.M{"_id": oid}, bson.M{"$set": bson.M{"deleted": true}})

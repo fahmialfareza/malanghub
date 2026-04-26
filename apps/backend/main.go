@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
+	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/fahmialfareza/malanghub/backend/pkg/routes"
@@ -43,6 +44,13 @@ func main() {
 	if err := db.EnsureIndexes(ctx, db.Client()); err != nil {
 		log.Printf("warning: could not ensure indexes: %v", err)
 	}
+
+	// initialize Redis if configured (non-fatal)
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL == "" {
+		redisURL = "redis://localhost:6379"
+	}
+	cache.Connect(redisURL)
 
 	// initialize New Relic if configured (non-fatal)
 	nrApp, err := newrelicpkg.Init()

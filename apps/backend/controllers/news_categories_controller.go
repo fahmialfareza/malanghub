@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
+	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
@@ -17,6 +18,12 @@ import (
 // GetAllCategories returns categories populated with approved news (lightweight)
 func GetAllCategories(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetAllCategories")()
+
+	const cacheKey = "categories:all"
+	if cached, err := cache.Get(c, cacheKey); err == nil {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", cached)
+		return
+	}
 
 	coll := db.GetCollection("newscategories")
 	if coll == nil {
@@ -47,8 +54,9 @@ func GetAllCategories(c *gin.Context) {
 		return
 	}
 
-	// Optionally populate news for each category (skip heavy population here)
-	c.JSON(http.StatusOK, gin.H{"data": cats})
+	response := gin.H{"data": cats}
+	_ = cache.Set(c, cacheKey, response, 10*time.Minute)
+	c.JSON(http.StatusOK, response)
 }
 
 // GetCategoryBySlug returns category and approved news under it
@@ -56,6 +64,12 @@ func GetCategoryBySlug(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetCategoryBySlug")()
 
 	slug := c.Param("slug")
+	cacheKey := "category:slug:" + slug
+
+	if cached, err := cache.Get(c, cacheKey); err == nil {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", cached)
+		return
+	}
 
 	coll := db.GetCollection("newscategories")
 	if coll == nil {
@@ -91,8 +105,9 @@ func GetCategoryBySlug(c *gin.Context) {
 		}
 	}
 
-	resp := bson.M{"category": cat, "news": newsList}
-	c.JSON(http.StatusOK, gin.H{"data": resp})
+	response := gin.H{"data": bson.M{"category": cat, "news": newsList}}
+	_ = cache.Set(c, cacheKey, response, 10*time.Minute)
+	c.JSON(http.StatusOK, response)
 }
 
 // CreateCategory creates a new category
@@ -120,6 +135,7 @@ func CreateCategory(c *gin.Context) {
 		return
 	}
 
+	_ = cache.Delete(c, "categories:all")
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
 
@@ -152,6 +168,7 @@ func UpdateCategory(c *gin.Context) {
 		return
 	}
 
+	_ = cache.Delete(c, "categories:all", "category:slug:"+updated.Slug)
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
 
@@ -169,6 +186,12 @@ func DeleteCategory(c *gin.Context) {
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
+	}
+
+	// fetch slug before soft-delete to invalidate the per-slug cache key
+	var existing models.Category
+	if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&existing); err == nil {
+		_ = cache.Delete(c, "categories:all", "category:slug:"+existing.Slug)
 	}
 
 	res, err := coll.UpdateOne(c, bson.M{"_id": oid}, bson.M{"$set": bson.M{"deleted": true}})

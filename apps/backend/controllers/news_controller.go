@@ -15,6 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
+	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
@@ -78,6 +79,12 @@ func GetNewsBySlug(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetNewsBySlug")()
 
 	slugParam := c.Param("slug")
+	cacheKey := "news:slug:" + slugParam
+
+	if cached, err := cache.Get(c, cacheKey); err == nil {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", cached)
+		return
+	}
 
 	coll := db.GetCollection("news")
 	if coll == nil {
@@ -152,7 +159,9 @@ func GetNewsBySlug(c *gin.Context) {
 		delete(userDoc, "password")
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": result})
+	response := gin.H{"data": result}
+	_ = cache.Set(c, cacheKey, response, 5*time.Minute)
+	c.JSON(http.StatusOK, response)
 }
 
 // CreateNews creates a news entry; slug is generated if not provided
@@ -243,6 +252,12 @@ func CreateNews(c *gin.Context) {
 		return
 	}
 
+	// an approved news immediately appears in category/tag news lists
+	if payload.Approved {
+		_ = cache.DeleteByPattern(c, "category:slug:*")
+		_ = cache.DeleteByPattern(c, "tag:slug:*")
+	}
+
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
 
@@ -315,6 +330,11 @@ func UpdateNews(c *gin.Context) {
 		return
 	}
 
+	_ = cache.Delete(c, "news:slug:"+updated.Slug)
+	// approval change makes the news appear/disappear in category & tag news lists
+	_ = cache.DeleteByPattern(c, "category:slug:*")
+	_ = cache.DeleteByPattern(c, "tag:slug:*")
+
 	// return updated with populated fields similar to GetNewsBySlug
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
@@ -334,6 +354,14 @@ func DeleteNews(c *gin.Context) {
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
+	}
+
+	// fetch doc before deleting to get the slug for cache invalidation
+	var existing models.News
+	if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&existing); err == nil {
+		_ = cache.Delete(c, "news:slug:"+existing.Slug)
+		_ = cache.DeleteByPattern(c, "category:slug:*")
+		_ = cache.DeleteByPattern(c, "tag:slug:*")
 	}
 
 	// perform hard delete to match original Node behavior
