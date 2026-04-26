@@ -41,6 +41,7 @@ func Client() *redis.Client { return client }
 
 // Get retrieves raw bytes stored at key. Returns redis.Nil when the key is absent.
 func Get(ctx context.Context, key string) ([]byte, error) {
+	defer newrelicpkg.EndSegment(ctx, "cache.Get")()
 	if client == nil {
 		return nil, redis.Nil
 	}
@@ -50,6 +51,7 @@ func Get(ctx context.Context, key string) ([]byte, error) {
 // Set JSON-encodes value and stores it at key with the given TTL.
 // A zero TTL means no expiry.
 func Set(ctx context.Context, key string, value interface{}, ttl time.Duration) error {
+	defer newrelicpkg.EndSegment(ctx, "cache.Set")()
 	if client == nil {
 		return nil
 	}
@@ -62,6 +64,7 @@ func Set(ctx context.Context, key string, value interface{}, ttl time.Duration) 
 
 // Delete removes one or more keys.
 func Delete(ctx context.Context, keys ...string) error {
+	defer newrelicpkg.EndSegment(ctx, "cache.Delete")()
 	if client == nil || len(keys) == 0 {
 		return nil
 	}
@@ -70,6 +73,7 @@ func Delete(ctx context.Context, keys ...string) error {
 
 // DeleteByPattern removes all keys matching a glob pattern using SCAN.
 func DeleteByPattern(ctx context.Context, pattern string) error {
+	defer newrelicpkg.EndSegment(ctx, "cache.DeleteByPattern")()
 	if client == nil {
 		return nil
 	}
