@@ -1,17 +1,51 @@
 package middleware
 
 import (
+	"crypto/md5"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
+	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
+
+// advancedResultsCacheKey produces a stable Redis key from the collection, query params,
+// and (for user-scoped routes like /myNews) the caller's user ID.
+func advancedResultsCacheKey(collection string, c *gin.Context) string {
+	params := c.Request.URL.Query()
+	keys := make([]string, 0, len(params))
+	for k := range params {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	var parts []string
+	for _, k := range keys {
+		parts = append(parts, k+"="+strings.Join(params[k], ","))
+	}
+
+	// For user-scoped routes, include the user ID so different users never share the same cache entry.
+	if strings.Contains(c.Request.URL.Path, "/myNews") || strings.Contains(c.Request.URL.Path, "/myDrafts") {
+		if v, ok := c.Get("userID"); ok {
+			if uid, ok := v.(string); ok && uid != "" {
+				parts = append(parts, "_uid="+uid)
+			}
+		}
+	}
+
+	h := md5.Sum([]byte(strings.Join(parts, "&")))
+	return collection + ":list:adv:" + fmt.Sprintf("%x", h)
+}
 
 // AdvancedResults returns a middleware that performs filtering, sorting and pagination
 // for the given collection name and stores the results in the context under "advancedResults".
@@ -143,9 +177,27 @@ func AdvancedResults(collection string) gin.HandlerFunc {
 			searchQuery = c.Query("search")
 		}
 		if searchQuery != "" {
-			filter["$or"] = bson.A{
-				bson.M{"title": bson.M{"$regex": searchQuery, "$options": "i"}},
-				bson.M{"content": bson.M{"$regex": searchQuery, "$options": "i"}},
+			// Preserve the existing $or (soft-delete check) inside an $and so it
+			// is not clobbered by the search $or — otherwise soft-deleted docs
+			// would appear in search results.
+			filter["$and"] = bson.A{
+				bson.M{"$or": filter["$or"]},
+				bson.M{"$or": bson.A{
+					bson.M{"title": bson.M{"$regex": searchQuery, "$options": "i"}},
+					bson.M{"content": bson.M{"$regex": searchQuery, "$options": "i"}},
+				}},
+			}
+			delete(filter, "$or")
+		}
+
+		// Return cached result when available (key covers collection + query params + user ID).
+		cKey := advancedResultsCacheKey(collection, c)
+		if cached, err := cache.Get(c, cKey); err == nil {
+			var result interface{}
+			if jsonErr := json.Unmarshal(cached, &result); jsonErr == nil {
+				c.Set("advancedResults", result)
+				c.Next()
+				return
 			}
 		}
 
@@ -174,7 +226,7 @@ func AdvancedResults(collection string) gin.HandlerFunc {
 		}})
 		pipeline = append(pipeline, bson.M{"$unwind": bson.M{"path": "$category", "preserveNullAndEmptyArrays": true}})
 
-		// user (single ref)
+		// user (single ref) — strip password so it is never sent to clients
 		pipeline = append(pipeline, bson.M{"$lookup": bson.M{
 			"from":         "users",
 			"localField":   "user",
@@ -182,6 +234,7 @@ func AdvancedResults(collection string) gin.HandlerFunc {
 			"as":           "user",
 		}})
 		pipeline = append(pipeline, bson.M{"$unwind": bson.M{"path": "$user", "preserveNullAndEmptyArrays": true}})
+		pipeline = append(pipeline, bson.M{"$project": bson.M{"user.password": 0}})
 
 		// tags (array of refs)
 		pipeline = append(pipeline, bson.M{"$lookup": bson.M{
@@ -215,7 +268,9 @@ func AdvancedResults(collection string) gin.HandlerFunc {
 		total, _ := coll.CountDocuments(c, filter)
 
 		meta := bson.M{"page": page, "limit": limit, "total": total}
-		c.Set("advancedResults", gin.H{"meta": meta, "data": results})
+		response := gin.H{"meta": meta, "data": results}
+		_ = cache.Set(c, cKey, response, 5*time.Minute)
+		c.Set("advancedResults", response)
 		c.Next()
 	}
 }

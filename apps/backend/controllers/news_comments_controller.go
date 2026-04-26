@@ -10,6 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
+	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
@@ -25,13 +26,67 @@ func GetCommentsByNews(c *gin.Context) {
 		return
 	}
 
+	cacheKey := "news:comments:" + newsID
+	if cached, err := cache.Get(c, cacheKey); err == nil {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", cached)
+		return
+	}
+
 	coll := db.GetCollection("newsComments")
 	if coll == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	cur, err := coll.Find(c, bson.M{"news": oid})
+	// Single aggregation replaces N+1 user lookups: populates both the
+	// comment author and every reply author in two $lookup stages instead of
+	// one FindOne per comment/reply.
+	pipeline := []bson.M{
+		{"$match": bson.M{"news": oid}},
+		// Populate comment author
+		{"$lookup": bson.M{
+			"from":         "users",
+			"localField":   "user",
+			"foreignField": "_id",
+			"as":           "user",
+		}},
+		{"$unwind": bson.M{"path": "$user", "preserveNullAndEmptyArrays": true}},
+		// Fetch all reply authors in one query, then merge back into the array
+		{"$lookup": bson.M{
+			"from": "users",
+			"let":  bson.M{"replyUserIds": "$commentReplies.user"},
+			"pipeline": bson.A{
+				bson.M{"$match": bson.M{"$expr": bson.M{"$in": bson.A{"$_id", "$$replyUserIds"}}}},
+				bson.M{"$project": bson.M{"password": 0, "role": 0}},
+			},
+			"as": "replyUserDocs",
+		}},
+		{"$addFields": bson.M{
+			"commentReplies": bson.M{"$map": bson.M{
+				"input": bson.M{"$ifNull": bson.A{"$commentReplies", bson.A{}}},
+				"as":    "reply",
+				"in": bson.M{"$mergeObjects": bson.A{
+					"$$reply",
+					bson.M{"user": bson.M{"$arrayElemAt": bson.A{
+						bson.M{"$filter": bson.M{
+							"input": "$replyUserDocs",
+							"as":    "u",
+							"cond":  bson.M{"$eq": bson.A{"$$u._id", "$$reply.user"}},
+						}},
+						0,
+					}}},
+				}},
+			}},
+		}},
+		// Remove temp lookup field and strip sensitive fields from comment author
+		{"$project": bson.M{
+			"replyUserDocs": 0,
+			"user.password": 0,
+			"user.role":     0,
+		}},
+	}
+
+	cur, err := coll.Aggregate(c, pipeline)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -39,46 +94,17 @@ func GetCommentsByNews(c *gin.Context) {
 	defer cur.Close(c)
 
 	var out []bson.M
-	userColl := db.GetCollection("users")
 	for cur.Next(c) {
-		var nc models.NewsComment
-		if err := cur.Decode(&nc); err != nil {
+		var item bson.M
+		if err := cur.Decode(&item); err != nil {
 			continue
-		}
-		// populate user
-		var u bson.M
-		if userColl != nil {
-			_ = userColl.FindOne(c, bson.M{"_id": nc.User}).Decode(&u)
-			// strip sensitive fields
-			delete(u, "password")
-			delete(u, "role")
-		}
-
-		// populate replies' users
-		var replies []bson.M
-		for _, r := range nc.CommentReplies {
-			var ru bson.M
-			if userColl != nil {
-				_ = userColl.FindOne(c, bson.M{"_id": r.User}).Decode(&ru)
-				delete(ru, "password")
-				delete(ru, "role")
-			}
-			replies = append(replies, bson.M{"user": ru, "comment": r.Comment, "created_at": r.CreatedAt})
-		}
-
-		item := bson.M{
-			"id":             nc.ID.Hex(),
-			"news":           nc.News.Hex(),
-			"user":           u,
-			"comment":        nc.Comment,
-			"commentReplies": replies,
-			"created_at":     nc.CreatedAt,
-			"updated_at":     nc.UpdatedAt,
 		}
 		out = append(out, item)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": out})
+	response := gin.H{"data": out}
+	_ = cache.Set(c, cacheKey, response, 2*time.Minute)
+	c.JSON(http.StatusOK, response)
 }
 
 // CreateComment creates a comment for a news item
@@ -128,6 +154,7 @@ func CreateComment(c *gin.Context) {
 		return
 	}
 
+	_ = cache.Delete(c, "news:comments:"+newsID)
 	c.JSON(http.StatusCreated, gin.H{"data": nc})
 }
 
@@ -195,6 +222,7 @@ func CreateCommentByComment(c *gin.Context) {
 		replies = append(replies, bson.M{"user": ru, "comment": r.Comment, "created_at": r.CreatedAt})
 	}
 
+	_ = cache.Delete(c, "news:comments:"+updated.News.Hex())
 	out := bson.M{"id": updated.ID.Hex(), "news": updated.News.Hex(), "user": u, "comment": updated.Comment, "commentReplies": replies}
 	c.JSON(http.StatusCreated, gin.H{"data": out})
 }

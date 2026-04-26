@@ -49,12 +49,18 @@ func ListNews(c *gin.Context) {
 	}
 	skip := (page - 1) * limit
 
+	cacheKey := fmt.Sprintf("news:list:page:%d:limit:%d", page, limit)
+	if cached, err := cache.Get(c, cacheKey); err == nil {
+		c.Data(http.StatusOK, "application/json; charset=utf-8", cached)
+		return
+	}
+
 	filter := bson.M{"approved": true, "$or": bson.A{
 		bson.M{"deleted": false},
 		bson.M{"deleted": bson.M{"$exists": false}},
 	}}
 
-	findOptions := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit))
+	findOptions := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "created_at", Value: -1}})
 	cur, err := coll.Find(c, filter, findOptions)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
@@ -71,6 +77,7 @@ func ListNews(c *gin.Context) {
 		results = append(results, n)
 	}
 
+	_ = cache.Set(c, cacheKey, results, 5*time.Minute)
 	c.JSON(http.StatusOK, results)
 }
 
@@ -252,10 +259,11 @@ func CreateNews(c *gin.Context) {
 		return
 	}
 
-	// an approved news immediately appears in category/tag news lists
+	// an approved news immediately appears in category/tag/list news caches
 	if payload.Approved {
 		_ = cache.DeleteByPattern(c, "category:slug:*")
 		_ = cache.DeleteByPattern(c, "tag:slug:*")
+		_ = cache.DeleteByPattern(c, "news:list:*")
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
@@ -331,9 +339,10 @@ func UpdateNews(c *gin.Context) {
 	}
 
 	_ = cache.Delete(c, "news:slug:"+updated.Slug)
-	// approval change makes the news appear/disappear in category & tag news lists
+	// approval change makes the news appear/disappear in category, tag & list caches
 	_ = cache.DeleteByPattern(c, "category:slug:*")
 	_ = cache.DeleteByPattern(c, "tag:slug:*")
+	_ = cache.DeleteByPattern(c, "news:list:*")
 
 	// return updated with populated fields similar to GetNewsBySlug
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
@@ -362,6 +371,7 @@ func DeleteNews(c *gin.Context) {
 		_ = cache.Delete(c, "news:slug:"+existing.Slug)
 		_ = cache.DeleteByPattern(c, "category:slug:*")
 		_ = cache.DeleteByPattern(c, "tag:slug:*")
+		_ = cache.DeleteByPattern(c, "news:list:*")
 	}
 
 	// perform hard delete to match original Node behavior

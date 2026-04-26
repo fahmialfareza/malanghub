@@ -40,6 +40,48 @@ func EnsureIndexes(ctx context.Context, client *mongo.Client) error {
 	if err != nil && !isIndexDupErr(err) {
 		return err
 	}
+	// News: composite index for list queries (approved + soft-delete + sort by created_at)
+	_, err = news.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "approved", Value: 1}, {Key: "deleted", Value: 1}, {Key: "created_at", Value: -1}},
+		Options: options.Index().SetBackground(true),
+	})
+	if err != nil && !isIndexDupErr(err) {
+		return err
+	}
+	// News: composite index for MyNews / author queries
+	_, err = news.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "user", Value: 1}, {Key: "approved", Value: 1}, {Key: "deleted", Value: 1}},
+		Options: options.Index().SetBackground(true),
+	})
+	if err != nil && !isIndexDupErr(err) {
+		return err
+	}
+	// News: composite index for category filter queries
+	_, err = news.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "category", Value: 1}, {Key: "approved", Value: 1}, {Key: "deleted", Value: 1}},
+		Options: options.Index().SetBackground(true),
+	})
+	if err != nil && !isIndexDupErr(err) {
+		return err
+	}
+	// News: composite index for tag $in queries
+	_, err = news.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "tags", Value: 1}, {Key: "approved", Value: 1}, {Key: "deleted", Value: 1}},
+		Options: options.Index().SetBackground(true),
+	})
+	if err != nil && !isIndexDupErr(err) {
+		return err
+	}
+
+	// NewsComments: index on news for GetCommentsByNews queries
+	comments := client.Database(databaseName).Collection("newsComments")
+	_, err = comments.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys:    bson.D{{Key: "news", Value: 1}},
+		Options: options.Index().SetBackground(true),
+	})
+	if err != nil && !isIndexDupErr(err) {
+		return err
+	}
 
 	// Categories: unique name, slug
 	cats := client.Database(databaseName).Collection("newscategories")
