@@ -164,7 +164,8 @@ func UpdateTag(c *gin.Context) {
 		return
 	}
 
-	_ = cache.Delete(c, "tags:all", "tag:slug:"+updated.Slug)
+	_ = cache.Delete(c, "tags:all")
+	_ = cache.DeleteByPattern(c, "tag:slug:*")
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
 

@@ -168,7 +168,8 @@ func UpdateCategory(c *gin.Context) {
 		return
 	}
 
-	_ = cache.Delete(c, "categories:all", "category:slug:"+updated.Slug)
+	_ = cache.Delete(c, "categories:all")
+	_ = cache.DeleteByPattern(c, "category:slug:*")
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
 
