@@ -4,97 +4,43 @@
 
 This file tells GitHub Copilot how to behave when working inside this repository. Use it to produce code, tests, documentation, and CI changes that match the project's architecture, languages, and conventions.
 
-Shared repository facts that should stay aligned across Copilot, Codex, and Claude Code now live in `AGENT_CONTEXT.md`. Keep that file in sync when updating assistant guidance.
+Shared repository facts that should stay aligned across Copilot, Codex, and Claude Code now live in `AGENT_CONTEXT.md`. Keep that file in sync when updating assistant guidance, and keep this file focused on Copilot-specific workflow details.
 
-## Project summary
+## Read Order
 
-- Monorepo for `Malanghub` (frontend + backend services).
-- Key apps:
-  - `apps/backend`
-    The backend Go server with Gin Gonic framework.
-  - `apps/frontend`
-    Malanghub frontend Next.js app. Uses pnpm and has a `package.json` with scripts and dependencies.
-  - (deprecated) `apps/server`
-    An older Node.js Express server that is being phased out. Avoid adding new code here.
+1. Read `AGENT_CONTEXT.md` first for repository-wide rules.
+2. Load the relevant file-level instructions under `.github/instructions/` for the paths you touch.
+3. Use the reusable prompts under `.github/prompts/` and the task specs under `.github/tasks/` when the work benefits from a checklist-driven workflow.
 
-## Primary goals for Copilot
+## Copilot Workflow
 
-- Respect the language and framework used by each package (Go for backend, TypeScript/Next.js for frontend).
 - Prefer minimal, focused changes to existing files rather than large rewrites.
-- Follow existing project patterns and directory conventions.
-- Never introduce secrets, API keys, or credentials. If a change requires secrets, add a note listing required env vars instead of embedding them.
+- Follow existing local patterns before introducing new abstractions.
+- Mention affected apps and validation in your final summary.
+- If the work is feature, fix, or chore driven, create or update the matching task spec under `.github/tasks/` and keep its checklist current.
+- Follow Conventional Commits guidance from `.github/skills/commit-standards.skill.md` when preparing commit messages.
 
-## Code style & quality
+## Copilot Hooks
 
-For detailed code standards, see `.github/skills/code-standards.skill.md`.
-
-**Quick Reference:**
-
-- For Go: follow `gofmt` formatting, idiomatic Go error handling, context-aware functions, and package visibility rules. Use existing packages under `pkg/` instead of creating duplicates.
-- For TypeScript/Next.js: follow existing tsconfig, lint rules, and component patterns. Use `pnpm` and existing scripts in `package.json` for adding dependencies.
-- Tests: don't add unit tests since we don't have a test framework set up.
-
-**Git Hooks:**
-
-- Pre-commit: runs lint-staged (auto-formats Go, TypeScript, and other files)
-- Commit-msg: validates commit message format using commitlint
-
-**Copilot Hooks:**
-
-- Post-edit formatting: automatically formats files after Copilot edits them
+- Post-edit formatting: automatically formats files after Copilot edits them.
   - Go files in `apps/backend`: formatted with `gofmt`
   - TypeScript/JavaScript files in `apps/frontend`: formatted with `prettier`
-- See `.github/hooks/README.md` for details
+- See `.github/hooks/README.md` for details.
 
-## When editing files
+## Reusable Prompts
 
-- Add new helper functions or modules in the correct package folder.
-- Update import paths to match the monorepo config; prefer local `package/` modules where already present.
-- Keep changes well-scoped and add comments explaining non-obvious logic.
+- `.github/prompts/create-task-spec.prompt.md`: create or update a task specification.
+- `.github/prompts/work-from-task-spec.prompt.md`: execute work from a task specification.
+- `.github/prompts/bootstrap-feature.prompt.md`: bootstrap a feature workflow from scoping through the first implementation slice.
+- `.github/prompts/triage-fix.prompt.md`: triage and repair a bug with a local hypothesis and focused validation.
+- `.github/prompts/review-changes.prompt.md`: review a change with a findings-first mindset.
+- `.github/prompts/refactor-scope.prompt.md`: refactor a scoped area with minimal behavioral change.
 
-## Commit & CI guidance
+## Maintenance Notes
 
-- Follow Conventional Commits specification (see `.github/skills/commit-standards.skill.md`).
-- Format: `type(scope): subject` - e.g., `feat(mobile): add spending threshold`, `fix(backend): correct timezone handling`.
-- Common types: feat, fix, chore, docs, refactor, style, perf, test, build, ci, revert.
-- If a change affects CI, tests, or build scripts, include the necessary updates to `package.json` and explain required CI steps.
-
-## Security & secrets
-
-- When suggesting code that could leak data (logging, error messages), use sanitized logging and avoid printing sensitive fields.
-
-## Helpful run/test commands
-
-**From root directory:**
-
-- Backend: `pnpm run dev:backend`
-- Frontend: `pnpm run dev:frontend`
-- Server (deprecated): `pnpm run dev:server`
-- Format all: `pnpm run format:all` (TypeScript + Go)
-
-**Backend (Go):** Use VS Code debugger if configured.
-
-## Examples of good prompts for Copilot in this repo
-
-- "Add a API in `apps/backend` that uses the internal `pkg` layer to get data from database; include error handling."
-- "Refactor Next.js component A to extract a reusable store under `frontend/redux` and update callers. Keep UI behavior unchanged and add a small test."
-
-## Do not
-
-- Do not add heavy new third-party services without noting tradeoffs and adding them to top-level `package.json` or `go.mod` appropriately.
-
-## If unsure
-
-- When a design decision is ambiguous, prefer small incremental changes and include a comment describing assumptions. Create a short PR description listing alternatives.
-
-## Contact points (for humans)
-
-- Mention in PR description the affected app (e.g., `apps/backend`, `apps/server`, `apps/frontend`) and list manual verification steps.
-
-## Maintenance notes for Copilot
-
-- When generating code, include tests and basic documentation for any new public API.
-- Keep changes consistent with monorepo tooling (pnpm, pipenv, go modules).
+- Update `AGENT_CONTEXT.md` first when shared repository rules change.
+- Keep `AGENTS.md`, `CLAUDE.md`, and this file aligned by referencing the same shared guidance instead of copying large sections.
+- Keep this file limited to Copilot-specific workflow details, hooks, and prompt entrypoints.
 
 — End of instructions —
 
