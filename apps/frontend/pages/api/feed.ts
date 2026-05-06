@@ -27,11 +27,20 @@ function buildRss(items: any[]): string {
       const category = item.category?.name
         ? `<category>${escapeXml(item.category.name)}</category>`
         : "";
+      const tagCategories = Array.isArray(item.tags)
+        ? item.tags
+            .filter((t: any) => t?.name)
+            .map((t: any) => `<category>${escapeXml(t.name)}</category>`)
+            .join("\n      ")
+        : "";
       const image = item.mainImage
         ? `<enclosure url="${item.mainImage}" length="0" type="image/jpeg" />`
         : "";
       const author = item.user?.name
         ? `<author>${escapeXml(item.user.name)}</author>`
+        : "";
+      const fullContent = item.content
+        ? `<content:encoded><![CDATA[${item.content}]]></content:encoded>`
         : "";
 
       return `    <item>
@@ -41,8 +50,10 @@ function buildRss(items: any[]): string {
       <description>${description}</description>
       <pubDate>${itemPubDate}</pubDate>
       ${category}
+      ${tagCategories}
       ${author}
       ${image}
+      ${fullContent}
     </item>`;
     })
     .join("\n");

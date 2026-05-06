@@ -72,6 +72,12 @@ class MyDocument extends Document {
             title="Malanghub RSS Feed"
             href="https://www.malanghub.com/feed.xml"
           />
+          <link
+            rel="search"
+            type="application/opensearchdescription+xml"
+            title="Malanghub"
+            href="https://www.malanghub.com/opensearch.xml"
+          />
           <link rel="icon" href="/favicon.ico" />
           <link
             href="/favicon-16.png"

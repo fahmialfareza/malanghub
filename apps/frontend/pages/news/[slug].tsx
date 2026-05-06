@@ -120,6 +120,21 @@ const SingleNews = ({
           content={excerpt(currentNews?.content || "", 155)}
         />
         <meta property="twitter:image" content={currentNews?.mainImage} />
+        {currentNews?.user?.name && (
+          <meta name="twitter:label1" content="Penulis" />
+        )}
+        {currentNews?.user?.name && (
+          <meta name="twitter:data1" content={currentNews.user.name} />
+        )}
+        {currentNews?.time_read && (
+          <meta name="twitter:label2" content="Waktu Baca" />
+        )}
+        {currentNews?.time_read && (
+          <meta
+            name="twitter:data2"
+            content={`${Math.ceil(currentNews.time_read / 10)} menit`}
+          />
+        )}
 
         <script
           type="application/ld+json"
@@ -165,6 +180,13 @@ const SingleNews = ({
                     .filter(Boolean)
                     .join(", ")
                 : undefined,
+              articleBody: currentNews?.content
+                ? currentNews.content.replace(/<(.|\n)*?>/g, "").trim()
+                : undefined,
+              speakable: {
+                "@type": "SpeakableSpecification",
+                cssSelector: [".blog-desc-big", ".single-post-content p"],
+              },
               inLanguage: "id-ID",
             }),
           }}

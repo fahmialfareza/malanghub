@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>Malanghub</ShortName>
+  <Description>Cari berita seputar Malang Raya di Malanghub</Description>
+  <Tags>berita malang malang raya kota malang</Tags>
+  <Contact>https://www.malanghub.com/contact</Contact>
+  <Url type="text/html" template="https://www.malanghub.com/search/{searchTerms}"/>
+  <Image height="16" width="16" type="image/x-icon">https://www.malanghub.com/favicon.ico</Image>
+  <Image height="64" width="64" type="image/png">https://www.malanghub.com/favicon-48.png</Image>
+  <Language>id-id</Language>
+  <OutputEncoding>UTF-8</OutputEncoding>
+  <InputEncoding>UTF-8</InputEncoding>
+</OpenSearchDescription>
