@@ -70,6 +70,8 @@ const NewsTag = ({
           property="og:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="628" />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta
@@ -92,6 +94,36 @@ const NewsTag = ({
         <link
           rel="canonical"
           href={`https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Beranda",
+                  item: "https://www.malanghub.com/",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Tag Berita",
+                  item: "https://www.malanghub.com/news",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: oneNewsTag?.tag.name,
+                  item: `https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`,
+                },
+              ],
+            }),
+          }}
         />
       </Head>
 

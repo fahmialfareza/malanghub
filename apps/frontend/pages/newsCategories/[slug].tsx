@@ -72,6 +72,8 @@ const NewsCategory = ({
           property="og:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="628" />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta
@@ -106,6 +108,36 @@ const NewsCategory = ({
               description: `Berita kategori ${oneNewsCategory?.category?.name} dari Malanghub.`,
               url: `https://www.malanghub.com/newsCategories/${oneNewsCategory?.category?.slug}`,
               inLanguage: "id-ID",
+            }),
+          }}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Beranda",
+                  item: "https://www.malanghub.com/",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Kategori Berita",
+                  item: "https://www.malanghub.com/news",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: oneNewsCategory?.category?.name,
+                  item: `https://www.malanghub.com/newsCategories/${oneNewsCategory?.category?.slug}`,
+                },
+              ],
             }),
           }}
         />

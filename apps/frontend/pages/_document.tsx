@@ -21,6 +21,9 @@ class MyDocument extends Document {
           <meta name="keywords" content="Malanghub, berita Malang, berita Kota Malang, berita Kabupaten Malang, berita Batu, Malang Raya, informasi Malang" />
           <meta property="og:site_name" content="Malanghub" />
           <meta property="og:locale" content="id_ID" />
+          {process.env.NEXT_PUBLIC_INDEXNOW_KEY && (
+            <meta name="indexnow-verification" content={process.env.NEXT_PUBLIC_INDEXNOW_KEY} />
+          )}
           <meta name="theme-color" content="#000000" />
           <meta name="theme-color" content="#0085ad" />
           <meta name="mobile-web-app-capable" content="yes" />
@@ -44,6 +47,12 @@ class MyDocument extends Document {
           <meta name="layoutmode" content="fitscreen/standard" />
           <meta name="imagemode" content="force" />
           <meta name="screen-orientation" content="portrait" />
+          <link
+            rel="alternate"
+            type="application/rss+xml"
+            title="Malanghub RSS Feed"
+            href="https://www.malanghub.com/feed.xml"
+          />
           <link rel="icon" href="/favicon.ico" />
           <link
             href="/favicon-16.png"

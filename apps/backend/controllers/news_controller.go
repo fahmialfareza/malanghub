@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -19,6 +21,39 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
+
+// submitIndexNow notifies Bing/Yandex via IndexNow when a news article is published.
+// Runs in a goroutine — fire and forget, never blocks the request.
+func submitIndexNow(newsSlug string) {
+	key := os.Getenv("INDEXNOW_KEY")
+	siteURL := os.Getenv("SITE_URL")
+	if key == "" || siteURL == "" {
+		return
+	}
+
+	articleURL := siteURL + "/news/" + newsSlug
+	payload := map[string]interface{}{
+		"host":        "www.malanghub.com",
+		"key":         key,
+		"keyLocation": siteURL + "/" + key + ".txt",
+		"urlList":     []string{articleURL},
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return
+	}
+
+	resp, err := http.Post(
+		"https://api.indexnow.org/indexnow",
+		"application/json",
+		bytes.NewReader(body),
+	)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+}
 
 // ListNews returns approved news with simple pagination
 func ListNews(c *gin.Context) {
@@ -264,6 +299,7 @@ func CreateNews(c *gin.Context) {
 		_ = cache.DeleteByPattern(c, "category:slug:*")
 		_ = cache.DeleteByPattern(c, "tag:slug:*")
 		_ = cache.DeleteByPattern(c, "news:list:*")
+		go submitIndexNow(payload.Slug)
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
@@ -343,6 +379,9 @@ func UpdateNews(c *gin.Context) {
 	_ = cache.DeleteByPattern(c, "category:slug:*")
 	_ = cache.DeleteByPattern(c, "tag:slug:*")
 	_ = cache.DeleteByPattern(c, "news:list:*")
+	if approved, ok := newData["approved"].(bool); ok && approved {
+		go submitIndexNow(updated.Slug)
+	}
 
 	// return updated with populated fields similar to GetNewsBySlug
 	c.JSON(http.StatusCreated, gin.H{"data": updated})

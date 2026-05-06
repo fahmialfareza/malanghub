@@ -107,6 +107,39 @@ const GetUserProfile = ({
           rel="canonical"
           href={`https://www.malanghub.com/users/${userProfile?._id}`}
         />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Person",
+              name: userProfile?.name,
+              url: `https://www.malanghub.com/users/${userProfile?._id}`,
+              image: userProfile?.photo,
+              description: userProfile?.bio
+                ? userProfile.bio.replace(/<(.|\n)*?>/g, "").trim()
+                : undefined,
+              sameAs: [
+                userProfile?.instagram
+                  ? `https://www.instagram.com/${userProfile.instagram}`
+                  : null,
+                userProfile?.facebook
+                  ? `https://www.facebook.com/${userProfile.facebook}`
+                  : null,
+                userProfile?.twitter
+                  ? `https://www.twitter.com/${userProfile.twitter}`
+                  : null,
+                userProfile?.tiktok
+                  ? `https://www.tiktok.com/@${userProfile.tiktok}`
+                  : null,
+                userProfile?.linkedin
+                  ? `https://www.linkedin.com/in/${userProfile.linkedin}`
+                  : null,
+              ].filter(Boolean),
+            }),
+          }}
+        />
       </Head>
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">

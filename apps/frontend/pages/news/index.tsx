@@ -52,6 +52,8 @@ const News = ({
           property="og:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="628" />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content="https://www.malanghub.com/news" />

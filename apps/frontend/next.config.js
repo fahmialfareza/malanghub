@@ -13,6 +13,18 @@ const baseConfig = withImages({
         source: "/sitemap.xml",
         destination: "/api/sitemap",
       },
+      {
+        source: "/news-sitemap.xml",
+        destination: "/api/news-sitemap",
+      },
+      {
+        source: "/feed.xml",
+        destination: "/api/feed",
+      },
+      {
+        source: "/:key([0-9a-f]{32,}).txt",
+        destination: "/api/indexnow-key",
+      },
     ];
   },
   images: {

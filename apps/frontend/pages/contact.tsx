@@ -34,6 +34,8 @@ function Contact({ setActiveLink }: ContactProps) {
           property="og:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="628" />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta
@@ -51,6 +53,25 @@ function Contact({ setActiveLink }: ContactProps) {
         />
 
         <link rel="canonical" href="https://www.malanghub.com/contact" />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ContactPage",
+              name: "Kontak - Malanghub",
+              description:
+                "Hubungi tim Malanghub untuk pertanyaan, saran, atau kerjasama.",
+              url: "https://www.malanghub.com/contact",
+              inLanguage: "id-ID",
+              isPartOf: {
+                "@type": "WebSite",
+                "@id": "https://www.malanghub.com/#website",
+              },
+            }),
+          }}
+        />
       </Head>
 
       <nav id="breadcrumbs" className="breadcrumbs">

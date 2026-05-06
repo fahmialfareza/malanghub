@@ -5,3 +5,4 @@ Disallow: /signin
 Disallow: /signup
 
 Sitemap: https://www.malanghub.com/sitemap.xml
+Sitemap: https://www.malanghub.com/news-sitemap.xml

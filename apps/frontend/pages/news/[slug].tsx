@@ -169,6 +169,36 @@ const SingleNews = ({
             }),
           }}
         />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Beranda",
+                  item: "https://www.malanghub.com/",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Berita",
+                  item: "https://www.malanghub.com/news",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: currentNews?.title,
+                  item: `https://www.malanghub.com/news/${currentNews?.slug}`,
+                },
+              ],
+            }),
+          }}
+        />
       </Head>
 
       <nav id="breadcrumbs" className="breadcrumbs">
