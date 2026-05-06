@@ -28,7 +28,7 @@ function buildRss(items: any[]): string {
         ? `<category>${escapeXml(item.category.name)}</category>`
         : "";
       const image = item.mainImage
-        ? `<enclosure url="${item.mainImage}" type="image/jpeg" />`
+        ? `<enclosure url="${item.mainImage}" length="0" type="image/jpeg" />`
         : "";
       const author = item.user?.name
         ? `<author>${escapeXml(item.user.name)}</author>`
