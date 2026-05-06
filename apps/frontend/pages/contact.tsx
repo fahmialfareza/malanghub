@@ -49,6 +49,8 @@ function Contact({ setActiveLink }: ContactProps) {
           property="twitter:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+
+        <link rel="canonical" href="https://www.malanghub.com/contact" />
       </Head>
 
       <nav id="breadcrumbs" className="breadcrumbs">

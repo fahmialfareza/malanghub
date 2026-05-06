@@ -88,6 +88,11 @@ const NewsTag = ({
           property="twitter:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+
+        <link
+          rel="canonical"
+          href={`https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`}
+        />
       </Head>
 
       <nav id="breadcrumbs" className="breadcrumbs">

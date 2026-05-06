@@ -88,6 +88,7 @@ const SignIn = ({
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex,nofollow" />
         <title>Malanghub - Masuk</title>
         <meta name="title" content="Malanghub - Masuk" />
         <meta

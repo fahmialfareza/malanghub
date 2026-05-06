@@ -95,6 +95,7 @@ const SignUp = ({
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex,nofollow" />
         <title>Malanghub - Daftar</title>
         <meta name="title" content="Malanghub - Daftar" />
         <meta

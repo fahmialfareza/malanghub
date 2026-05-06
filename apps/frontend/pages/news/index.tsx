@@ -64,6 +64,27 @@ const News = ({
           property="twitter:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+
+        <link rel="canonical" href="https://www.malanghub.com/news" />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "CollectionPage",
+              name: "Semua Berita - Malanghub",
+              description:
+                "Kumpulan seluruh berita terbaru seputar Malang Raya dari Malanghub.",
+              url: "https://www.malanghub.com/news",
+              inLanguage: "id-ID",
+              isPartOf: {
+                "@type": "WebSite",
+                "@id": "https://www.malanghub.com/#website",
+              },
+            }),
+          }}
+        />
       </Head>
 
       <nav id="breadcrumbs" className="breadcrumbs">

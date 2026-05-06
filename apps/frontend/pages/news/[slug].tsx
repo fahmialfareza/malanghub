@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import Head from "next/head";
+import { excerpt } from "../../utils/seo";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -55,12 +56,15 @@ const SingleNews = ({
         />
         <meta
           name="description"
-          content={currentNews?.content
-            ?.replace(/<(.|\n)*?>/g, "")
-            .slice(0, 255)}
+          content={excerpt(currentNews?.content || "", 155)}
         />
 
-        <meta property="og:type" content="website" />
+        <link
+          rel="canonical"
+          href={`https://www.malanghub.com/news/${currentNews?.slug}`}
+        />
+
+        <meta property="og:type" content="article" />
         <meta
           property="og:url"
           content={`https://www.malanghub.com/news/${currentNews?.slug}`}
@@ -71,11 +75,37 @@ const SingleNews = ({
         />
         <meta
           property="og:description"
-          content={currentNews?.content
-            ?.replace(/<(.|\n)*?>/g, "")
-            .slice(0, 255)}
+          content={excerpt(currentNews?.content || "", 155)}
         />
         <meta property="og:image" content={currentNews?.mainImage} />
+        {currentNews?.created_at && (
+          <meta
+            property="article:published_time"
+            content={new Date(currentNews.created_at).toISOString()}
+          />
+        )}
+        {currentNews?.updated_at && (
+          <meta
+            property="article:modified_time"
+            content={new Date(currentNews.updated_at).toISOString()}
+          />
+        )}
+        {currentNews?.user?.name && (
+          <meta property="article:author" content={currentNews.user.name} />
+        )}
+        {currentNews?.category?.name && (
+          <meta
+            property="article:section"
+            content={currentNews.category.name}
+          />
+        )}
+        {Array.isArray(currentNews?.tags) &&
+          currentNews.tags.map((tag: any) =>
+            tag?.name ? (
+              <meta key={tag._id || tag.name} property="article:tag" content={tag.name} />
+            ) : null
+          )}
+
         <meta property="twitter:card" content="summary_large_image" />
         <meta
           property="twitter:url"
@@ -87,11 +117,58 @@ const SingleNews = ({
         />
         <meta
           property="twitter:description"
-          content={currentNews?.content
-            ?.replace(/<(.|\n)*?>/g, "")
-            .slice(0, 255)}
+          content={excerpt(currentNews?.content || "", 155)}
         />
         <meta property="twitter:image" content={currentNews?.mainImage} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "NewsArticle",
+              headline: currentNews?.title,
+              description: excerpt(currentNews?.content || "", 155),
+              image: currentNews?.mainImage ? [currentNews.mainImage] : undefined,
+              datePublished: currentNews?.created_at
+                ? new Date(currentNews.created_at).toISOString()
+                : undefined,
+              dateModified: currentNews?.updated_at
+                ? new Date(currentNews.updated_at).toISOString()
+                : currentNews?.created_at
+                ? new Date(currentNews.created_at).toISOString()
+                : undefined,
+              author: currentNews?.user
+                ? {
+                    "@type": "Person",
+                    name: currentNews.user.name,
+                    url: `https://www.malanghub.com/users/${currentNews.user._id}`,
+                  }
+                : undefined,
+              publisher: {
+                "@type": "Organization",
+                name: "Malanghub",
+                logo: {
+                  "@type": "ImageObject",
+                  url: "https://www.malanghub.com/logo512.png",
+                },
+              },
+              url: `https://www.malanghub.com/news/${currentNews?.slug}`,
+              mainEntityOfPage: {
+                "@type": "WebPage",
+                "@id": `https://www.malanghub.com/news/${currentNews?.slug}`,
+              },
+              articleSection: currentNews?.category?.name,
+              keywords: Array.isArray(currentNews?.tags)
+                ? currentNews.tags
+                    .map((tag: any) => tag?.name)
+                    .filter(Boolean)
+                    .join(", ")
+                : undefined,
+              inLanguage: "id-ID",
+            }),
+          }}
+        />
       </Head>
 
       <nav id="breadcrumbs" className="breadcrumbs">

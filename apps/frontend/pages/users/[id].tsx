@@ -102,6 +102,11 @@ const GetUserProfile = ({
           content={userProfile?.bio?.replace(/<(.|\n)*?>/g, "").slice(0, 255)}
         />
         <meta property="twitter:image" content={userProfile?.photo} />
+
+        <link
+          rel="canonical"
+          href={`https://www.malanghub.com/users/${userProfile?._id}`}
+        />
       </Head>
       <nav id="breadcrumbs" className="breadcrumbs">
         <div className="container page-wrapper">

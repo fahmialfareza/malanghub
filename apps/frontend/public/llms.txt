@@ -1,0 +1,40 @@
+# Malanghub
+
+> Malanghub adalah portal berita dan informasi terkini seputar Malang Raya, mencakup Kota Malang, Kabupaten Malang, dan Kota Batu, Jawa Timur, Indonesia.
+
+Malanghub menyediakan berita lokal, informasi komunitas, dan liputan peristiwa di kawasan Malang Raya. Seluruh konten ditulis dalam Bahasa Indonesia.
+
+## Halaman Utama
+
+- [Beranda](https://www.malanghub.com/): Berita terbaru dan berita trending dari seluruh Malang Raya
+- [Semua Berita](https://www.malanghub.com/news): Arsip seluruh berita yang telah diterbitkan
+- [Kontak](https://www.malanghub.com/contact): Informasi kontak dan alamat redaksi
+
+## Artikel Berita
+
+Setiap artikel berita dapat diakses di:
+`https://www.malanghub.com/news/{slug-berita}`
+
+Artikel berisi: judul, penulis, kategori, tag, tanggal publikasi, dan konten lengkap.
+
+## Kategori Berita
+
+Berita dikelompokkan ke dalam beberapa kategori. Setiap kategori memiliki halaman tersendiri di:
+`https://www.malanghub.com/newsCategories/{slug-kategori}`
+
+## Tag Berita
+
+Berita juga ditandai dengan tag untuk memudahkan navigasi. Setiap tag dapat diakses di:
+`https://www.malanghub.com/newsTags/{slug-tag}`
+
+## Sitemap
+
+Daftar lengkap semua URL yang dapat diindeks tersedia di:
+`https://www.malanghub.com/sitemap.xml`
+
+## Informasi Teknis
+
+- Bahasa konten: Bahasa Indonesia (id-ID)
+- Wilayah liputan: Malang Raya (Kota Malang, Kabupaten Malang, Kota Batu)
+- Provinsi: Jawa Timur, Indonesia
+- Frekuensi pembaruan: Harian

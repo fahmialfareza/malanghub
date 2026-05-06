@@ -18,7 +18,9 @@ class MyDocument extends Document {
         <Head>
           <meta charSet="utf-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-          <meta name="keywords" content="Malanghub" />
+          <meta name="keywords" content="Malanghub, berita Malang, berita Kota Malang, berita Kabupaten Malang, berita Batu, Malang Raya, informasi Malang" />
+          <meta property="og:site_name" content="Malanghub" />
+          <meta property="og:locale" content="id_ID" />
           <meta name="theme-color" content="#000000" />
           <meta name="theme-color" content="#0085ad" />
           <meta name="mobile-web-app-capable" content="yes" />

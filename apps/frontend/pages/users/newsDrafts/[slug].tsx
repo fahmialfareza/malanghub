@@ -59,6 +59,7 @@ const NewsDraft = ({
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex,nofollow" />
         <title>
           Malanghub - Antrian Berita -{" "}
           {currentNewsDraft && currentNewsDraft.title}

@@ -52,6 +52,7 @@ const SearchNews = ({
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex,follow" />
         <title>Malanghub - Cari Berita - {router?.query?.search}</title>
         <meta
           name="title"

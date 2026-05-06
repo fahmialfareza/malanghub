@@ -7,6 +7,14 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 const { withSentryConfig } = require("@sentry/nextjs");
 
 const baseConfig = withImages({
+  async rewrites() {
+    return [
+      {
+        source: "/sitemap.xml",
+        destination: "/api/sitemap",
+      },
+    ];
+  },
   images: {
     disableStaticImages: true,
     remotePatterns: [

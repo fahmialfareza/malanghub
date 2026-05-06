@@ -61,6 +61,54 @@ const Home = ({
           property="twitter:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+
+        <link rel="canonical" href="https://www.malanghub.com/" />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@graph": [
+                {
+                  "@type": "WebSite",
+                  "@id": "https://www.malanghub.com/#website",
+                  url: "https://www.malanghub.com/",
+                  name: "Malanghub",
+                  description:
+                    "Situs berita dan informasi terkini seputar Malang Raya",
+                  inLanguage: "id-ID",
+                  potentialAction: {
+                    "@type": "SearchAction",
+                    target: {
+                      "@type": "EntryPoint",
+                      urlTemplate:
+                        "https://www.malanghub.com/search/{search_term_string}",
+                    },
+                    "query-input": "required name=search_term_string",
+                  },
+                },
+                {
+                  "@type": "Organization",
+                  "@id": "https://www.malanghub.com/#organization",
+                  name: "Malanghub",
+                  url: "https://www.malanghub.com/",
+                  logo: {
+                    "@type": "ImageObject",
+                    url: "https://www.malanghub.com/logo512.png",
+                    width: 512,
+                    height: 512,
+                  },
+                  contactPoint: {
+                    "@type": "ContactPoint",
+                    contactType: "customer support",
+                    availableLanguage: "Indonesian",
+                  },
+                },
+              ],
+            }),
+          }}
+        />
       </Head>
 
       <div className="w3l-homeblock1 py-5">

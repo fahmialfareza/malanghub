@@ -90,6 +90,25 @@ const NewsCategory = ({
           property="twitter:image"
           content="https://www.malanghub.com/malanghub-meta.png"
         />
+
+        <link
+          rel="canonical"
+          href={`https://www.malanghub.com/newsCategories/${oneNewsCategory?.category?.slug}`}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "CollectionPage",
+              name: `${oneNewsCategory?.category?.name} - Malanghub`,
+              description: `Berita kategori ${oneNewsCategory?.category?.name} dari Malanghub.`,
+              url: `https://www.malanghub.com/newsCategories/${oneNewsCategory?.category?.slug}`,
+              inLanguage: "id-ID",
+            }),
+          }}
+        />
       </Head>
 
       <nav id="breadcrumbs" className="breadcrumbs">

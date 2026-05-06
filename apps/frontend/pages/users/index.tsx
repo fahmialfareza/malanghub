@@ -57,6 +57,7 @@ const UserProfile = ({
   return (
     <>
       <Head>
+        <meta name="robots" content="noindex,nofollow" />
         <title>Malanghub - Profil</title>
         <meta name="title" content="Malanghub - Profil" />
         <meta
