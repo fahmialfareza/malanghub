@@ -78,3 +78,25 @@ jobs:
             "s3://${R2_BUCKET}/mongodb/weekly/${{ steps.backup.outputs.backup_filename }}" \
             --endpoint-url "${endpoint_url}" \
             --only-show-errors
+
+      - name: Delete backups older than 4 weeks
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets['R2_ACCESS_KEY_ID'] }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets['R2_SECRET_ACCESS_KEY'] }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          set -euo pipefail
+
+          endpoint_url="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          cutoff="$(date -u -d '28 days ago' +'%Y-%m-%d')"
+
+          aws s3 ls "s3://${R2_BUCKET}/mongodb/weekly/" \
+            --endpoint-url "${endpoint_url}" | \
+          while read -r date _time _size filename; do
+            if [[ "${date}" < "${cutoff}" ]]; then
+              echo "Deleting old backup: ${filename} (${date})"
+              aws s3 rm "s3://${R2_BUCKET}/mongodb/weekly/${filename}" \
+                --endpoint-url "${endpoint_url}" \
+                --only-show-errors
+            fi
+          done
