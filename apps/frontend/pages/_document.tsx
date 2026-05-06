@@ -18,11 +18,17 @@ class MyDocument extends Document {
         <Head>
           <meta charSet="utf-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-          <meta name="keywords" content="Malanghub, berita Malang, berita Kota Malang, berita Kabupaten Malang, berita Batu, Malang Raya, informasi Malang" />
+          <meta
+            name="keywords"
+            content="Malanghub, berita Malang, berita Kota Malang, berita Kabupaten Malang, berita Batu, Malang Raya, informasi Malang"
+          />
           <meta property="og:site_name" content="Malanghub" />
           <meta property="og:locale" content="id_ID" />
           {process.env.NEXT_PUBLIC_INDEXNOW_KEY && (
-            <meta name="indexnow-verification" content={process.env.NEXT_PUBLIC_INDEXNOW_KEY} />
+            <meta
+              name="indexnow-verification"
+              content={process.env.NEXT_PUBLIC_INDEXNOW_KEY}
+            />
           )}
           <meta name="theme-color" content="#000000" />
           <meta name="theme-color" content="#0085ad" />
@@ -129,6 +135,25 @@ class MyDocument extends Document {
             src="https://static.cloudflareinsights.com/beacon.min.js"
             data-cf-beacon='{"token": "0fd44994b4f045188c4df4091265f8a6"}'
           ></script>
+
+          {/* Reader Revenue Manager */}
+          <script
+            async
+            type="application/javascript"
+            src="https://news.google.com/swg/js/v1/swg-basic.js"
+          ></script>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
+                basicSubscriptions.init({
+                  type: "NewsArticle",
+                  isPartOfType: ["Product"],
+                  isPartOfProductId: "CAow2L3GDA:openaccess",
+                  clientOptions: { theme: "light", lang: "id" },
+                });
+              });`,
+            }}
+          />
         </Head>
 
         <body>
