@@ -104,6 +104,8 @@ export default async function handler(
     { url: SITE_URL, changefreq: "daily", priority: "1.0" },
     { url: `${SITE_URL}/news`, changefreq: "daily", priority: "0.9" },
     { url: `${SITE_URL}/contact`, changefreq: "monthly", priority: "0.3" },
+    { url: `${SITE_URL}/terms`, changefreq: "yearly", priority: "0.2" },
+    { url: `${SITE_URL}/privacy`, changefreq: "yearly", priority: "0.2" },
   ];
 
   const [newsEntries, categoryEntries, tagEntries] = await Promise.all([

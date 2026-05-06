@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import Link from "next/link";
 import assetsPath from "./Assets";
 
 const Footer = () => {
@@ -27,6 +28,14 @@ const Footer = () => {
               by
               <a href="https://w3layouts.com">W3layouts</a>{" "}
             </h6>
+            <p className="mt-2" style={{ fontSize: "0.85rem" }}>
+              <Link href="/terms" style={{ color: "inherit", marginRight: "1rem" }}>
+                Syarat dan Ketentuan
+              </Link>
+              <Link href="/privacy" style={{ color: "inherit" }}>
+                Kebijakan Privasi
+              </Link>
+            </p>
           </div>
           {/* <ul className="author-icons mt-4">
             <li>

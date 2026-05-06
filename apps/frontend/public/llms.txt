@@ -9,6 +9,8 @@ Malanghub menyediakan berita lokal, informasi komunitas, dan liputan peristiwa d
 - [Beranda](https://www.malanghub.com/): Berita terbaru dan berita trending dari seluruh Malang Raya
 - [Semua Berita](https://www.malanghub.com/news): Arsip seluruh berita yang telah diterbitkan
 - [Kontak](https://www.malanghub.com/contact): Informasi kontak dan alamat redaksi
+- [Syarat dan Ketentuan](https://www.malanghub.com/terms): Syarat penggunaan layanan Malanghub
+- [Kebijakan Privasi](https://www.malanghub.com/privacy): Kebijakan privasi dan penggunaan data
 
 ## Artikel Berita
 
