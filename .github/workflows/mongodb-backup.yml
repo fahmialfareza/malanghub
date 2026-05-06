@@ -12,7 +12,7 @@ jobs:
   backup:
     runs-on: ubuntu-latest
     env:
-      MONGODB_URI: ${{ secrets['MONGODB_URI'] }}
+      MONGODB_URI: ${{ secrets['MONGO_URI'] }}
       R2_ACCOUNT_ID: ${{ secrets['R2_ACCOUNT_ID'] }}
       R2_BUCKET: ${{ secrets['R2_BUCKET'] }}
     steps:
@@ -43,6 +43,11 @@ jobs:
         id: backup
         run: |
           set -euo pipefail
+
+          if [[ -z "${MONGODB_URI}" ]]; then
+            echo "MONGODB_URI secret is not set or empty." >&2
+            exit 1
+          fi
 
           timestamp="$(date -u +'%Y-%m-%d-%H%M%S')"
           backup_filename="catetin-mongodb-${timestamp}.archive.gz"
