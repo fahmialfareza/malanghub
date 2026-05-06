@@ -24,6 +24,19 @@ class MyDocument extends Document {
           />
           <meta property="og:site_name" content="Malanghub" />
           <meta property="og:locale" content="id_ID" />
+          <meta
+            name="robots"
+            content="max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+          />
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link
+            rel="preconnect"
+            href="https://fonts.gstatic.com"
+            crossOrigin="anonymous"
+          />
+          <link rel="preconnect" href="https://res.cloudinary.com" />
+          <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+          <link rel="preconnect" href="https://static.cloudflareinsights.com" />
           {process.env.NEXT_PUBLIC_INDEXNOW_KEY && (
             <meta
               name="indexnow-verification"

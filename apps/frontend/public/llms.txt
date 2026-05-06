@@ -40,3 +40,8 @@ Daftar lengkap semua URL yang dapat diindeks tersedia di:
 - Wilayah liputan: Malang Raya (Kota Malang, Kabupaten Malang, Kota Batu)
 - Provinsi: Jawa Timur, Indonesia
 - Frekuensi pembaruan: Harian
+
+## Dokumentasi Lengkap
+
+Dokumentasi lebih lengkap untuk AI tersedia di:
+`https://www.malanghub.com/llms-full.txt`

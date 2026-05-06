@@ -1,0 +1,103 @@
+# Malanghub — Dokumentasi Lengkap untuk AI
+
+> Malanghub adalah portal berita dan informasi terkini seputar Malang Raya, mencakup Kota Malang, Kabupaten Malang, dan Kota Batu, Jawa Timur, Indonesia.
+
+Malanghub menyediakan berita lokal, informasi komunitas, dan liputan peristiwa di kawasan Malang Raya. Seluruh konten ditulis dalam Bahasa Indonesia dan ditujukan bagi masyarakat Malang Raya serta pembaca yang tertarik dengan perkembangan wilayah tersebut.
+
+---
+
+## Identitas Situs
+
+- **Nama:** Malanghub
+- **URL:** https://www.malanghub.com
+- **Bahasa konten:** Bahasa Indonesia (id-ID)
+- **Wilayah liputan:** Malang Raya (Kota Malang, Kabupaten Malang, Kota Batu)
+- **Provinsi:** Jawa Timur, Indonesia
+- **Status:** Dikelola secara nirlaba untuk kepentingan masyarakat
+- **Frekuensi pembaruan:** Harian
+
+---
+
+## Halaman Utama
+
+- [Beranda](https://www.malanghub.com/) — Berita terbaru dan berita trending dari seluruh Malang Raya
+- [Semua Berita](https://www.malanghub.com/news) — Arsip seluruh berita yang telah diterbitkan
+- [Kontak](https://www.malanghub.com/contact) — Informasi kontak dan alamat redaksi
+- [Syarat dan Ketentuan](https://www.malanghub.com/terms) — Syarat penggunaan layanan Malanghub
+- [Kebijakan Privasi](https://www.malanghub.com/privacy) — Kebijakan privasi dan penggunaan data pengguna
+
+---
+
+## Struktur Konten
+
+### Artikel Berita
+
+Setiap artikel berita dapat diakses di URL:
+`https://www.malanghub.com/news/{slug-berita}`
+
+Setiap artikel berisi:
+- Judul berita
+- Nama penulis (jurnalis atau kontributor terdaftar)
+- Kategori berita
+- Tag/label berita
+- Tanggal publikasi dan tanggal terakhir diperbarui
+- Konten lengkap dalam format HTML
+- Gambar utama (thumbnail)
+
+### Kategori Berita
+
+Berita dikelompokkan ke dalam kategori tematik. Setiap kategori memiliki halaman tersendiri:
+`https://www.malanghub.com/newsCategories/{slug-kategori}`
+
+Contoh kategori: Politik, Ekonomi, Olahraga, Pendidikan, Kuliner, Pariwisata, dll.
+
+### Tag Berita
+
+Berita juga diberi tag untuk memudahkan pencarian dan navigasi:
+`https://www.malanghub.com/newsTags/{slug-tag}`
+
+### Profil Penulis
+
+Setiap penulis memiliki halaman profil publik:
+`https://www.malanghub.com/users/{id-pengguna}`
+
+---
+
+## Feed dan Indeks Mesin Pencari
+
+- **Sitemap XML:** `https://www.malanghub.com/sitemap.xml` — Daftar lengkap semua URL
+- **Google News Sitemap:** `https://www.malanghub.com/news-sitemap.xml` — Artikel dari 48 jam terakhir
+- **RSS Feed:** `https://www.malanghub.com/feed.xml` — 20 artikel terbaru dalam format RSS 2.0
+- **robots.txt:** `https://www.malanghub.com/robots.txt`
+
+---
+
+## Kebijakan Penggunaan Konten
+
+Seluruh konten di Malanghub dilindungi hak cipta.
+
+**Diperbolehkan:**
+- Membaca dan berbagi konten untuk keperluan pribadi dan non-komersial
+- Mengutip sebagian konten dengan mencantumkan sumber dan tautan ke artikel asli
+
+**Tidak diperbolehkan:**
+- Menyalin atau mereproduksi konten secara keseluruhan tanpa izin tertulis
+- Menggunakan konten untuk keperluan komersial tanpa seizin Malanghub
+
+---
+
+## Layanan Teknis yang Digunakan
+
+- **Google Analytics:** Analitik pengunjung
+- **Google OAuth:** Autentikasi pengguna
+- **Cloudflare:** CDN, keamanan, dan analitik web
+- **Cloudinary:** Penyimpanan dan pengelolaan gambar
+- **Sentry:** Pemantauan error teknis
+- **Google Reader Revenue Manager:** Fitur publikasi berita
+
+---
+
+## Informasi Kontak
+
+Untuk pertanyaan editorial atau teknis, gunakan halaman kontak:
+https://www.malanghub.com/contact

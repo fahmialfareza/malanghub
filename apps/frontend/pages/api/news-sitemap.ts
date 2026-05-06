@@ -5,8 +5,9 @@ const API_ADDRESS = process.env.API_ADDRESS;
 const PUBLICATION_NAME = "Malanghub";
 const PUBLICATION_LANGUAGE = "id";
 
-// Google News sitemap only covers articles from the last 2 days
+// Google News sitemap covers articles from the last 2 days; falls back to last 20 if none
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+const FALLBACK_LIMIT = 20;
 
 interface NewsEntry {
   slug: string;
@@ -16,47 +17,35 @@ interface NewsEntry {
 
 async function fetchRecentNews(): Promise<NewsEntry[]> {
   const cutoff = new Date(Date.now() - TWO_DAYS_MS).toISOString();
-  const entries: NewsEntry[] = [];
-  let page = 1;
-  let totalPages = 1;
+  const recent: NewsEntry[] = [];
+  const fallback: NewsEntry[] = [];
 
-  do {
-    try {
-      const res = await fetch(
-        `${API_ADDRESS}/api/news?page=${page}&limit=100&sort=-created_at`
-      );
-      if (!res.ok) break;
-      const json = await res.json();
+  try {
+    const res = await fetch(
+      `${API_ADDRESS}/api/news?page=1&limit=100&sort=-created_at`
+    );
+    if (!res.ok) return [];
+    const json = await res.json();
+    const items: any[] = json.data || [];
 
-      const items: any[] = json.data || [];
-      let reachedOld = false;
-
-      for (const item of items) {
-        if (item.created_at && item.created_at < cutoff) {
-          reachedOld = true;
-          break;
-        }
-        if (item.slug && item.title && item.created_at) {
-          entries.push({
-            slug: item.slug,
-            title: item.title,
-            created_at: item.created_at,
-          });
-        }
+    for (const item of items) {
+      if (!item.slug || !item.title || !item.created_at) continue;
+      const entry: NewsEntry = {
+        slug: item.slug,
+        title: item.title,
+        created_at: item.created_at,
+      };
+      if (item.created_at >= cutoff) {
+        recent.push(entry);
+      } else if (fallback.length < FALLBACK_LIMIT) {
+        fallback.push(entry);
       }
-
-      if (reachedOld) break;
-
-      const total: number = json.meta?.total || items.length;
-      const limit: number = json.meta?.limit || 100;
-      totalPages = Math.ceil(total / limit);
-      page++;
-    } catch {
-      break;
     }
-  } while (page <= totalPages);
+  } catch {
+    return [];
+  }
 
-  return entries;
+  return recent.length > 0 ? recent : fallback;
 }
 
 function escapeXml(str: string): string {
@@ -69,10 +58,6 @@ function escapeXml(str: string): string {
 }
 
 function buildNewsXml(entries: NewsEntry[]): string {
-  if (entries.length === 0) {
-    return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n</urlset>`;
-  }
-
   const urls = entries
     .map((e) => {
       const pubDate = new Date(e.created_at).toISOString();
@@ -90,11 +75,7 @@ function buildNewsXml(entries: NewsEntry[]): string {
     })
     .join("\n");
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
-${urls}
-</urlset>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">\n${urls}\n</urlset>`;
 }
 
 export default async function handler(
