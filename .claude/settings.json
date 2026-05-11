@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs ls -la)",
+      "Bash(grep -rn \"users/\\\\`\" /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(grep -rn \"users/\\\\${\" /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/pages /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/components)",
+      "Bash(grep -rn \"href=.\\\\`/users/\\\\$\" /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/pages /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/components)",
+      "Bash(grep -rn 'href={`/users/' /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/pages /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/components)",
+      "Bash(grep -B3 'href={`/users/\\\\${news.user._id}' /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/components/news/TrendingNews.tsx /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/components/news/RelatedNews.tsx)",
+      "Bash(git -C /Users/fahmialfareza/Code/my-code/malanghub-next diff --stat HEAD)",
+      "Bash(git -C /Users/fahmialfareza/Code/my-code/malanghub-next diff HEAD)",
+      "Bash(python3 -c \"from PIL import Image; print\\('PIL available'\\)\")",
+      "Bash(python3 -)",
+      "Bash(ffmpeg -y -i /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/public/logo512.png -vf 'crop=420:200:46:156,scale=-2:60,pad=300:60:\\(ow-iw\\)/2:\\(oh-ih\\)/2:white' /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/public/logo-wide.png)",
+      "Bash(ffmpeg -y -i /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/public/logo512.png -vf 'crop=420:200:46:156,scale=-2:60,pad=300:60:\\(ow-iw\\)/2:\\(oh-ih\\)/2:white' -update 1 /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/public/logo-wide.png)",
+      "Bash(sips -g pixelWidth -g pixelHeight /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/public/logo-wide.png)",
+      "Bash(ffmpeg -y -i /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/public/logo512.png -vf 'crop=440:200:36:156,scale=-2:60,pad=300:60:\\(ow-iw\\)/2:\\(oh-ih\\)/2:white' -update 1 /Users/fahmialfareza/Code/my-code/malanghub-next/apps/frontend/public/logo-wide.png)"
+    ]
+  }
+}

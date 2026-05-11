@@ -216,16 +216,14 @@ export async function getServerSideProps({ req }: GetServerSidePropsContext) {
     async () => {
       try {
         if (!req.headers.cookie) {
-          return {
-            redirect: {
-              permanent: false,
-              destination: "/signin",
-            },
-            props: {},
-          };
+          return { props: {} };
         }
 
         const { token } = cookie.parse(req.headers.cookie);
+
+        if (!token) {
+          return { props: {} };
+        }
 
         const response = await fetch(`${process.env.API_ADDRESS}/api/user`, {
           headers: {
@@ -242,7 +240,7 @@ export async function getServerSideProps({ req }: GetServerSidePropsContext) {
             props: {},
           };
         } else {
-          throw new Error("Failed to fetch user data");
+          return { props: {} };
         }
       } catch (e) {
         Sentry.captureException(e);

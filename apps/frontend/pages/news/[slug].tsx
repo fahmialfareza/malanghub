@@ -144,7 +144,10 @@ const SingleNews = ({
               "@type": "NewsArticle",
               headline: currentNews?.title,
               description: excerpt(currentNews?.content || "", 155),
-              image: currentNews?.mainImage ? [currentNews.mainImage] : undefined,
+              image: currentNews?.mainImage
+                ? [{ "@type": "ImageObject", url: currentNews.mainImage }]
+                : undefined,
+              isAccessibleForFree: "True",
               datePublished: currentNews?.created_at
                 ? new Date(currentNews.created_at).toISOString()
                 : undefined,
@@ -157,7 +160,9 @@ const SingleNews = ({
                 ? {
                     "@type": "Person",
                     name: currentNews.user.name,
-                    url: `https://www.malanghub.com/users/${currentNews.user._id}`,
+                    url: currentNews.user._id
+                      ? `https://www.malanghub.com/users/${currentNews.user._id}`
+                      : undefined,
                   }
                 : undefined,
               publisher: {
@@ -165,7 +170,9 @@ const SingleNews = ({
                 name: "Malanghub",
                 logo: {
                   "@type": "ImageObject",
-                  url: "https://www.malanghub.com/logo512.png",
+                  url: "https://www.malanghub.com/logo-wide.png",
+                  width: 300,
+                  height: 60,
                 },
               },
               url: `https://www.malanghub.com/news/${currentNews?.slug}`,
@@ -495,6 +502,18 @@ const SingleNews = ({
 export async function getServerSideProps({
   params,
 }: GetServerSidePropsContext<{ slug: string }>) {
+  const rawSlug = params?.slug;
+  const cleanSlug = rawSlug?.replace(/-+$/, "");
+
+  if (cleanSlug && cleanSlug !== rawSlug) {
+    return {
+      redirect: {
+        destination: `/news/${cleanSlug}`,
+        permanent: true,
+      },
+    };
+  }
+
   const result = await Sentry.startSpan(
     {
       name: "news.[slug].getServerSideProps",
@@ -505,7 +524,7 @@ export async function getServerSideProps({
       try {
         // Fetch the current news item based on the slug
         const currentNewsResponse = await fetch(
-          `${process.env.API_ADDRESS}/api/news/${params?.slug}`
+          `${process.env.API_ADDRESS}/api/news/${rawSlug}`
         );
 
         if (!currentNewsResponse.ok) {

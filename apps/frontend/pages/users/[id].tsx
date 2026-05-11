@@ -486,6 +486,11 @@ const GetUserProfile = ({
 export async function getServerSideProps({
   params,
 }: GetServerSidePropsContext<{ id: string }>) {
+  const id = params?.id;
+  if (!id || id === "undefined" || id === "-" || id.length < 8) {
+    return { notFound: true };
+  }
+
   const result = await Sentry.startSpan(
     {
       name: "users.[id].getServerSideProps",

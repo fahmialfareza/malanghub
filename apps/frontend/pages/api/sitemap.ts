@@ -25,8 +25,10 @@ async function fetchAllNewsSlugs(): Promise<SitemapEntry[]> {
 
       const items: any[] = json.data || [];
       for (const item of items) {
+        if (!item.slug) continue;
+        const slug = item.slug.replace(/-+$/, "");
         entries.push({
-          url: `${SITE_URL}/news/${item.slug}`,
+          url: `${SITE_URL}/news/${slug}`,
           lastmod: item.updated_at
             ? new Date(item.updated_at).toISOString().split("T")[0]
             : undefined,

@@ -31,7 +31,7 @@ async function fetchRecentNews(): Promise<NewsEntry[]> {
     for (const item of items) {
       if (!item.slug || !item.title || !item.created_at) continue;
       const entry: NewsEntry = {
-        slug: item.slug,
+        slug: item.slug.replace(/-+$/, ""),
         title: item.title,
         created_at: item.created_at,
       };

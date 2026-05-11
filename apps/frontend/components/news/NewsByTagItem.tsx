@@ -127,21 +127,17 @@ const NewsByTagItem = ({
                     <div className="author align-items-center mt-3 mb-1">
                       {item.user && item.user._id ? (
                         <Link href={`/users/${item.user._id}`}>
-                          {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                          }
-                          {item.category &&
-                          typeof item.category !== "string" &&
-                          item.category.slug ? (
-                            <Link href={`/newsCategories/${item.category.slug}`}>
-                              {item.category.name ?? "Kategori"}
-                            </Link>
-                          ) : (
-                            <span>
-                              {typeof item.category === "string"
-                                ? item.category
-                                : (item.category?.name ?? "Kategori")}
-                            </span>
-                          )}
+                          {item.user.name ?? "Penulis"}
+                        </Link>
+                      ) : (
+                        <span>{item.user?.name ?? "Penulis"}</span>
+                      )}{" "}
+                      di{" "}
+                      {item.category &&
+                      typeof item.category !== "string" &&
+                      item.category.slug ? (
+                        <Link href={`/newsCategories/${item.category.slug}`}>
+                          {item.category.name ?? "Kategori"}
                         </Link>
                       ) : (
                         <span>
