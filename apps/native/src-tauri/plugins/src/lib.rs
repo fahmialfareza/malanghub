@@ -39,6 +39,29 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             commands::sign_in,
             commands::open_external_url
         ])
+        .on_navigation(|_webview, _url| {
+            #[cfg(target_os = "android")]
+            {
+                let url_value = _url.as_str();
+                let should_open_externally =
+                    _url.scheme() == "intent"
+                        || (commands::is_allowed_external_url(url_value)
+                            && !matches!(_url.scheme(), "http" | "https"));
+
+                if should_open_externally {
+                    let app = _webview.app_handle().clone();
+                    let url = url_value.to_string();
+
+                    std::thread::spawn(move || {
+                        let _ = app.google_auth().open_external_url(url);
+                    });
+
+                    return false;
+                }
+            }
+
+            true
+        })
         .setup(|app, api| {
             #[cfg(mobile)]
             let google_auth = mobile::init(app, api)?;

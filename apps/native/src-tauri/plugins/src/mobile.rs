@@ -30,4 +30,11 @@ impl<R: Runtime> GoogleAuth<R> {
             .run_mobile_plugin("signIn", payload)
             .map_err(Into::into)
     }
+
+    #[cfg(target_os = "android")]
+    pub fn open_external_url(&self, url: String) -> crate::Result<()> {
+        self.0
+            .run_mobile_plugin("openExternalUrl", OpenExternalUrlRequest { url })
+            .map_err(Into::into)
+    }
 }

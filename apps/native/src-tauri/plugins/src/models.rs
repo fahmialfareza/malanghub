@@ -8,6 +8,12 @@ pub struct SignInRequest {
     pub redirect_uri: Option<String>,
 }
 
+#[derive(Debug, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OpenExternalUrlRequest {
+    pub url: String,
+}
+
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignInResponse {

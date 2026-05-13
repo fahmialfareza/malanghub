@@ -1,4 +1,5 @@
 use tauri::{command, AppHandle, Runtime};
+#[cfg(not(target_os = "android"))]
 use tauri_plugin_shell::ShellExt;
 
 use crate::models::*;
@@ -8,6 +9,8 @@ use crate::Result;
 const EXTERNAL_URL_SCHEMES: &[&str] = &[
     "http://",
     "https://",
+    "intent://",
+    "intent:",
     "mailto:",
     "tel:",
     "sms:",
@@ -18,7 +21,7 @@ const EXTERNAL_URL_SCHEMES: &[&str] = &[
     "google.navigation:",
 ];
 
-fn is_allowed_external_url(url: &str) -> bool {
+pub(crate) fn is_allowed_external_url(url: &str) -> bool {
     let url = url.trim().to_ascii_lowercase();
     EXTERNAL_URL_SCHEMES
         .iter()
@@ -44,8 +47,19 @@ pub(crate) fn open_external_url<R: Runtime>(
         return Err("Unsupported external URL scheme.".into());
     }
 
-    #[allow(deprecated)]
-    app.shell()
-        .open(url.to_string(), None)
-        .map_err(|error| error.to_string())
+    #[cfg(target_os = "android")]
+    {
+        return app
+            .google_auth()
+            .open_external_url(url.to_string())
+            .map_err(|error| error.to_string());
+    }
+
+    #[cfg(not(target_os = "android"))]
+    {
+        #[allow(deprecated)]
+        app.shell()
+            .open(url.to_string(), None)
+            .map_err(|error| error.to_string())
+    }
 }

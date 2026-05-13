@@ -43,8 +43,8 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Native mobile launcher icons regenerated from the Malanghub logo for Android and iOS.
 - [x] Native Google login no longer depends on app-level browser callbacks on Android; iOS uses native PKCE inside `ASWebAuthenticationSession`.
 - [x] Native mobile Google login switched to Option B: Android/iOS obtain a Google credential natively, then the backend issues the Malanghub token.
-- [x] Native Android Google login uses `VITE_GOOGLE_ANDROID_CLIENT_ID` directly instead of a server-client env var.
-- [x] Backend Google login accepts native `id_token` payloads and validates the Google token audience before issuing a Malanghub token.
+- [x] Native Android Google login uses the Android OAuth app/account picker and sends a Google access token to the backend.
+- [x] Backend Google login accepts Google `id_token`/`access_token` payloads and validates ID-token audiences before issuing a Malanghub token.
 - [x] Native Tauri Google auth plugin added for Android/iOS sign-in.
 - [x] Native Option B Google auth validated through Android debug APK and iOS simulator archive builds.
 - [x] Shared Google auth UI can consume a platform-provided Malanghub auth token directly and reports non-Error failures with useful messages.
@@ -101,5 +101,7 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Web frontend opts out of the shared offline banner so `navigator.onLine` false positives do not cover pages.
 - [x] Native external link bridge deduplicates desktop opens and uses app-first Google Maps navigation fallbacks.
 - [x] Contact map overlays working link/navigation hit areas on the embedded Google Maps controls without an extra button below the iframe.
+- [x] Android native Google auth no longer requires a Web OAuth client for native-device login.
+- [x] Android WebView `intent://` map navigations are intercepted and opened through native intents with browser fallback.
 - [ ] Manual mobile: `pnpm --filter native tauri android dev --open`
 - [ ] Manual mobile: `pnpm --filter native tauri ios dev --open`

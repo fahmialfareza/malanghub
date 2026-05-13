@@ -60,6 +60,7 @@ const googleOAuthTimeoutMs = 5 * 60 * 1000;
 const externalProtocols = new Set([
   "http:",
   "https:",
+  "intent:",
   "mailto:",
   "tel:",
   "sms:",
@@ -162,14 +163,16 @@ function getGoogleMapsDestination(target: string) {
       return null;
     }
 
-    if (
-      !url.pathname.includes("/maps/dir") &&
-      !url.searchParams.has("destination")
-    ) {
-      return null;
+    if (url.searchParams.has("destination")) {
+      return url.searchParams.get("destination");
     }
 
-    return url.searchParams.get("destination");
+    if (url.pathname.includes("/maps/dir")) {
+      const pathParts = url.pathname.split("/").filter(Boolean);
+      return pathParts[pathParts.length - 1] || null;
+    }
+
+    return null;
   } catch {
     return null;
   }

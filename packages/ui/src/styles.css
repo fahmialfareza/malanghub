@@ -234,7 +234,9 @@ body.malanghub-native-mobile .theme-switch .mode-container::before {
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 4px 12px rgba(10, 20, 30, 0.22);
-  transition: transform 0.2s ease, background 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
 }
 
 body.malanghub-native-mobile
@@ -496,11 +498,11 @@ body.malanghub-native-mobile .malanghub-native-tabbar-spacer {
 
 .malanghub-map-hitarea {
   position: absolute;
-  top: 32px;
-  z-index: 3;
+  top: 22px;
+  z-index: 5;
   display: block;
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   color: transparent;
   font-size: 0;
@@ -512,26 +514,26 @@ body.malanghub-native-mobile .malanghub-native-tabbar-spacer {
 }
 
 .malanghub-map-hitarea-link {
-  left: min(calc(100% - 205px), 450px);
+  left: min(calc(100% - 220px), 450px);
 }
 
 .malanghub-map-hitarea-navigation {
-  left: min(calc(100% - 106px), 548px);
+  left: min(calc(100% - 112px), 548px);
 }
 
 @media (max-width: 575px) {
   .malanghub-map-hitarea {
-    top: 24px;
-    width: 58px;
-    height: 58px;
+    top: 16px;
+    width: 74px;
+    height: 74px;
   }
 
   .malanghub-map-hitarea-link {
-    left: calc(100% - 155px);
+    left: calc(100% - 180px);
   }
 
   .malanghub-map-hitarea-navigation {
-    left: calc(100% - 76px);
+    left: calc(100% - 96px);
   }
 }
 
