@@ -15,6 +15,7 @@ const securityHeaders = [
 ];
 
 const baseConfig = withImages({
+  transpilePackages: ["@malanghub/core", "@malanghub/ui"],
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },

@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Default desktop and mobile permissions",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "deep-link:default",
+    "shell:allow-open",
+    "oauth:allow-start",
+    "oauth:allow-cancel",
+    "google-auth:allow-sign-in"
+  ]
+}

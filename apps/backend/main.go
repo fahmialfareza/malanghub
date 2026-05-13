@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"time"
 
@@ -71,6 +72,9 @@ func main() {
 	r.Use(cors.New(config))
 
 	routes.Register(r)
+	r.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, gin.H{"message": "route not found"})
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {

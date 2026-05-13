@@ -23,6 +23,7 @@ func Register(r *gin.Engine) {
 		users.POST("/signup", controllers.Signup)
 		users.POST("/signin", controllers.Signin)
 		users.POST("/google", controllers.GoogleSignIn)
+		users.PUT("", authpkg.JWTMiddleware(), controllers.UpdateProfile)
 		// Admin listing endpoint kept at /all
 		users.GET("/all", authpkg.AdminMiddleware(), controllers.ListUsers)
 		users.POST("", controllers.CreateUser)

@@ -2,11 +2,14 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	slugpkg "github.com/gosimple/slug"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
@@ -119,6 +122,20 @@ func CreateCategory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	payload.Name = strings.TrimSpace(payload.Name)
+	if payload.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "name is required"})
+		return
+	}
+	payload.Slug = slugpkg.Make(payload.Slug)
+	if payload.Slug == "" {
+		payload.Slug = slugpkg.Make(payload.Name)
+	}
+	if payload.Slug == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "slug is required"})
+		return
+	}
+
 	payload.ID = primitive.NewObjectID()
 	now := time.Now().UTC()
 	payload.CreatedAt = now
@@ -131,6 +148,10 @@ func CreateCategory(c *gin.Context) {
 	}
 
 	if _, err := coll.InsertOne(c, payload); err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			c.JSON(http.StatusConflict, gin.H{"message": "category already exists"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
@@ -154,6 +175,28 @@ func UpdateCategory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
+	update := bson.M{}
+	if name, ok := body["name"].(string); ok {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "name is required"})
+			return
+		}
+		update["name"] = name
+		update["slug"] = slugpkg.Make(name)
+	}
+	if slugValue, ok := body["slug"].(string); ok && strings.TrimSpace(slugValue) != "" {
+		update["slug"] = slugpkg.Make(slugValue)
+	}
+	if slugValue, ok := update["slug"].(string); ok && slugValue == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "slug is required"})
+		return
+	}
+	if len(update) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "no fields to update"})
+		return
+	}
+	update["updated_at"] = time.Now().UTC()
 
 	coll := db.GetCollection("newscategories")
 	if coll == nil {
@@ -161,9 +204,13 @@ func UpdateCategory(c *gin.Context) {
 		return
 	}
 
-	res := coll.FindOneAndUpdate(c, bson.M{"_id": oid}, bson.M{"$set": body}, options.FindOneAndUpdate().SetReturnDocument(options.After))
+	res := coll.FindOneAndUpdate(c, bson.M{"_id": oid}, bson.M{"$set": update}, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	var updated models.Category
 	if err := res.Decode(&updated); err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			c.JSON(http.StatusConflict, gin.H{"message": "category already exists"})
+			return
+		}
 		c.JSON(http.StatusNotFound, gin.H{"message": "category not found"})
 		return
 	}

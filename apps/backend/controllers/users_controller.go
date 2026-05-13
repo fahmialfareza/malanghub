@@ -1,16 +1,21 @@
 package controllers
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
+	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CreateUser(c *gin.Context) {
@@ -100,6 +105,91 @@ func GetProfile(c *gin.Context) {
 
 	u.Password = ""
 
+	c.JSON(http.StatusOK, gin.H{"data": u})
+}
+
+func UpdateProfile(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.UpdateProfile")()
+
+	v, ok := c.Get("userID")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
+		return
+	}
+
+	idStr, _ := v.(string)
+	oid, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
+		return
+	}
+
+	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
+		return
+	}
+
+	body := bson.M{}
+	for _, field := range []string{"name", "motto", "bio", "instagram", "facebook", "twitter", "tiktok", "linkedin"} {
+		if value := strings.TrimSpace(c.PostForm(field)); value != "" {
+			body[field] = value
+		}
+	}
+
+	if fileHeader, err := c.FormFile("photo"); err == nil && fileHeader != nil {
+		contentType := fileHeader.Header.Get("Content-Type")
+		if contentType == "" || !strings.HasPrefix(contentType, "image") {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "photo must be an image"})
+			return
+		}
+		if fileHeader.Size > 1000000 {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "photo must be less than 1 MB"})
+			return
+		}
+
+		cld, err := cloudinarypkg.InitWithContext(c)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary init failed: " + err.Error()})
+			return
+		}
+		if cld != nil {
+			b := make([]byte, 16)
+			if _, err := rand.Read(b); err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "could not generate filename"})
+				return
+			}
+			publicID := hex.EncodeToString(b)
+
+			url, err := cloudinarypkg.UploadFileHeader(c, cld, fileHeader, "malanghub", publicID)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary upload failed: " + err.Error()})
+				return
+			}
+			body["photo"] = url
+		}
+	}
+
+	body["updated_at"] = time.Now().UTC()
+
+	coll := db.GetCollection("users")
+	if coll == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
+		return
+	}
+
+	res := coll.FindOneAndUpdate(
+		c,
+		bson.M{"_id": oid},
+		bson.M{"$set": body},
+		options.FindOneAndUpdate().SetReturnDocument(options.After),
+	)
+	var u models.User
+	if err := res.Decode(&u); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
+		return
+	}
+
+	u.Password = ""
 	c.JSON(http.StatusOK, gin.H{"data": u})
 }
 

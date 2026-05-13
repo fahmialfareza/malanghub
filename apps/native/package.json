@@ -1,0 +1,40 @@
+{
+  "name": "native",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "check-types": "tsc -p tsconfig.json --noEmit",
+    "mobile:config": "node ./scripts/mobile-device-dev.mjs config",
+    "ios:device": "node ./scripts/mobile-device-dev.mjs ios",
+    "android:device": "node ./scripts/mobile-device-dev.mjs android",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@malanghub/core": "workspace:*",
+    "@malanghub/ui": "workspace:*",
+    "@tanstack/react-query": "^5.90.12",
+    "@tauri-apps/api": "^2.8.0",
+    "@tauri-apps/plugin-deep-link": "^2.4.9",
+    "@tauri-apps/plugin-os": "^2.3.2",
+    "@tauri-apps/plugin-shell": "^2.3.5",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-router-dom": "^7.10.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.8.0",
+    "@types/react": "19.0.2",
+    "@types/react-dom": "19.0.2",
+    "@vitejs/plugin-react": "^5.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.6"
+  },
+  "volta": {
+    "node": "24.11.0",
+    "pnpm": "10.20.0"
+  }
+}

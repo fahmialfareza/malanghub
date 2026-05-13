@@ -1,0 +1,135 @@
+.malanghub-alert {
+  position: fixed;
+  z-index: 10000;
+  top: 16px;
+  left: 50%;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  max-width: min(520px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  border-radius: 6px;
+  padding: 12px 14px;
+  color: #fff;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+.malanghub-alert button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+}
+
+.malanghub-alert-success {
+  background: #13795b;
+}
+
+.malanghub-alert-danger {
+  background: #b42318;
+}
+
+.malanghub-alert-info {
+  background: #005f73;
+}
+
+.malanghub-loading,
+.malanghub-empty {
+  min-height: 120px;
+  display: grid;
+  place-items: center;
+  color: var(--heading-color, #1f2937);
+}
+
+.malanghub-profile-form input,
+.malanghub-profile-form textarea,
+.malanghub-profile-form select {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.malanghub-profile-form {
+  display: grid;
+  gap: 14px;
+}
+
+.malanghub-profile-form-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.malanghub-native-note {
+  border-left: 4px solid #0085ad;
+  margin: 12px 0 18px;
+  padding: 10px 12px;
+  background: rgba(0, 133, 173, 0.08);
+}
+
+.page-pagination {
+  padding-left: 0;
+  list-style: none;
+}
+
+.page-pagination a.page-numbers[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.page-numbers-break {
+  cursor: default;
+  pointer-events: none;
+}
+
+.malanghub-offline-banner {
+  position: fixed;
+  z-index: 10001;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #374151;
+  color: #fff;
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+.single-post-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.malanghub-static-content {
+  max-width: 760px;
+  line-height: 1.8;
+}
+
+.malanghub-modal {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.malanghub-modal .modal-body {
+  -webkit-overflow-scrolling: touch;
+}
+
+[data-theme="dark"] .malanghub-dashboard-card,
+[data-theme="dark"] .malanghub-dashboard-table {
+  background: #343a40;
+  color: #f8f9fa;
+}
+
+[data-theme="dark"] .malanghub-dashboard-table th,
+[data-theme="dark"] .malanghub-dashboard-table td {
+  border-color: var(--border-light, #444);
+}
+
+[data-theme="dark"] .malanghub-profile-form input,
+[data-theme="dark"] .malanghub-profile-form textarea,
+[data-theme="dark"] .malanghub-profile-form select {
+  background: #1a1b2a;
+  border-color: var(--border-light, #444);
+  color: var(--font-color);
+}
