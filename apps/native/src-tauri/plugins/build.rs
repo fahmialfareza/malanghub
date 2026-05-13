@@ -1,4 +1,4 @@
-const COMMANDS: &[&str] = &["sign_in"];
+const COMMANDS: &[&str] = &["sign_in", "open_external_url"];
 
 fn main() {
     tauri_plugin::Builder::new(COMMANDS)

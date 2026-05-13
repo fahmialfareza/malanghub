@@ -33,11 +33,22 @@ import {
   getAuthorHref,
   getCategoryHref,
   getCategoryName,
+  getSocialHref,
   readingTime,
   siteUrl,
 } from "./utils";
 
 const DEFAULT_AVATAR_SRC = "/assets/images/author.jpg";
+const MALANGHUB_ADDRESS =
+  "Perum. Bumi Madinah Blok C3, Jalan Ngasri, Mulyoagung, Dau, Malang, Jawa Timur 65151";
+const MALANGHUB_MAPS_PLACE_URL =
+  `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+    MALANGHUB_ADDRESS,
+  )}`;
+const MALANGHUB_MAPS_NAVIGATION_URL =
+  `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+    MALANGHUB_ADDRESS,
+  )}`;
 
 const Spinner = () => (
   <div className="malanghub-loading" aria-live="polite">
@@ -52,7 +63,7 @@ const EmptyState = ({ children }: { children: React.ReactNode }) => (
 const getNewsTags = (news: News) =>
   (news.tags ?? []).filter(
     (tag): tag is Exclude<(typeof news.tags)[number], string> =>
-      typeof tag !== "string"
+      typeof tag !== "string",
   );
 
 const formatDateTime = (value?: string | Date) => {
@@ -68,7 +79,11 @@ const formatDateTime = (value?: string | Date) => {
   }).format(new Date(value));
 };
 
-const Breadcrumbs = ({ items }: { items: Array<{ label: string; href?: string }> }) => {
+const Breadcrumbs = ({
+  items,
+}: {
+  items: Array<{ label: string; href?: string }>;
+}) => {
   const { Link } = useAdapters();
 
   return (
@@ -150,12 +165,16 @@ function buildPageList(
   page: number,
   pageCount: number,
   marginPages = 2,
-  pageRange = 5
+  pageRange = 5,
 ): (number | "...")[] {
   const pages = new Set<number>();
   for (let i = 1; i <= Math.min(marginPages, pageCount); i++) pages.add(i);
-  for (let i = Math.max(pageCount - marginPages + 1, 1); i <= pageCount; i++) pages.add(i);
-  const rangeStart = Math.max(1, Math.min(pageCount - pageRange + 1, page - Math.floor(pageRange / 2)));
+  for (let i = Math.max(pageCount - marginPages + 1, 1); i <= pageCount; i++)
+    pages.add(i);
+  const rangeStart = Math.max(
+    1,
+    Math.min(pageCount - pageRange + 1, page - Math.floor(pageRange / 2)),
+  );
   const rangeEnd = Math.min(pageCount, rangeStart + pageRange - 1);
   for (let i = rangeStart; i <= rangeEnd; i++) pages.add(i);
   const sorted = Array.from(pages).sort((a, b) => a - b);
@@ -189,7 +208,9 @@ const NewsGrid = ({
         <div
           key={item._id}
           className={
-            index === 0 ? "col-md-12 item" : "col-lg-6 col-md-6 item mt-5 pt-lg-3"
+            index === 0
+              ? "col-md-12 item"
+              : "col-lg-6 col-md-6 item mt-5 pt-lg-3"
           }
         >
           <NewsCard news={item} />
@@ -214,7 +235,9 @@ const NewsGrid = ({
             {buildPageList(page, pageCount).map((item, index) =>
               item === "..." ? (
                 <li key={`ellipsis-${index}`}>
-                  <span className="page-numbers page-numbers-break">{"..."}</span>
+                  <span className="page-numbers page-numbers-break">
+                    {"..."}
+                  </span>
                 </li>
               ) : (
                 <li key={item}>
@@ -229,7 +252,7 @@ const NewsGrid = ({
                     {item}
                   </a>
                 </li>
-              )
+              ),
             )}
             <li>
               <a
@@ -269,7 +292,10 @@ const HomeNews = ({ news }: { news: News[] }) => {
       <div className="col-lg-7 col-md-6 mt-md-0 mt-5">
         <div className="list-view list-view1">
           {rest.map((item, index) => (
-            <div key={item._id} className={`grids5-info ${index > 0 ? "mt-5" : ""}`}>
+            <div
+              key={item._id}
+              className={`grids5-info ${index > 0 ? "mt-5" : ""}`}
+            >
               <Link
                 href={`/news/${item.slug}`}
                 className="d-block zoom embed-responsive embed-responsive-1by1"
@@ -393,7 +419,9 @@ export const NewsListPage = () => {
         description="Malanghub - Semua Berita - Situs yang menyediakan informasi sekitar Malang Raya!"
         canonical={`${siteUrl}/news`}
       />
-      <Breadcrumbs items={[{ label: "Beranda", href: "/" }, { label: "Semua Berita" }]} />
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: "Semua Berita" }]}
+      />
       <TwoColumnNewsLayout title="Semua Berita" trending={trending.data?.data}>
         {news.isLoading ? (
           <Spinner />
@@ -415,7 +443,10 @@ const TaxonomyPage = ({
   const { api } = useMalanghubRuntime();
   const { Meta } = useAdapters();
   const [page, setPage] = useState(1);
-  const category = useCategoryDetail(api, type === "category" ? slug : undefined);
+  const category = useCategoryDetail(
+    api,
+    type === "category" ? slug : undefined,
+  );
   const tag = useTagDetail(api, type === "tag" ? slug : undefined);
   const entity = type === "category" ? category.data?.category : tag.data?.tag;
   const params: NewsListParams =
@@ -442,8 +473,15 @@ const TaxonomyPage = ({
           { label: entity?.name ?? slug ?? "" },
         ]}
       />
-      <TwoColumnNewsLayout title={entity?.name ?? titlePrefix} trending={trending.data?.data}>
-        {isLoading ? <Spinner /> : <NewsGrid response={news.data} onPageChange={setPage} />}
+      <TwoColumnNewsLayout
+        title={entity?.name ?? titlePrefix}
+        trending={trending.data?.data}
+      >
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <NewsGrid response={news.data} onPageChange={setPage} />
+        )}
       </TwoColumnNewsLayout>
     </>
   );
@@ -471,10 +509,20 @@ export const SearchPage = ({ search }: { search?: string }) => {
         description={`Hasil pencarian Malanghub untuk ${search ?? ""}`}
       />
       <Breadcrumbs
-        items={[{ label: "Beranda", href: "/" }, { label: `Pencarian: ${search ?? ""}` }]}
+        items={[
+          { label: "Beranda", href: "/" },
+          { label: `Pencarian: ${search ?? ""}` },
+        ]}
       />
-      <TwoColumnNewsLayout title={`Pencarian: ${search ?? ""}`} trending={trending.data?.data}>
-        {news.isLoading ? <Spinner /> : <NewsGrid response={news.data} onPageChange={setPage} />}
+      <TwoColumnNewsLayout
+        title={`Pencarian: ${search ?? ""}`}
+        trending={trending.data?.data}
+      >
+        {news.isLoading ? (
+          <Spinner />
+        ) : (
+          <NewsGrid response={news.data} onPageChange={setPage} />
+        )}
       </TwoColumnNewsLayout>
     </>
   );
@@ -571,13 +619,20 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                     </div>
 
                     <div className="single-post-content text-justify">
-                      <div dangerouslySetInnerHTML={{ __html: currentNews.content }} />
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: currentNews.content,
+                        }}
+                      />
 
                       <div className="d-grid left-right mt-5 pb-md-5">
                         <div className="buttons-singles tags">
                           <h4>Tag :</h4>
                           {newsTags.map((tag) => (
-                            <Link key={tag._id ?? tag.slug} href={`/newsTags/${tag.slug}`}>
+                            <Link
+                              key={tag._id ?? tag.slug}
+                              href={`/newsTags/${tag.slug}`}
+                            >
                               {tag.name}
                             </Link>
                           ))}
@@ -589,14 +644,20 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                             rel="noreferrer"
                             href={`https://www.facebook.com/share.php?u=${siteUrl}/news/${currentNews.slug}`}
                           >
-                            <span className="fa fa-facebook" aria-hidden="true" />
+                            <span
+                              className="fa fa-facebook"
+                              aria-hidden="true"
+                            />
                           </a>
                           <a
                             target="_blank"
                             rel="noreferrer"
                             href={`https://twitter.com/intent/tweet?text=${siteUrl}/news/${currentNews.slug}`}
                           >
-                            <span className="fa fa-twitter" aria-hidden="true" />
+                            <span
+                              className="fa fa-twitter"
+                              aria-hidden="true"
+                            />
                           </a>
                         </div>
                       </div>
@@ -606,7 +667,9 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                           <div className="col-sm-3 col-6">
                             <div className="embed-responsive embed-responsive-1by1">
                               <Image
-                                src={currentNews.user?.photo || DEFAULT_AVATAR_SRC}
+                                src={
+                                  currentNews.user?.photo || DEFAULT_AVATAR_SRC
+                                }
                                 alt={currentNews.user?.name ?? "Penulis"}
                                 className="rounded-circle img-fluid embed-responsive-item"
                                 objectFit="cover"
@@ -618,7 +681,9 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                             <h3 className="mb-3 title">
                               {currentNews.user?.name ?? "Penulis"}
                             </h3>
-                            {currentNews.user?.bio && <p>{currentNews.user.bio}</p>}
+                            {currentNews.user?.bio && (
+                              <p>{currentNews.user.bio}</p>
+                            )}
                             <ul className="author-icons mt-4">
                               {currentNews.user?.facebook && (
                                 <li>
@@ -626,9 +691,15 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                                     target="_blank"
                                     rel="noreferrer"
                                     className="facebook"
-                                    href={currentNews.user.facebook}
+                                    href={getSocialHref(
+                                      "facebook",
+                                      currentNews.user.facebook,
+                                    )}
                                   >
-                                    <span className="fab fa-facebook" aria-hidden="true" />
+                                    <span
+                                      className="fab fa-facebook"
+                                      aria-hidden="true"
+                                    />
                                   </a>
                                 </li>
                               )}
@@ -638,9 +709,15 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                                     target="_blank"
                                     rel="noreferrer"
                                     className="twitter"
-                                    href={`https://twitter.com/${currentNews.user.twitter}`}
+                                    href={getSocialHref(
+                                      "twitter",
+                                      currentNews.user.twitter,
+                                    )}
                                   >
-                                    <span className="fab fa-twitter" aria-hidden="true" />
+                                    <span
+                                      className="fab fa-twitter"
+                                      aria-hidden="true"
+                                    />
                                   </a>
                                 </li>
                               )}
@@ -650,9 +727,15 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                                     target="_blank"
                                     rel="noreferrer"
                                     className="instagram"
-                                    href={`https://instagram.com/${currentNews.user.instagram}`}
+                                    href={getSocialHref(
+                                      "instagram",
+                                      currentNews.user.instagram,
+                                    )}
                                   >
-                                    <span className="fab fa-instagram" aria-hidden="true" />
+                                    <span
+                                      className="fab fa-instagram"
+                                      aria-hidden="true"
+                                    />
                                   </a>
                                 </li>
                               )}
@@ -662,9 +745,15 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                                     target="_blank"
                                     rel="noreferrer"
                                     className="linkedin"
-                                    href={currentNews.user.linkedin}
+                                    href={getSocialHref(
+                                      "linkedin",
+                                      currentNews.user.linkedin,
+                                    )}
                                   >
-                                    <span className="fab fa-linkedin" aria-hidden="true" />
+                                    <span
+                                      className="fab fa-linkedin"
+                                      aria-hidden="true"
+                                    />
                                   </a>
                                 </li>
                               )}
@@ -674,9 +763,15 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
                                     target="_blank"
                                     rel="noreferrer"
                                     className="tiktok"
-                                    href={`https://www.tiktok.com/@${currentNews.user.tiktok}`}
+                                    href={getSocialHref(
+                                      "tiktok",
+                                      currentNews.user.tiktok,
+                                    )}
                                   >
-                                    <span className="fab fa-tiktok" aria-hidden="true" />
+                                    <span
+                                      className="fab fa-tiktok"
+                                      aria-hidden="true"
+                                    />
                                   </a>
                                 </li>
                               )}
@@ -708,9 +803,7 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
 
 const AuthCard = ({ children }: { children: React.ReactNode }) => (
   <section className="w3l-contact-2 py-5">
-    <div className="container py-lg-5 py-md-4">
-      {children}
-    </div>
+    <div className="container py-lg-5 py-md-4">{children}</div>
   </section>
 );
 
@@ -796,6 +889,7 @@ const GoogleAuthButton = ({
 export const SignInPage = () => {
   const { api, authStorage, refreshAuth, notify } = useMalanghubRuntime();
   const adapters = useAdapters();
+  const { Link } = adapters;
   const [form, setForm] = useState({ email: "", password: "" });
   const onAuthSuccess = async (data: AuthResponse) => {
     await authStorage.setToken(data.token);
@@ -814,14 +908,19 @@ export const SignInPage = () => {
     signIn.mutate(form, {
       onError: (error) => {
         adapters.reportError?.(error);
-        notify(error instanceof Error ? error.message : "Gagal masuk", "danger");
+        notify(
+          error instanceof Error ? error.message : "Gagal masuk",
+          "danger",
+        );
       },
     });
   };
 
   return (
     <>
-      <Breadcrumbs items={[{ label: "Beranda", href: "/" }, { label: "Masuk" }]} />
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: "Masuk" }]}
+      />
       <AuthCard>
         <h3 className="section-title-left">Masuk</h3>
         <div className="contact-grids d-grid">
@@ -837,7 +936,9 @@ export const SignInPage = () => {
                   placeholder="Email*"
                   className="contact-input"
                   value={form.email}
-                  onChange={(event) => setForm({ ...form, email: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, email: event.target.value })
+                  }
                   required
                 />
                 <input
@@ -846,13 +947,22 @@ export const SignInPage = () => {
                   placeholder="Password*"
                   className="contact-input"
                   value={form.password}
-                  onChange={(event) => setForm({ ...form, password: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, password: event.target.value })
+                  }
                   required
                 />
               </div>
-              <button className="btn btn-style btn-outline" type="submit" disabled={signIn.isPending}>
+              <button
+                className="btn btn-style btn-outline"
+                type="submit"
+                disabled={signIn.isPending}
+              >
                 Masuk
               </button>
+              <p className="malanghub-auth-switch mt-4">
+                Belum punya akun? <Link href="/signup">Daftar sekarang</Link>
+              </p>
             </form>
           </div>
         </div>
@@ -864,6 +974,7 @@ export const SignInPage = () => {
 export const SignUpPage = () => {
   const { api, authStorage, refreshAuth, notify } = useMalanghubRuntime();
   const adapters = useAdapters();
+  const { Link } = adapters;
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -891,14 +1002,19 @@ export const SignUpPage = () => {
     signUp.mutate(form, {
       onError: (error) => {
         adapters.reportError?.(error);
-        notify(error instanceof Error ? error.message : "Gagal daftar", "danger");
+        notify(
+          error instanceof Error ? error.message : "Gagal daftar",
+          "danger",
+        );
       },
     });
   };
 
   return (
     <>
-      <Breadcrumbs items={[{ label: "Beranda", href: "/" }, { label: "Daftar" }]} />
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: "Daftar" }]}
+      />
       <AuthCard>
         <h3 className="section-title-left">Daftar</h3>
         <div className="contact-grids d-grid">
@@ -914,7 +1030,9 @@ export const SignUpPage = () => {
                   placeholder="Nama*"
                   className="contact-input"
                   value={form.name}
-                  onChange={(event) => setForm({ ...form, name: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, name: event.target.value })
+                  }
                   required
                 />
                 <input
@@ -923,7 +1041,9 @@ export const SignUpPage = () => {
                   placeholder="Email*"
                   className="contact-input"
                   value={form.email}
-                  onChange={(event) => setForm({ ...form, email: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, email: event.target.value })
+                  }
                   required
                 />
                 <input
@@ -932,7 +1052,9 @@ export const SignUpPage = () => {
                   placeholder="Password*"
                   className="contact-input"
                   value={form.password}
-                  onChange={(event) => setForm({ ...form, password: event.target.value })}
+                  onChange={(event) =>
+                    setForm({ ...form, password: event.target.value })
+                  }
                   required
                 />
                 <input
@@ -942,14 +1064,24 @@ export const SignUpPage = () => {
                   className="contact-input"
                   value={form.passwordConfirmation}
                   onChange={(event) =>
-                    setForm({ ...form, passwordConfirmation: event.target.value })
+                    setForm({
+                      ...form,
+                      passwordConfirmation: event.target.value,
+                    })
                   }
                   required
                 />
               </div>
-              <button className="btn btn-style btn-outline" type="submit" disabled={signUp.isPending}>
+              <button
+                className="btn btn-style btn-outline"
+                type="submit"
+                disabled={signUp.isPending}
+              >
                 Daftar
               </button>
+              <p className="malanghub-auth-switch mt-4">
+                Sudah punya akun? <Link href="/signin">Masuk</Link>
+              </p>
             </form>
           </div>
         </div>
@@ -962,35 +1094,60 @@ const AuthorSocialLinks = ({ user }: { user: UserProfile }) => (
   <ul className="author-icons mt-4">
     {user.facebook && (
       <li>
-        <a target="_blank" rel="noreferrer" className="facebook" href={user.facebook}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="facebook"
+          href={getSocialHref("facebook", user.facebook)}
+        >
           <span className="fab fa-facebook" aria-hidden="true" />
         </a>
       </li>
     )}
     {user.twitter && (
       <li>
-        <a target="_blank" rel="noreferrer" className="twitter" href={`https://twitter.com/${user.twitter}`}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="twitter"
+          href={getSocialHref("twitter", user.twitter)}
+        >
           <span className="fab fa-twitter" aria-hidden="true" />
         </a>
       </li>
     )}
     {user.instagram && (
       <li>
-        <a target="_blank" rel="noreferrer" className="instagram" href={`https://instagram.com/${user.instagram}`}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="instagram"
+          href={getSocialHref("instagram", user.instagram)}
+        >
           <span className="fab fa-instagram" aria-hidden="true" />
         </a>
       </li>
     )}
     {user.linkedin && (
       <li>
-        <a target="_blank" rel="noreferrer" className="linkedin" href={user.linkedin}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="linkedin"
+          href={getSocialHref("linkedin", user.linkedin)}
+        >
           <span className="fab fa-linkedin" aria-hidden="true" />
         </a>
       </li>
     )}
     {user.tiktok && (
       <li>
-        <a target="_blank" rel="noreferrer" className="tiktok" href={`https://www.tiktok.com/@${user.tiktok}`}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="tiktok"
+          href={getSocialHref("tiktok", user.tiktok)}
+        >
           <span className="fab fa-tiktok" aria-hidden="true" />
         </a>
       </li>
@@ -1038,7 +1195,10 @@ const LegacyDashboardPage = () => {
         setEditOpen(false);
       },
       onError: (error) =>
-        notify(error instanceof Error ? error.message : "Gagal memperbarui profil", "danger"),
+        notify(
+          error instanceof Error ? error.message : "Gagal memperbarui profil",
+          "danger",
+        ),
     });
   };
 
@@ -1062,7 +1222,9 @@ const LegacyDashboardPage = () => {
 
   return (
     <>
-      <Breadcrumbs items={[{ label: "Beranda", href: "/" }, { label: "Profil" }]} />
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: "Profil" }]}
+      />
       <section id="author" className="w3l-author py-5">
         <div className="container py-md-3">
           <div className="row align-items-center">
@@ -1083,7 +1245,9 @@ const LegacyDashboardPage = () => {
                 Halo, <span className="typed-text">{user?.name}</span>
                 <span className="cursor typing">&nbsp;</span>
               </h1>
-              {user?.bio && <p dangerouslySetInnerHTML={{ __html: user.bio }} />}
+              {user?.bio && (
+                <p dangerouslySetInnerHTML={{ __html: user.bio }} />
+              )}
               {user && <AuthorSocialLinks user={user} />}
               <button
                 className="btn btn-primary btn-block my-2"
@@ -1094,21 +1258,30 @@ const LegacyDashboardPage = () => {
             </div>
           </div>
           {editOpen && (
-            <form className="malanghub-profile-form mt-4" onSubmit={saveProfile}>
+            <form
+              className="malanghub-profile-form mt-4"
+              onSubmit={saveProfile}
+            >
               <input
                 value={profile.name}
                 placeholder="Nama"
-                onChange={(event) => setProfile({ ...profile, name: event.target.value })}
+                onChange={(event) =>
+                  setProfile({ ...profile, name: event.target.value })
+                }
               />
               <input
                 value={profile.motto}
                 placeholder="Motto"
-                onChange={(event) => setProfile({ ...profile, motto: event.target.value })}
+                onChange={(event) =>
+                  setProfile({ ...profile, motto: event.target.value })
+                }
               />
               <textarea
                 value={profile.bio}
                 placeholder="Bio"
-                onChange={(event) => setProfile({ ...profile, bio: event.target.value })}
+                onChange={(event) =>
+                  setProfile({ ...profile, bio: event.target.value })
+                }
               />
               <div className="malanghub-profile-form-actions">
                 <button
@@ -1169,7 +1342,10 @@ const LegacyDashboardPage = () => {
               </div>
             )}
             <div className="col-md-3 mb-2">
-              <adapters.Link href="/users/newsDrafts/new" className="btn btn-success btn-block">
+              <adapters.Link
+                href="/users/newsDrafts/new"
+                className="btn btn-success btn-block"
+              >
                 <i className="fa fa-plus" aria-hidden="true" /> Tulis Draft
               </adapters.Link>
             </div>
@@ -1180,7 +1356,11 @@ const LegacyDashboardPage = () => {
               <div className="card malanghub-dashboard-card">
                 <div className="card-header">
                   <h4>
-                    {tab === "berita" ? "Berita Saya" : tab === "antrian" ? "Antrian Berita" : "Persetujuan Berita"}
+                    {tab === "berita"
+                      ? "Berita Saya"
+                      : tab === "antrian"
+                        ? "Antrian Berita"
+                        : "Persetujuan Berita"}
                   </h4>
                 </div>
                 <div className="table-responsive">
@@ -1198,10 +1378,10 @@ const LegacyDashboardPage = () => {
                       {(() => {
                         const rows =
                           tab === "berita"
-                            ? myNews.data ?? []
+                            ? (myNews.data ?? [])
                             : tab === "antrian"
-                              ? myDrafts.data ?? []
-                              : allDrafts.data ?? [];
+                              ? (myDrafts.data ?? [])
+                              : (allDrafts.data ?? []);
                         if (!rows.length) {
                           return (
                             <tr>
@@ -1289,7 +1469,6 @@ const LegacyDashboardPage = () => {
   );
 };
 
-
 export const UserProfilePage = ({ id }: { id?: string }) => {
   const { api } = useMalanghubRuntime();
   const adapters = useAdapters();
@@ -1353,7 +1532,9 @@ export const UserProfilePage = ({ id }: { id?: string }) => {
                   <span className="typed-text">{user?.name}</span>
                   <span className="cursor typing">&nbsp;</span>
                 </h1>
-                {user?.bio && <p dangerouslySetInnerHTML={{ __html: user.bio }} />}
+                {user?.bio && (
+                  <p dangerouslySetInnerHTML={{ __html: user.bio }} />
+                )}
                 {user && <AuthorSocialLinks user={user} />}
               </div>
             </div>
@@ -1372,7 +1553,10 @@ export const UserProfilePage = ({ id }: { id?: string }) => {
                 {profileNews.isLoading ? (
                   <Spinner />
                 ) : (
-                  <NewsGrid response={profileNews.data} onPageChange={setPage} />
+                  <NewsGrid
+                    response={profileNews.data}
+                    onPageChange={setPage}
+                  />
                 )}
               </div>
               <div className="col-lg-3 trending mb-5 mt-lg-0 mt-5">
@@ -1413,6 +1597,107 @@ export const StaticPage = ({
   </>
 );
 
+export interface DownloadLink {
+  platform: string;
+  group: "mobile" | "desktop";
+  href?: string;
+  icon: string;
+  description: string;
+  status?: string;
+}
+
+const DownloadCard = ({ item }: { item: DownloadLink }) => {
+  const isExternal = Boolean(item.href && /^(https?:)?\/\//.test(item.href));
+
+  return (
+    <article
+      className={`malanghub-download-card${item.href ? "" : " is-disabled"}`}
+    >
+      <div className="malanghub-download-card-icon">
+        <span className={`fa ${item.icon}`} aria-hidden="true" />
+      </div>
+      <div className="malanghub-download-card-body">
+        <h4>{item.platform}</h4>
+        <p>{item.description}</p>
+        {item.href ? (
+          <a
+            className="btn btn-primary"
+            href={item.href}
+            target={isExternal ? "_blank" : undefined}
+            rel={isExternal ? "noreferrer" : undefined}
+          >
+            <span className="fa fa-download mr-2" aria-hidden="true" />
+            Unduh
+          </a>
+        ) : (
+          <span className="malanghub-download-status">
+            {item.status ?? "Segera hadir"}
+          </span>
+        )}
+      </div>
+    </article>
+  );
+};
+
+export const DownloadPage = ({ links }: { links: DownloadLink[] }) => {
+  const { Meta, Link } = useAdapters();
+  const mobileLinks = links.filter((link) => link.group === "mobile");
+  const desktopLinks = links.filter((link) => link.group === "desktop");
+
+  return (
+    <>
+      <Meta
+        title="Malanghub - Download"
+        description="Download aplikasi Malanghub untuk Android, iOS, macOS, Windows, dan Linux."
+        canonical={`${siteUrl}/download`}
+        image={`${siteUrl}/malanghub-meta.png`}
+      />
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: "Download" }]}
+      />
+      <section className="malanghub-download-page py-5">
+        <div className="container py-lg-5 py-md-4">
+          <div className="row align-items-start">
+            <div className="col-lg-4 mb-5 mb-lg-0">
+              <div className="malanghub-download-intro">
+                <span className="malanghub-download-kicker">Aplikasi Native</span>
+                <h3 className="section-title-left">Download Malanghub</h3>
+                <p>
+                  Baca berita, kelola draft, dan masuk ke akun Malanghub dari
+                  aplikasi desktop maupun mobile.
+                </p>
+                <Link href="/contact" className="malanghub-download-help">
+                  Butuh bantuan instalasi?
+                </Link>
+              </div>
+            </div>
+
+            <div className="col-lg-8">
+              <div className="malanghub-download-section">
+                <h4>Mobile</h4>
+                <div className="malanghub-download-grid">
+                  {mobileLinks.map((item) => (
+                    <DownloadCard key={item.platform} item={item} />
+                  ))}
+                </div>
+              </div>
+
+              <div className="malanghub-download-section mt-5">
+                <h4>Desktop</h4>
+                <div className="malanghub-download-grid">
+                  {desktopLinks.map((item) => (
+                    <DownloadCard key={item.platform} item={item} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
+  );
+};
+
 export const ContactPage = () => {
   const { Meta } = useAdapters();
 
@@ -1424,7 +1709,9 @@ export const ContactPage = () => {
         canonical={`${siteUrl}/contact`}
         image={`${siteUrl}/malanghub-meta.png`}
       />
-      <Breadcrumbs items={[{ label: "Beranda", href: "/" }, { label: "Kontak" }]} />
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: "Kontak" }]}
+      />
       <section className="w3l-contact-2 py-5">
         <div className="container py-lg-5 py-md-4">
           <h3 className="section-title-left">Tinggalkan pesan untuk kami </h3>
@@ -1451,6 +1738,15 @@ export const ContactPage = () => {
                     <p>Perum. Bumi Madinah Blok C3</p>
                     <p>
                       Jalan Ngasri, Mulyoagung, Dau, Malang, Jawa Timur 65151
+                    </p>
+                    <p>
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        href={MALANGHUB_MAPS_NAVIGATION_URL}
+                      >
+                        Buka Navigasi Google Maps
+                      </a>
                     </p>
                   </div>
                 </div>
@@ -1488,15 +1784,35 @@ export const ContactPage = () => {
               </div>
             </div>
             <div className="contact-right">
-              <div className="embed-responsive embed-responsive-1by1">
-                <iframe
-                  title="Lokasi Malanghub"
-                  className="embed-responsive-item"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.6257545166436!2d112.56973751477908!3d-7.934097594284932!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7883c600d082fd%3A0x3f1caf9c821540c1!2sPerum.%20Bumi%20Madinah%20Blok%20C%202!5e0!3m2!1sen!2sid!4v1614682193710!5m2!1sen!2sid"
-                  style={{ border: 0, borderRadius: 10 }}
-                  allowFullScreen
-                  loading="lazy"
-                />
+              <div className="malanghub-map-embed">
+                <div className="embed-responsive embed-responsive-1by1">
+                  <iframe
+                    title="Lokasi Malanghub"
+                    className="embed-responsive-item"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.6257545166436!2d112.56973751477908!3d-7.934097594284932!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7883c600d082fd%3A0x3f1caf9c821540c1!2sPerum.%20Bumi%20Madinah%20Blok%20C%202!5e0!3m2!1sen!2sid!4v1614682193710!5m2!1sen!2sid"
+                    style={{ border: 0, borderRadius: 10 }}
+                    allowFullScreen
+                    loading="lazy"
+                  />
+                </div>
+                <a
+                  className="malanghub-map-hitarea malanghub-map-hitarea-link"
+                  target="_blank"
+                  rel="noreferrer"
+                  href={MALANGHUB_MAPS_PLACE_URL}
+                  aria-label="Buka lokasi di Google Maps"
+                >
+                  Buka lokasi di Google Maps
+                </a>
+                <a
+                  className="malanghub-map-hitarea malanghub-map-hitarea-navigation"
+                  target="_blank"
+                  rel="noreferrer"
+                  href={MALANGHUB_MAPS_NAVIGATION_URL}
+                  aria-label="Buka navigasi Google Maps"
+                >
+                  Buka navigasi Google Maps
+                </a>
               </div>
             </div>
           </div>
@@ -1556,7 +1872,9 @@ const LegalPageShell = ({
         canonical={`${siteUrl}/${title === "Kebijakan Privasi" ? "privacy" : "terms"}`}
         image={`${siteUrl}/malanghub-meta.png`}
       />
-      <Breadcrumbs items={[{ label: "Beranda", href: "/" }, { label: title }]} />
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: title }]}
+      />
 
       <div className="w3l-searchblock w3l-homeblock1 py-5">
         <div className="container py-lg-4 py-md-3">
@@ -1625,8 +1943,8 @@ export const TermsPage = () => {
               Ada Pertanyaan?
             </h6>
             <p style={{ fontSize: "0.9rem" }} className="mb-3">
-              Hubungi tim Malanghub jika Anda memiliki pertanyaan seputar
-              syarat penggunaan layanan kami.
+              Hubungi tim Malanghub jika Anda memiliki pertanyaan seputar syarat
+              penggunaan layanan kami.
             </p>
             <Link href="/contact" className="btn btn-style btn-primary btn-sm">
               Hubungi Kami
@@ -1664,15 +1982,26 @@ export const TermsPage = () => {
           <strong>Anda diperbolehkan untuk:</strong>
         </p>
         <ul className="pl-4 mb-3">
-          <li>Membaca dan berbagi konten untuk keperluan pribadi dan non-komersial.</li>
-          <li>Mengutip sebagian konten dengan mencantumkan sumber dan tautan ke artikel asli.</li>
+          <li>
+            Membaca dan berbagi konten untuk keperluan pribadi dan
+            non-komersial.
+          </li>
+          <li>
+            Mengutip sebagian konten dengan mencantumkan sumber dan tautan ke
+            artikel asli.
+          </li>
         </ul>
         <p className="mb-1">
           <strong>Anda tidak diperbolehkan untuk:</strong>
         </p>
         <ul className="pl-4">
-          <li>Menyalin, mendistribusikan, atau mereproduksi konten secara keseluruhan tanpa izin tertulis.</li>
-          <li>Menggunakan konten untuk keperluan komersial tanpa seizin Malanghub.</li>
+          <li>
+            Menyalin, mendistribusikan, atau mereproduksi konten secara
+            keseluruhan tanpa izin tertulis.
+          </li>
+          <li>
+            Menggunakan konten untuk keperluan komersial tanpa seizin Malanghub.
+          </li>
         </ul>
       </div>
       <div className="card mb-4 p-4">
@@ -1691,11 +2020,13 @@ export const TermsPage = () => {
         <h5 className="font-weight-bold">5. Konten yang Dikirimkan Pengguna</h5>
         <p>
           Dengan mengirimkan konten ke Malanghub, Anda memberikan Malanghub hak
-          non-eksklusif untuk menerbitkan, mengedit, dan mendistribusikan
-          konten tersebut. Malanghub berhak menolak atau menghapus konten yang:
+          non-eksklusif untuk menerbitkan, mengedit, dan mendistribusikan konten
+          tersebut. Malanghub berhak menolak atau menghapus konten yang:
         </p>
         <ul className="pl-4">
-          <li>Mengandung ujaran kebencian, SARA, atau konten yang melanggar hukum.</li>
+          <li>
+            Mengandung ujaran kebencian, SARA, atau konten yang melanggar hukum.
+          </li>
           <li>Bersifat spam atau menyesatkan.</li>
           <li>Melanggar hak cipta pihak ketiga.</li>
         </ul>
@@ -1713,9 +2044,9 @@ export const TermsPage = () => {
         <h5 className="font-weight-bold">7. Batasan Tanggung Jawab</h5>
         <p>
           Malanghub tidak bertanggung jawab atas kerugian langsung maupun tidak
-          langsung yang timbul akibat penggunaan atau ketidakmampuan
-          menggunakan layanan ini, termasuk kerugian akibat kesalahan informasi
-          atau gangguan teknis.
+          langsung yang timbul akibat penggunaan atau ketidakmampuan menggunakan
+          layanan ini, termasuk kerugian akibat kesalahan informasi atau
+          gangguan teknis.
         </p>
       </div>
       <div className="card mb-4 p-4">
@@ -1746,7 +2077,8 @@ export const TermsPage = () => {
         <h5 className="font-weight-bold">11. Hubungi Kami</h5>
         <p className="mb-0">
           Jika Anda memiliki pertanyaan mengenai Syarat dan Ketentuan ini,
-          silakan hubungi kami melalui halaman <Link href="/contact">Kontak</Link>.
+          silakan hubungi kami melalui halaman{" "}
+          <Link href="/contact">Kontak</Link>.
         </p>
       </div>
     </LegalPageShell>
@@ -1805,10 +2137,22 @@ export const PrivacyPage = () => {
         <h5 className="font-weight-bold">2. Data yang Kami Kumpulkan</h5>
         <p>Kami dapat mengumpulkan data berikut:</p>
         <ul className="pl-4 mb-0">
-          <li><strong>Data akun:</strong> Nama, alamat email, dan kata sandi terenkripsi saat Anda mendaftar.</li>
-          <li><strong>Data profil:</strong> Foto profil, bio, motto, dan tautan media sosial yang Anda isi secara sukarela.</li>
-          <li><strong>Data penggunaan:</strong> Halaman yang dikunjungi, artikel yang dibaca, dan interaksi di situs.</li>
-          <li><strong>Data teknis:</strong> Alamat IP, jenis browser, dan perangkat yang digunakan, dikumpulkan secara otomatis.</li>
+          <li>
+            <strong>Data akun:</strong> Nama, alamat email, dan kata sandi
+            terenkripsi saat Anda mendaftar.
+          </li>
+          <li>
+            <strong>Data profil:</strong> Foto profil, bio, motto, dan tautan
+            media sosial yang Anda isi secara sukarela.
+          </li>
+          <li>
+            <strong>Data penggunaan:</strong> Halaman yang dikunjungi, artikel
+            yang dibaca, dan interaksi di situs.
+          </li>
+          <li>
+            <strong>Data teknis:</strong> Alamat IP, jenis browser, dan
+            perangkat yang digunakan, dikumpulkan secara otomatis.
+          </li>
         </ul>
       </div>
       <div className="card mb-4 p-4">
@@ -1829,11 +2173,25 @@ export const PrivacyPage = () => {
           kebijakan privasi masing-masing:
         </p>
         <ul className="pl-4 mb-0">
-          <li><strong>Google Analytics & Google OAuth:</strong> Untuk analitik dan masuk dengan akun Google.</li>
-          <li><strong>Cloudflare:</strong> Untuk keamanan, CDN, dan analitik web.</li>
-          <li><strong>Cloudinary:</strong> Untuk penyimpanan dan pengelolaan gambar.</li>
-          <li><strong>Sentry:</strong> Untuk pemantauan dan pelaporan error teknis.</li>
-          <li><strong>Google Reader Revenue Manager:</strong> Untuk fitur publikasi berita.</li>
+          <li>
+            <strong>Google Analytics & Google OAuth:</strong> Untuk analitik dan
+            masuk dengan akun Google.
+          </li>
+          <li>
+            <strong>Cloudflare:</strong> Untuk keamanan, CDN, dan analitik web.
+          </li>
+          <li>
+            <strong>Cloudinary:</strong> Untuk penyimpanan dan pengelolaan
+            gambar.
+          </li>
+          <li>
+            <strong>Sentry:</strong> Untuk pemantauan dan pelaporan error
+            teknis.
+          </li>
+          <li>
+            <strong>Google Reader Revenue Manager:</strong> Untuk fitur
+            publikasi berita.
+          </li>
         </ul>
       </div>
       <div className="card mb-4 p-4">
@@ -1841,8 +2199,8 @@ export const PrivacyPage = () => {
         <p className="mb-0">
           Malanghub menggunakan cookie untuk menjaga sesi login dan meningkatkan
           pengalaman pengguna. Anda dapat menonaktifkan cookie melalui
-          pengaturan browser, namun beberapa fitur situs mungkin tidak
-          berfungsi dengan baik.
+          pengaturan browser, namun beberapa fitur situs mungkin tidak berfungsi
+          dengan baik.
         </p>
       </div>
       <div className="card mb-4 p-4">
@@ -1926,13 +2284,21 @@ export const NativeDraftEditorPage = () => {
       adapters.navigate("/users");
     } catch (error) {
       adapters.reportError?.(error);
-      notify(error instanceof Error ? error.message : "Gagal membuat draft", "danger");
+      notify(
+        error instanceof Error ? error.message : "Gagal membuat draft",
+        "danger",
+      );
     }
   };
 
   return (
     <>
-      <Breadcrumbs items={[{ label: "Dashboard", href: "/users" }, { label: "Tulis Draft" }]} />
+      <Breadcrumbs
+        items={[
+          { label: "Dashboard", href: "/users" },
+          { label: "Tulis Draft" },
+        ]}
+      />
       <section className="w3l-homeblock1 py-5">
         <div className="container py-lg-4 py-md-3">
           <h3 className="section-title-left">Tulis Draft</h3>
@@ -1944,11 +2310,7 @@ export const NativeDraftEditorPage = () => {
                 setForm({ ...form, title: event.target.value })
               }
             />
-            <input
-              value={createSlug(form.title)}
-              placeholder="Slug"
-              readOnly
-            />
+            <input value={createSlug(form.title)} placeholder="Slug" readOnly />
             <select
               value={form.category}
               onChange={(event) =>
@@ -1969,7 +2331,7 @@ export const NativeDraftEditorPage = () => {
                 setForm({
                   ...form,
                   tags: Array.from(event.target.selectedOptions).map(
-                    (option) => option.value
+                    (option) => option.value,
                   ),
                 })
               }

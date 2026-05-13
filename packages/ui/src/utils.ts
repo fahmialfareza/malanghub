@@ -43,3 +43,54 @@ export const createSlug = (value: string) =>
     .trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+type SocialPlatform =
+  | "facebook"
+  | "twitter"
+  | "instagram"
+  | "linkedin"
+  | "tiktok";
+
+const hasProtocol = (value: string) => /^[a-z][a-z0-9+.-]*:/i.test(value);
+
+const isUrlLike = (value: string) =>
+  /^(?:[a-z][a-z0-9+.-]*:)?\/\//i.test(value) ||
+  /^(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+(?:\/|$)/i.test(value);
+
+const normalizeExternalUrl = (value: string) => {
+  const trimmed = value.trim();
+
+  if (!trimmed) return "";
+  if (trimmed.startsWith("//")) return `https:${trimmed}`;
+  if (hasProtocol(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+};
+
+const cleanHandle = (value: string) =>
+  value.trim().replace(/^@+/, "").replace(/^\/+/, "").replace(/\/+$/, "");
+
+export const getSocialHref = (
+  platform: SocialPlatform,
+  value?: string | null,
+) => {
+  const raw = value?.trim();
+
+  if (!raw) return "";
+  if (isUrlLike(raw) || hasProtocol(raw)) return normalizeExternalUrl(raw);
+
+  const handle = cleanHandle(raw);
+  if (!handle) return "";
+
+  switch (platform) {
+    case "facebook":
+      return `https://www.facebook.com/${handle}`;
+    case "twitter":
+      return `https://x.com/${handle}`;
+    case "instagram":
+      return `https://instagram.com/${handle}`;
+    case "linkedin":
+      return `https://www.linkedin.com/in/${handle}`;
+    case "tiktok":
+      return `https://www.tiktok.com/@${handle}`;
+  }
+};

@@ -16,7 +16,6 @@ import com.google.android.gms.common.api.ApiException
 @InvokeArg
 class SignInArgs {
   var androidClientId: String? = null
-  var serverClientId: String? = null
 }
 
 @TauriPlugin
@@ -24,17 +23,17 @@ class GoogleAuthPlugin(private val activity: Activity): Plugin(activity) {
     @Command
     fun signIn(invoke: Invoke) {
         val args = invoke.parseArgs(SignInArgs::class.java)
-        val serverClientId = args.serverClientId?.trim()
+        val androidClientId = args.androidClientId?.trim()
 
-        if (serverClientId.isNullOrEmpty()) {
-            invoke.reject("VITE_GOOGLE_SERVER_CLIENT_ID belum diisi.")
+        if (androidClientId.isNullOrEmpty()) {
+            invoke.reject("VITE_GOOGLE_ANDROID_CLIENT_ID belum diisi.")
             return
         }
 
         val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestEmail()
             .requestProfile()
-            .requestIdToken(serverClientId)
+            .requestIdToken(androidClientId)
             .build()
         val client = GoogleSignIn.getClient(activity, options)
 

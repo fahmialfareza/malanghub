@@ -96,6 +96,7 @@ export const MalanghubProviders = ({
 }: MalanghubProvidersProps) => {
   const [authVersion, setAuthVersion] = useState(0);
   const [alert, setAlert] = useState<AlertState | null>(null);
+  const offlineBannerEnabled = adapters.offlineBannerEnabled ?? true;
 
   const client = useMemo(
     () =>
@@ -150,7 +151,7 @@ export const MalanghubProviders = ({
       <RuntimeContext.Provider value={runtime}>
         <QueryClientProvider client={client}>
           <AlertBanner alert={alert} onClose={() => setAlert(null)} />
-          <OfflineBanner />
+          {offlineBannerEnabled && <OfflineBanner />}
           {children}
           {adapters.analytics}
         </QueryClientProvider>

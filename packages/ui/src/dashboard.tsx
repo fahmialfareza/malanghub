@@ -34,6 +34,7 @@ import {
   getAuthorHref,
   getCategoryHref,
   getCategoryName,
+  getSocialHref,
   readingTime,
   siteUrl,
 } from "./utils";
@@ -255,9 +256,11 @@ const RichTextEditor = ({
 const ProfileHero = ({
   user,
   onEdit,
+  onLogout,
 }: {
   user?: UserProfile;
   onEdit(): void;
+  onLogout(): void | Promise<void>;
 }) => {
   const { Image } = useAdapters();
 
@@ -286,10 +289,16 @@ const ProfileHero = ({
               <p dangerouslySetInnerHTML={{ __html: user.bio }} />
             )}
             <SocialLinks user={user} />
-            <button className="btn btn-primary mt-4" type="button" onClick={onEdit}>
-              <span className="fa fa-edit mr-2" />
-              Edit Profil
-            </button>
+            <div className="malanghub-profile-actions mt-4">
+              <button className="btn btn-primary" type="button" onClick={onEdit}>
+                <span className="fa fa-edit mr-2" />
+                Edit Profil
+              </button>
+              <button className="btn btn-outline-danger" type="button" onClick={onLogout}>
+                <span className="fa fa-sign-out-alt mr-2" />
+                Keluar
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -301,35 +310,60 @@ const SocialLinks = ({ user }: { user?: UserProfile }) => (
   <ul className="author-icons mt-4">
     {user?.facebook && (
       <li>
-        <a target="_blank" rel="noreferrer" className="facebook" href={user.facebook}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="facebook"
+          href={getSocialHref("facebook", user.facebook)}
+        >
           <span className="fab fa-facebook" aria-hidden="true" />
         </a>
       </li>
     )}
     {user?.twitter && (
       <li>
-        <a target="_blank" rel="noreferrer" className="twitter" href={`https://twitter.com/${user.twitter}`}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="twitter"
+          href={getSocialHref("twitter", user.twitter)}
+        >
           <span className="fab fa-twitter" aria-hidden="true" />
         </a>
       </li>
     )}
     {user?.instagram && (
       <li>
-        <a target="_blank" rel="noreferrer" className="instagram" href={`https://instagram.com/${user.instagram}`}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="instagram"
+          href={getSocialHref("instagram", user.instagram)}
+        >
           <span className="fab fa-instagram" aria-hidden="true" />
         </a>
       </li>
     )}
     {user?.linkedin && (
       <li>
-        <a target="_blank" rel="noreferrer" className="linkedin" href={user.linkedin}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="linkedin"
+          href={getSocialHref("linkedin", user.linkedin)}
+        >
           <span className="fab fa-linkedin" aria-hidden="true" />
         </a>
       </li>
     )}
     {user?.tiktok && (
       <li>
-        <a target="_blank" rel="noreferrer" className="tiktok" href={`https://www.tiktok.com/@${user.tiktok}`}>
+        <a
+          target="_blank"
+          rel="noreferrer"
+          className="tiktok"
+          href={getSocialHref("tiktok", user.tiktok)}
+        >
           <span className="fab fa-tiktok" aria-hidden="true" />
         </a>
       </li>
@@ -1358,7 +1392,8 @@ const ApproveDraftModal = ({
 };
 
 export const DashboardPage = () => {
-  const { api, authStorage, authVersion } = useMalanghubRuntime();
+  const { api, authStorage, authVersion, notify, refreshAuth, signOut } =
+    useMalanghubRuntime();
   const adapters = useAdapters();
   const { Meta } = adapters;
   const [hasToken, setHasToken] = useState(false);
@@ -1372,6 +1407,14 @@ export const DashboardPage = () => {
     });
   }, [adapters, authStorage, authVersion]);
 
+  const onLogout = async () => {
+    await signOut();
+    setHasToken(false);
+    refreshAuth();
+    notify("Berhasil keluar", "success");
+    adapters.navigate("/signin");
+  };
+
   if (currentUser.isLoading) return <Spinner />;
 
   return (
@@ -1382,7 +1425,11 @@ export const DashboardPage = () => {
         robots="noindex,nofollow"
       />
       <Breadcrumbs label="Profil" />
-      <ProfileHero user={currentUser.data} onEdit={() => setProfileModalOpen(true)} />
+      <ProfileHero
+        user={currentUser.data}
+        onEdit={() => setProfileModalOpen(true)}
+        onLogout={onLogout}
+      />
       {currentUser.data && <DashboardWorkbench user={currentUser.data} />}
       <EditProfileModal user={currentUser.data} open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
     </>
@@ -1504,7 +1551,10 @@ const DraftArticleView = ({ news }: { news: News }) => {
                                   target="_blank"
                                   rel="noreferrer"
                                   className="facebook"
-                                  href={news.user.facebook}
+                                  href={getSocialHref(
+                                    "facebook",
+                                    news.user.facebook,
+                                  )}
                                 >
                                   <span className="fab fa-facebook" aria-hidden="true" />
                                 </a>
@@ -1516,7 +1566,10 @@ const DraftArticleView = ({ news }: { news: News }) => {
                                   target="_blank"
                                   rel="noreferrer"
                                   className="twitter"
-                                  href={`https://twitter.com/${news.user.twitter}`}
+                                  href={getSocialHref(
+                                    "twitter",
+                                    news.user.twitter,
+                                  )}
                                 >
                                   <span className="fab fa-twitter" aria-hidden="true" />
                                 </a>
@@ -1528,7 +1581,10 @@ const DraftArticleView = ({ news }: { news: News }) => {
                                   target="_blank"
                                   rel="noreferrer"
                                   className="instagram"
-                                  href={`https://instagram.com/${news.user.instagram}`}
+                                  href={getSocialHref(
+                                    "instagram",
+                                    news.user.instagram,
+                                  )}
                                 >
                                   <span className="fab fa-instagram" aria-hidden="true" />
                                 </a>
@@ -1540,7 +1596,10 @@ const DraftArticleView = ({ news }: { news: News }) => {
                                   target="_blank"
                                   rel="noreferrer"
                                   className="linkedin"
-                                  href={news.user.linkedin}
+                                  href={getSocialHref(
+                                    "linkedin",
+                                    news.user.linkedin,
+                                  )}
                                 >
                                   <span className="fab fa-linkedin" aria-hidden="true" />
                                 </a>
@@ -1552,7 +1611,10 @@ const DraftArticleView = ({ news }: { news: News }) => {
                                   target="_blank"
                                   rel="noreferrer"
                                   className="tiktok"
-                                  href={`https://www.tiktok.com/@${news.user.tiktok}`}
+                                  href={getSocialHref(
+                                    "tiktok",
+                                    news.user.tiktok,
+                                  )}
                                 >
                                   <span className="fab fa-tiktok" aria-hidden="true" />
                                 </a>

@@ -23,6 +23,98 @@
         // Ignore storage access errors in restricted WebView modes.
       }
     </script>
+    <style>
+      html,
+      body {
+        background: #f8fafc;
+      }
+
+      [data-theme="dark"],
+      [data-theme="dark"] body {
+        background: #111322;
+      }
+
+      body.malanghub-splash-active {
+        overflow: hidden;
+      }
+
+      .malanghub-startup-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 2147483647;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: #f8fafc;
+        color: #0085ad;
+        opacity: 1;
+        transition:
+          opacity 180ms ease,
+          visibility 180ms ease;
+      }
+
+      body.malanghub-splash-active .malanghub-startup-splash {
+        display: flex;
+      }
+
+      [data-theme="dark"] .malanghub-startup-splash {
+        background: #111322;
+      }
+
+      .malanghub-startup-splash--hide {
+        visibility: hidden;
+        opacity: 0;
+      }
+
+      .malanghub-startup-splash__content {
+        display: grid;
+        justify-items: center;
+        gap: 22px;
+        padding: 32px;
+        text-align: center;
+      }
+
+      .malanghub-startup-splash__logo {
+        width: min(240px, 68vw);
+        height: auto;
+      }
+
+      .malanghub-startup-splash__loader {
+        width: 42px;
+        height: 42px;
+        border: 4px solid rgba(0, 133, 173, 0.18);
+        border-top-color: #0085ad;
+        border-radius: 50%;
+        animation: malanghub-splash-spin 800ms linear infinite;
+      }
+
+      .malanghub-startup-splash__label {
+        color: currentColor;
+        font-family:
+          "Cabin",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      @keyframes malanghub-splash-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .malanghub-startup-splash,
+        .malanghub-startup-splash__loader {
+          animation: none;
+          transition: none;
+        }
+      }
+    </style>
     <link
       href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap"
       rel="stylesheet"
@@ -35,6 +127,54 @@
     <script src="https://kit.fontawesome.com/855574462f.js" crossorigin="anonymous"></script>
   </head>
   <body>
+    <script>
+      (() => {
+        const userAgent = navigator.userAgent || "";
+        const platform = navigator.platform || "";
+        const isAndroid = /Android/i.test(userAgent);
+        const isIos =
+          /iPad|iPhone|iPod/i.test(userAgent) ||
+          (platform === "MacIntel" && navigator.maxTouchPoints > 1);
+
+        if (!isAndroid && !isIos) {
+          return;
+        }
+
+        const hideSplash = () => {
+          const splash = document.getElementById("malanghub-splash");
+          document.body.classList.remove("malanghub-splash-active");
+
+          if (!splash) {
+            return;
+          }
+
+          splash.classList.add("malanghub-startup-splash--hide");
+          window.setTimeout(() => splash.remove(), 220);
+        };
+
+        document.documentElement.dataset.splashStart = String(
+          performance.now(),
+        );
+        document.body.classList.add("malanghub-splash-active");
+        window.setTimeout(hideSplash, 4500);
+      })();
+    </script>
+    <div
+      id="malanghub-splash"
+      class="malanghub-startup-splash"
+      role="status"
+      aria-label="Memuat Malanghub"
+    >
+      <div class="malanghub-startup-splash__content">
+        <img
+          class="malanghub-startup-splash__logo"
+          src="/logo.png"
+          alt="Malanghub"
+        />
+        <div class="malanghub-startup-splash__loader" aria-hidden="true"></div>
+        <div class="malanghub-startup-splash__label">Memuat Malanghub</div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

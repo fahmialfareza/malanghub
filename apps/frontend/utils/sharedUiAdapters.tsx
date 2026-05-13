@@ -63,6 +63,7 @@ export const useNextUiAdapters = (): PlatformAdapters => {
     useCurrentPath: () => router.asPath.split("?")[0] || "/",
     reportError: (error) => Sentry.captureException(error),
     googleAuthAvailable: true,
+    offlineBannerEnabled: false,
     tinyApiKey: process.env.NEXT_PUBLIC_TINY_API_KEY,
     apiBaseUrl: process.env.NEXT_PUBLIC_API_ADDRESS,
     appName: "Malanghub",

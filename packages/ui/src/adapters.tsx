@@ -39,6 +39,7 @@ export interface PlatformAdapters {
   analytics?: React.ReactNode;
   googleAuthAvailable?: boolean;
   googleAuthUnavailableMessage?: string;
+  offlineBannerEnabled?: boolean;
   tinyApiKey?: string;
   apiBaseUrl?: string;
   appName?: string;
@@ -105,6 +106,7 @@ export const browserAdapters: PlatformAdapters = {
     console.error(error);
   },
   googleAuthAvailable: false,
+  offlineBannerEnabled: true,
   appName: "Malanghub",
 };
 

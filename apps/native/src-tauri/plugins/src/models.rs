@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 pub struct SignInRequest {
     pub ios_client_id: Option<String>,
     pub android_client_id: Option<String>,
-    pub server_client_id: Option<String>,
     pub redirect_uri: Option<String>,
 }
 

@@ -32,8 +32,14 @@ const Footer = () => {
               <Link href="/terms" style={{ color: "inherit", marginRight: "1rem" }}>
                 Syarat dan Ketentuan
               </Link>
-              <Link href="/privacy" style={{ color: "inherit" }}>
+              <Link
+                href="/privacy"
+                style={{ color: "inherit", marginRight: "1rem" }}
+              >
                 Kebijakan Privasi
+              </Link>
+              <Link href="/download" style={{ color: "inherit" }}>
+                Download
               </Link>
             </p>
           </div>

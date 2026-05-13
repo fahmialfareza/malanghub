@@ -43,6 +43,7 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Native mobile launcher icons regenerated from the Malanghub logo for Android and iOS.
 - [x] Native Google login no longer depends on app-level browser callbacks on Android; iOS uses native PKCE inside `ASWebAuthenticationSession`.
 - [x] Native mobile Google login switched to Option B: Android/iOS obtain a Google credential natively, then the backend issues the Malanghub token.
+- [x] Native Android Google login uses `VITE_GOOGLE_ANDROID_CLIENT_ID` directly instead of a server-client env var.
 - [x] Backend Google login accepts native `id_token` payloads and validates the Google token audience before issuing a Malanghub token.
 - [x] Native Tauri Google auth plugin added for Android/iOS sign-in.
 - [x] Native Option B Google auth validated through Android debug APK and iOS simulator archive builds.
@@ -82,5 +83,23 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Manual desktop: `pnpm --filter native tauri dev`
 - [x] iOS simulator and device Xcode project builds validated with `xcodebuild`.
 - [x] iOS physical-device dev opener validated with `pnpm --filter native tauri ios dev --open --host <mac-lan-ip>`.
+- [x] Native mobile back/forward/refresh gestures added on top of React Router history without visible browser controls.
+- [x] Android hardware back button wired to native React Router navigation.
+- [x] Native mobile edge-swipe back/forward and pull-to-refresh gestures added.
+- [x] Root and native package scripts added for macOS, Windows, Linux, iOS real-device, and Android real-device runs.
+- [x] Native mobile bottom tab navigation added and web-style hamburger navigation hidden on native mobile.
+- [x] Native external link bridge added for browser/app links such as Google Maps, WhatsApp, email, and social shares.
+- [x] Native shell open allowlist configured for http, mail, tel, SMS, maps, and WhatsApp links.
+- [x] Native external link opening moved behind an ACL-permitted Rust plugin command so real-device dev builds can open OS apps from the LAN Vite origin.
+- [x] Native Vite startup splash screen limited to Android/iOS and protected with a fail-safe timeout.
+- [x] Native mobile News tab now opens a category sheet for "Semua Berita" and category routes.
+- [x] Native mobile header and dark/light toggle polished for bottom-tab navigation.
+- [x] Shared profile page logout action added for authenticated users.
+- [x] Shared sign-in/sign-up pages updated with clearer account-switch links and mobile spacing.
+- [x] Shared social links normalized so handles and full external URLs open consistently.
+- [x] Web frontend download page and navigation/footer links added for native app installers.
+- [x] Web frontend opts out of the shared offline banner so `navigator.onLine` false positives do not cover pages.
+- [x] Native external link bridge deduplicates desktop opens and uses app-first Google Maps navigation fallbacks.
+- [x] Contact map overlays working link/navigation hit areas on the embedded Google Maps controls without an extra button below the iframe.
 - [ ] Manual mobile: `pnpm --filter native tauri android dev --open`
 - [ ] Manual mobile: `pnpm --filter native tauri ios dev --open`

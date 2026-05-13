@@ -61,6 +61,21 @@
   flex-wrap: wrap;
 }
 
+.malanghub-profile-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.malanghub-auth-switch {
+  color: var(--font-color, #5f6675);
+  font-weight: 600;
+}
+
+.malanghub-auth-switch a {
+  color: var(--primary-color, #0085ad);
+}
+
 .malanghub-native-note {
   border-left: 4px solid #0085ad;
   margin: 12px 0 18px;
@@ -132,4 +147,602 @@
   background: #1a1b2a;
   border-color: var(--border-light, #444);
   color: var(--font-color);
+}
+
+body.malanghub-native-mobile .navbar-toggler,
+body.malanghub-native-mobile #navbarSupportedContent {
+  display: none !important;
+}
+
+body.malanghub-native-mobile .w3l-header {
+  position: sticky;
+  z-index: 10002;
+  top: 0;
+  padding: 0;
+  border-bottom: 1px solid rgba(0, 133, 173, 0.12);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 26px rgba(10, 20, 30, 0.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+body.malanghub-native-mobile .w3l-header .navbar {
+  min-height: 74px;
+  padding: calc(10px + env(safe-area-inset-top)) 18px 12px !important;
+}
+
+body.malanghub-native-mobile .w3l-header .container {
+  display: flex;
+  width: 100%;
+  max-width: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+}
+
+body.malanghub-native-mobile .w3l-header .navbar-brand {
+  min-width: 0;
+  max-width: min(52vw, 170px);
+}
+
+body.malanghub-native-mobile .w3l-header .navbar-brand img {
+  width: auto !important;
+  max-width: 100%;
+  height: 34px !important;
+  object-fit: contain;
+}
+
+body.malanghub-native-mobile .mobile-position {
+  position: static;
+  right: auto;
+  top: auto;
+  margin-left: auto;
+}
+
+body.malanghub-native-mobile .theme-switch-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+body.malanghub-native-mobile .theme-switch {
+  display: block;
+  width: 58px;
+  height: 34px;
+  border: 1px solid rgba(0, 133, 173, 0.24);
+  border-radius: 999px;
+  margin: 0;
+  padding: 3px;
+  background: rgba(0, 133, 173, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+}
+
+body.malanghub-native-mobile .theme-switch .mode-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin-left: 0;
+}
+
+body.malanghub-native-mobile .theme-switch .mode-container::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 26px;
+  height: 26px;
+  content: "";
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(10, 20, 30, 0.22);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+body.malanghub-native-mobile
+  .theme-switch
+  input:checked
+  + .mode-container::before {
+  background: #111322;
+  transform: translateX(24px);
+}
+
+body.malanghub-native-mobile .theme-switch .gg-sun,
+body.malanghub-native-mobile .theme-switch .gg-moon {
+  position: absolute;
+  z-index: 1;
+  top: 5px;
+  left: 5px;
+  color: #0085ad;
+  --ggs: 0.68;
+}
+
+body.malanghub-native-mobile .theme-switch .gg-sun {
+  left: 31px;
+  color: #f8f9fa;
+}
+
+body.malanghub-native-mobile .w3l-contact-2 {
+  padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+}
+
+body.malanghub-native-mobile .w3l-contact-2 .container {
+  padding-right: 18px;
+  padding-left: 18px;
+}
+
+body.malanghub-native-mobile .w3l-contact-2 .contact-grids {
+  gap: 20px;
+}
+
+body.malanghub-native-mobile .w3l-contact-2 .contact-left,
+body.malanghub-native-mobile .w3l-contact-2 .contact-right {
+  width: 100%;
+  max-width: 100%;
+}
+
+body.malanghub-native-mobile .signin-form .contact-input {
+  min-height: 56px;
+  font-size: 16px;
+}
+
+body.malanghub-native-mobile .malanghub-profile-actions .btn {
+  min-width: 132px;
+}
+
+body.malanghub-native-mobile .w3l-footer-16 {
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+
+.malanghub-native-tabbar {
+  position: fixed;
+  z-index: 10003;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  gap: 2px;
+  align-items: stretch;
+  min-height: calc(66px + env(safe-area-inset-bottom));
+  padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(0, 133, 173, 0.18);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -12px 28px rgba(10, 20, 30, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.malanghub-native-tabbar button {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #5f6675;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.malanghub-native-tabbar button .fa {
+  font-size: 19px;
+  line-height: 1;
+}
+
+.malanghub-native-tabbar button.active {
+  background: rgba(0, 133, 173, 0.1);
+  color: #0085ad;
+}
+
+.malanghub-native-tabbar button:active {
+  background: rgba(0, 133, 173, 0.15);
+  color: #006987;
+}
+
+.malanghub-native-tabbar-spacer {
+  display: none;
+}
+
+body.malanghub-native-mobile .malanghub-native-tabbar-spacer {
+  display: block;
+  height: calc(76px + env(safe-area-inset-bottom));
+}
+
+.malanghub-native-search-backdrop {
+  position: fixed;
+  z-index: 10004;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(8, 10, 20, 0.5);
+}
+
+.malanghub-native-search-sheet {
+  width: 100%;
+  border-radius: 16px 16px 0 0;
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+  background: var(--bg-color, #fff);
+  box-shadow: 0 -18px 38px rgba(0, 0, 0, 0.26);
+}
+
+.malanghub-native-search-sheet label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--heading-color, #101828);
+  font-weight: 800;
+}
+
+.malanghub-native-search-sheet div {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid rgba(0, 133, 173, 0.26);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.malanghub-native-search-sheet input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  padding: 14px;
+  color: #101828;
+  font-size: 16px;
+  outline: none;
+}
+
+.malanghub-native-search-sheet button {
+  width: 54px;
+  border: 0;
+  background: #0085ad;
+  color: #fff;
+}
+
+.malanghub-native-sheet-backdrop {
+  position: fixed;
+  z-index: 10004;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(8, 10, 20, 0.5);
+}
+
+.malanghub-native-action-sheet {
+  width: 100%;
+  max-height: min(72vh, 620px);
+  overflow: hidden;
+  border-radius: 18px 18px 0 0;
+  background: var(--bg-color, #fff);
+  box-shadow: 0 -18px 38px rgba(0, 0, 0, 0.26);
+}
+
+.malanghub-native-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 12px;
+  border-bottom: 1px solid rgba(0, 133, 173, 0.12);
+}
+
+.malanghub-native-sheet-header h2 {
+  margin: 0;
+  color: var(--heading-color, #101828);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.malanghub-native-sheet-header button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(0, 133, 173, 0.1);
+  color: var(--primary-color, #0085ad);
+}
+
+.malanghub-native-sheet-body {
+  max-height: calc(min(72vh, 620px) - 67px);
+  overflow-y: auto;
+  padding: 10px 14px calc(18px + env(safe-area-inset-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+
+.malanghub-native-sheet-options {
+  display: grid;
+  gap: 8px;
+}
+
+.malanghub-native-sheet-options button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  border-radius: 10px;
+  padding: 13px 14px;
+  background: transparent;
+  color: var(--font-color, #5f6675);
+  font-size: 16px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.malanghub-native-sheet-options button .fa {
+  width: 20px;
+  color: var(--primary-color, #0085ad);
+  text-align: center;
+}
+
+.malanghub-native-sheet-options button.active,
+.malanghub-native-sheet-options button:active {
+  background: rgba(0, 133, 173, 0.1);
+  color: var(--primary-color, #0085ad);
+}
+
+.malanghub-native-sheet-note {
+  padding: 12px 14px;
+  color: var(--font-color, #5f6675);
+  font-weight: 600;
+}
+
+.malanghub-map-embed {
+  position: relative;
+}
+
+.malanghub-map-hitarea {
+  position: absolute;
+  top: 32px;
+  z-index: 3;
+  display: block;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  color: transparent;
+  font-size: 0;
+}
+
+.malanghub-map-hitarea:focus-visible {
+  outline: 3px solid var(--primary-color, #0085ad);
+  outline-offset: 2px;
+}
+
+.malanghub-map-hitarea-link {
+  left: min(calc(100% - 205px), 450px);
+}
+
+.malanghub-map-hitarea-navigation {
+  left: min(calc(100% - 106px), 548px);
+}
+
+@media (max-width: 575px) {
+  .malanghub-map-hitarea {
+    top: 24px;
+    width: 58px;
+    height: 58px;
+  }
+
+  .malanghub-map-hitarea-link {
+    left: calc(100% - 155px);
+  }
+
+  .malanghub-map-hitarea-navigation {
+    left: calc(100% - 76px);
+  }
+}
+
+.malanghub-download-page {
+  background: var(--bg-color, #fff);
+}
+
+.malanghub-download-intro {
+  position: sticky;
+  top: 88px;
+}
+
+.malanghub-download-kicker {
+  display: inline-flex;
+  margin-bottom: 12px;
+  color: var(--primary-color, #0085ad);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.malanghub-download-intro p {
+  margin: 18px 0 22px;
+  color: var(--font-color, #5f6675);
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.malanghub-download-help {
+  color: var(--primary-color, #0085ad);
+  font-weight: 800;
+}
+
+.malanghub-download-section h4 {
+  margin-bottom: 18px;
+  color: var(--heading-color, #101828);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.malanghub-download-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.malanghub-download-card {
+  display: flex;
+  min-height: 176px;
+  align-items: flex-start;
+  gap: 18px;
+  border: 1px solid rgba(0, 133, 173, 0.16);
+  border-radius: 8px;
+  padding: 22px;
+  background: var(--card-bg, #fff);
+  box-shadow: 0 12px 26px rgba(16, 24, 40, 0.06);
+}
+
+.malanghub-download-card-icon {
+  display: grid;
+  flex: 0 0 54px;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 8px;
+  background: rgba(0, 133, 173, 0.1);
+  color: var(--primary-color, #0085ad);
+}
+
+.malanghub-download-card-icon .fa {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.malanghub-download-card-body {
+  min-width: 0;
+}
+
+.malanghub-download-card h4 {
+  margin: 0 0 8px;
+  color: var(--heading-color, #101828);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.malanghub-download-card p {
+  margin: 0 0 18px;
+  color: var(--font-color, #5f6675);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.malanghub-download-card .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 116px;
+  border-radius: 6px;
+  font-weight: 800;
+}
+
+.malanghub-download-card.is-disabled {
+  border-color: rgba(95, 102, 117, 0.18);
+  box-shadow: none;
+  opacity: 0.76;
+}
+
+.malanghub-download-card.is-disabled .malanghub-download-card-icon {
+  background: rgba(95, 102, 117, 0.1);
+  color: var(--font-color, #5f6675);
+}
+
+.malanghub-download-status {
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  border: 1px solid rgba(95, 102, 117, 0.24);
+  border-radius: 6px;
+  padding: 0 14px;
+  color: var(--font-color, #5f6675);
+  font-weight: 800;
+}
+
+[data-theme="dark"] .malanghub-download-card {
+  border-color: rgba(255, 255, 255, 0.1);
+  background: #1a1b2a;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .malanghub-download-card-icon {
+  background: rgba(0, 167, 216, 0.14);
+  color: #00a7d8;
+}
+
+[data-theme="dark"] .malanghub-download-card.is-disabled {
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .malanghub-download-status {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+@media (max-width: 991px) {
+  .malanghub-download-intro {
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .malanghub-download-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .malanghub-download-card {
+    min-height: auto;
+    padding: 18px;
+  }
+}
+
+[data-theme="dark"] body.malanghub-native-mobile .w3l-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+  background: rgba(18, 20, 34, 0.94);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+
+[data-theme="dark"] body.malanghub-native-mobile .theme-switch {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(0, 167, 216, 0.18);
+  box-shadow: none;
+}
+
+[data-theme="dark"] .malanghub-native-tabbar {
+  border-top-color: rgba(255, 255, 255, 0.12);
+  background: rgba(18, 20, 34, 0.94);
+  box-shadow: 0 -12px 28px rgba(0, 0, 0, 0.32);
+}
+
+[data-theme="dark"] .malanghub-native-tabbar button {
+  color: #a7adbd;
+}
+
+[data-theme="dark"] .malanghub-native-tabbar button.active {
+  background: rgba(0, 167, 216, 0.14);
+  color: #00a7d8;
+}
+
+[data-theme="dark"] .malanghub-native-search-sheet {
+  background: #111322;
+}
+
+[data-theme="dark"] .malanghub-native-action-sheet {
+  background: #111322;
+}
+
+[data-theme="dark"] .malanghub-native-sheet-header {
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .malanghub-native-sheet-header button,
+[data-theme="dark"] .malanghub-native-sheet-options button.active,
+[data-theme="dark"] .malanghub-native-sheet-options button:active {
+  background: rgba(0, 167, 216, 0.14);
+}
+
+[data-theme="dark"] .malanghub-native-search-sheet div {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: #1a1b2a;
+}
+
+[data-theme="dark"] .malanghub-native-search-sheet input {
+  background: #1a1b2a;
+  color: #f8f9fa;
 }

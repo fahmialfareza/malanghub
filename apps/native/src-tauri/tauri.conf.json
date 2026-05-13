@@ -38,6 +38,9 @@
     }
   },
   "plugins": {
+    "shell": {
+      "open": "((mailto:.+)|(tel:.+)|(sms:.+)|(https?://.+)|(geo:.+)|(maps:.+)|(whatsapp:.+)|(comgooglemaps:.+)|(google\\.navigation:.+))"
+    },
     "deep-link": {
       "mobile": [
         {

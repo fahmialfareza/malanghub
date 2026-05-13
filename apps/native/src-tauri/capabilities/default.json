@@ -3,12 +3,16 @@
   "identifier": "default",
   "description": "Default desktop and mobile permissions",
   "windows": ["main"],
+  "remote": {
+    "urls": ["http://*:1420/*"]
+  },
   "permissions": [
     "core:default",
     "deep-link:default",
     "shell:allow-open",
     "oauth:allow-start",
     "oauth:allow-cancel",
-    "google-auth:allow-sign-in"
+    "google-auth:allow-sign-in",
+    "google-auth:allow-open-external-url"
   ]
 }

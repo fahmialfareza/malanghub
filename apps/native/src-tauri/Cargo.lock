@@ -3382,6 +3382,7 @@ dependencies = [
  "serde",
  "tauri",
  "tauri-plugin",
+ "tauri-plugin-shell",
  "thiserror 2.0.18",
 ]
 
