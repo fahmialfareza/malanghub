@@ -40,6 +40,33 @@ Shared:
 | `VITE_TINY_API_KEY`             | TinyMCE API key                                               |
 | `VITE_SENTRY_DSN`               | Optional Sentry DSN                                           |
 
+Store identifiers:
+
+- Android Play Store package: `com.malanghub.native`
+- iOS App Store bundle ID: `com.malanghub.native`
+- Tauri mobile generator ID: `com.malanghub.mobile`
+
+Tauri's Android/iOS generator rejects `native` because it is a reserved Java
+keyword. The CI workflows therefore run Tauri mobile commands with
+`src-tauri/tauri.mobile-ci.conf.json`, then patch the generated Android/iOS
+projects back to `com.malanghub.native` before compiling. Do not create new
+store apps for `com.malanghub.mobile`; it is only an internal build-time ID. The
+iOS workflow also wraps `xcodebuild` so the archived IPA keeps
+`com.malanghub.native` as its final `CFBundleIdentifier`.
+
+For manual mobile builds, use the same mobile config path:
+
+```bash
+pnpm --filter native mobile:init android
+pnpm --filter native tauri android build --config src-tauri/tauri.mobile-ci.conf.json --aab --ci
+
+pnpm --filter native mobile:init ios
+```
+
+For a local iOS App Store archive, also mimic the workflow's `xcodebuild`
+bundle-ID wrapper or use `pnpm release ios <build-number>` so the final archive
+does not fall back to the internal `com.malanghub.mobile` generator ID.
+
 Apple App Store Connect:
 
 | Name                                      | Notes                                              |
@@ -115,7 +142,8 @@ keytool -genkeypair \
 
 1. Base64 `malanghub-upload-key.jks` into `ANDROID_KEYSTORE_BASE64`.
 2. In Play Console, enable API access, create or link a Google Cloud service account, grant app release access, and download the JSON key.
-3. The first Play Console app/bundle upload may still need to be done manually before API uploads are accepted.
+3. The Android OAuth client package name must remain `com.malanghub.native`; add the SHA-1 for the upload key or debug key you are testing.
+4. The first Play Console app/bundle upload may still need to be done manually before API uploads are accepted.
 
 Snapcraft:
 
@@ -125,6 +153,8 @@ snapcraft export-login --snaps malanghub --acls package_upload,package_release s
 ```
 
 Copy the full `snapcraft-login.txt` contents into `SNAPCRAFT_STORE_CREDENTIALS`.
+The Snapcraft build installs `pnpm` locally inside the part build directory
+because the Node snap used by Snapcraft does not expose `corepack`.
 
 Windows:
 
@@ -134,3 +164,6 @@ Windows:
 4. Download the x64 and arm64 MSIX artifacts from the GitHub Actions run and upload them manually in Partner Center.
 
 `WINDOWS_PFX_BASE64` is not required for the Partner Center artifact flow. It is only useful if you want the GitHub artifact to be signed for sideload testing before Store submission.
+
+The MSIX script generates the required wide tile logo during packaging so
+`Square310x310Logo` and `Wide310x150Logo` are present together in the manifest.

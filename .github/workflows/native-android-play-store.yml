@@ -104,7 +104,9 @@ jobs:
       - name: Initialize Android project
         run: |
           if [ ! -d apps/native/src-tauri/gen/android ]; then
-            pnpm --filter native tauri android init
+            pnpm --filter native mobile:init android
+          else
+            pnpm --filter native mobile:store-id android
           fi
 
       - name: Configure Android release signing
@@ -131,10 +133,11 @@ jobs:
           EOF
 
           pnpm --filter native android:release-signing
+          pnpm --filter native mobile:store-id android
 
       - name: Build Android App Bundle
         run: |
-          pnpm --filter native tauri android build --aab --ci
+          pnpm --filter native tauri android build --aab --ci --config src-tauri/tauri.mobile-ci.conf.json
           aab_path="$(find apps/native/src-tauri/gen/android/app/build/outputs/bundle -name '*.aab' -type f | head -n 1)"
           test -n "$aab_path"
           echo "AAB_PATH=$aab_path" >> "$GITHUB_ENV"

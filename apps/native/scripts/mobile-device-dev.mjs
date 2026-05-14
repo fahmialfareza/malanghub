@@ -1,5 +1,11 @@
 import { spawn, spawnSync } from "node:child_process";
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -88,22 +94,47 @@ const androidThemeItems = `        <item name="android:windowBackground">@drawab
         <item name="android:navigationBarColor">@color/splash_background</item>
         <item name="android:statusBarColor">@color/splash_background</item>`;
 
-const androidThemeXml = `<resources xmlns:tools="http://schemas.android.com/tools">
+function getAndroidThemeName() {
+  try {
+    const manifest = readFileSync(
+      resolve(
+        srcTauriDir,
+        "gen/android/app/src/main/AndroidManifest.xml",
+      ),
+      "utf8",
+    );
+    const match = manifest.match(/android:theme="@style\/([^"]+)"/);
+
+    if (match?.[1]) {
+      return match[1];
+    }
+  } catch {
+    // The generated Android project may not exist yet.
+  }
+
+  return "Theme.malanghub_native";
+}
+
+function getAndroidThemeXml(themeName) {
+  return `<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Theme.malanghub_native" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="${themeName}" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 ${androidThemeItems}
     </style>
 </resources>
 `;
+}
 
-const androidV31ThemeXml = `<resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.malanghub_native" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+function getAndroidV31ThemeXml(themeName) {
+  return `<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="${themeName}" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 ${androidThemeItems}
         <item name="android:windowSplashScreenBackground">@color/splash_background</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
     </style>
 </resources>
 `;
+}
 
 function writeGeneratedFile(path, contents) {
   mkdirSync(dirname(path), { recursive: true });
@@ -146,6 +177,7 @@ function prepareMobileSplashResources() {
     "gen/apple/Assets.xcassets/LaunchLogo.imageset",
   );
   const androidResDir = resolve(srcTauriDir, "gen/android/app/src/main/res");
+  const androidThemeName = getAndroidThemeName();
 
   writeGeneratedFile(
     resolve(srcTauriDir, "gen/apple/LaunchScreen.storyboard"),
@@ -180,14 +212,17 @@ function prepareMobileSplashResources() {
     resolve(androidResDir, "drawable/splash_screen.xml"),
     androidSplashScreenXml,
   );
-  writeGeneratedFile(resolve(androidResDir, "values/themes.xml"), androidThemeXml);
+  writeGeneratedFile(
+    resolve(androidResDir, "values/themes.xml"),
+    getAndroidThemeXml(androidThemeName),
+  );
   writeGeneratedFile(
     resolve(androidResDir, "values-night/themes.xml"),
-    androidThemeXml,
+    getAndroidThemeXml(androidThemeName),
   );
   writeGeneratedFile(
     resolve(androidResDir, "values-v31/themes.xml"),
-    androidV31ThemeXml,
+    getAndroidV31ThemeXml(androidThemeName),
   );
   ensureAndroidSplashColor(resolve(androidResDir, "values/colors.xml"));
 
@@ -241,6 +276,31 @@ function writePlatformConfig(platform, host) {
   return configPath;
 }
 
+function ensureMobileProject(platform) {
+  const root =
+    platform === "android"
+      ? resolve(srcTauriDir, "gen/android")
+      : resolve(srcTauriDir, "gen/apple");
+  const action = existsSync(root) ? "patch" : "init";
+  const result = spawnSync(
+    process.execPath,
+    [
+      resolve(appDir, "scripts/mobile-store-identifier.mjs"),
+      action,
+      platform,
+    ],
+    {
+      cwd: appDir,
+      env: process.env,
+      stdio: "inherit",
+    },
+  );
+
+  if (result.status !== 0) {
+    process.exit(result.status || 1);
+  }
+}
+
 function configure(platforms, host) {
   prepareMobileSplashResources();
 
@@ -253,9 +313,19 @@ function configure(platforms, host) {
 }
 
 function run(platform, host) {
+  ensureMobileProject(platform);
   configure([platform], host);
 
-  const args = ["tauri", platform, "dev", "--open", `--host=${host}`, ...extraArgs];
+  const args = [
+    "tauri",
+    platform,
+    "dev",
+    "--config",
+    "src-tauri/tauri.mobile-ci.conf.json",
+    "--open",
+    `--host=${host}`,
+    ...extraArgs,
+  ];
 
   console.log(`Starting ${platform} device dev server on ${host}`);
   console.log(`Use the IDE opened by this command so the generated mobile config is applied.`);

@@ -7,6 +7,10 @@ description: |
 grade: stable
 confinement: strict
 
+layout:
+  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
+    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1
+
 apps:
   malanghub:
     command: usr/bin/malanghub-native
@@ -46,8 +50,9 @@ parts:
     override-build: |
       set -eu
       rustup default stable
-      corepack enable
-      corepack prepare pnpm@10.20.0 --activate
+      npm install --prefix "$SNAPCRAFT_PART_BUILD/.pnpm" pnpm@10.20.0
+      export PATH="$SNAPCRAFT_PART_BUILD/.pnpm/node_modules/.bin:$PATH"
+      pnpm --version
       pnpm install --frozen-lockfile
       pnpm --filter native tauri build --bundles deb --ci
 

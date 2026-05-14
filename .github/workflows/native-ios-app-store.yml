@@ -33,6 +33,7 @@ jobs:
       RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
       APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
+      MALANGHUB_IOS_BUNDLE_ID: com.malanghub.native
       VITE_API_ADDRESS: ${{ secrets.VITE_API_ADDRESS }}
       VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
       VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
@@ -115,18 +116,39 @@ jobs:
       - name: Initialize iOS project
         run: |
           if [ ! -d apps/native/src-tauri/gen/apple ]; then
-            pnpm --filter native tauri ios init
+            pnpm --filter native mobile:init ios
+          else
+            pnpm --filter native mobile:store-id ios
           fi
+
+      - name: Configure iOS store bundle override
+        run: |
+          set -euo pipefail
+          wrapper_dir="$RUNNER_TEMP/malanghub-xcodebuild"
+          mkdir -p "$wrapper_dir"
+          cat > "$wrapper_dir/xcodebuild" <<'EOF'
+          #!/bin/sh
+          exec /usr/bin/xcodebuild "$@" PRODUCT_BUNDLE_IDENTIFIER="${MALANGHUB_IOS_BUNDLE_ID:-com.malanghub.native}"
+          EOF
+          chmod +x "$wrapper_dir/xcodebuild"
+          echo "$wrapper_dir" >> "$GITHUB_PATH"
 
       - name: Build IPA
         run: |
+          pnpm --filter native mobile:store-id ios
           pnpm --filter native tauri ios build \
             --target aarch64 \
             --export-method "${{ inputs.export_method }}" \
             --build-number "$BUILD_NUMBER" \
+            --config src-tauri/tauri.mobile-ci.conf.json \
             --ci
           ipa_path="$(find apps/native/src-tauri/gen/apple -name '*.ipa' -type f | head -n 1)"
           test -n "$ipa_path"
+          archive_info="$(find apps/native/src-tauri/gen/apple/build -path '*.xcarchive/Info.plist' -type f | head -n 1 || true)"
+          if [ -n "$archive_info" ]; then
+            bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleIdentifier' "$archive_info")"
+            test "$bundle_id" = "$MALANGHUB_IOS_BUNDLE_ID"
+          fi
           echo "IPA_PATH=$ipa_path" >> "$GITHUB_ENV"
 
       - name: Upload IPA artifact

@@ -1,0 +1,16 @@
+{
+  "identifier": "com.malanghub.mobile",
+  "plugins": {
+    "deep-link": {
+      "mobile": [
+        {
+          "scheme": ["com.malanghub.native"],
+          "appLink": false
+        }
+      ],
+      "desktop": {
+        "schemes": ["com.malanghub.native"]
+      }
+    }
+  }
+}

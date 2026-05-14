@@ -16,6 +16,8 @@
     "android": "node ./scripts/mobile-device-dev.mjs android",
     "mobile:prepare": "node ./scripts/mobile-device-dev.mjs prepare",
     "mobile:config": "node ./scripts/mobile-device-dev.mjs config",
+    "mobile:init": "node ./scripts/mobile-store-identifier.mjs init",
+    "mobile:store-id": "node ./scripts/mobile-store-identifier.mjs patch",
     "android:release-signing": "node ./scripts/android-release-signing.mjs",
     "release:version": "node ./scripts/set-release-version.mjs",
     "ios:device": "node ./scripts/mobile-device-dev.mjs ios",

@@ -118,6 +118,9 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Native release guide added with required GitHub variables, secrets, and credential setup steps.
 - [x] Native release workflows switched shared build configuration from GitHub variables to GitHub secrets.
 - [x] Native bundle/package identifier migrated to `com.malanghub.native`.
+- [x] Native Android/iOS CI uses a safe Tauri generator identifier while keeping store package/bundle `com.malanghub.native`.
 - [x] Windows MSIX Partner Center identity moved into GitHub Secrets; PFX kept optional for sideload signing only.
+- [x] Linux Snapcraft build fixed to install `pnpm` without `corepack`.
+- [x] Windows MSIX manifest fixed with a generated wide tile logo.
 - [x] Manual mobile: `pnpm --filter native tauri android dev --open`
 - [x] Manual mobile: `pnpm --filter native tauri ios dev --open`
