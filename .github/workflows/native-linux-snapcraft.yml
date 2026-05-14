@@ -60,8 +60,12 @@ jobs:
           if-no-files-found: error
 
       - name: Publish Snap to Snapcraft
-        uses: canonical/action-publish@v1
-        with:
-          store_login: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
-          snap: ${{ steps.snapcraft.outputs.snap }}
-          release: ${{ inputs.channel }}
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        run: |
+          set -euo pipefail
+          test -n "$SNAPCRAFT_STORE_CREDENTIALS"
+          if ! command -v snapcraft >/dev/null 2>&1; then
+            sudo snap install --channel stable --classic snapcraft
+          fi
+          snapcraft upload "${{ steps.snapcraft.outputs.snap }}" --release "${{ inputs.channel }}"

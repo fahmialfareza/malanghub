@@ -160,10 +160,24 @@ jobs:
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_MACOS_APPLE_ID: ${{ secrets.APP_STORE_CONNECT_MACOS_APPLE_ID }}
+          APP_STORE_CONNECT_ASC_PUBLIC_ID: ${{ secrets.APP_STORE_CONNECT_ASC_PUBLIC_ID }}
         run: |
           set -euo pipefail
           test -n "$APP_STORE_CONNECT_KEY_ID"
           test -n "$APP_STORE_CONNECT_ISSUER_ID"
-          xcrun altool --upload-package "$PKG_PATH" \
-            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+          test -n "$APP_STORE_CONNECT_MACOS_APPLE_ID"
+          upload_args=(
+            --upload-package "$PKG_PATH"
+            --type macos
+            --apple-id "$APP_STORE_CONNECT_MACOS_APPLE_ID"
+            --bundle-id com.malanghub.native
+            --bundle-version "$BUILD_NUMBER"
+            --bundle-short-version-string "$RELEASE_VERSION"
+            --apiKey "$APP_STORE_CONNECT_KEY_ID"
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          )
+          if [ -n "${APP_STORE_CONNECT_ASC_PUBLIC_ID:-}" ]; then
+            upload_args+=(--asc-public-id "$APP_STORE_CONNECT_ASC_PUBLIC_ID")
+          fi
+          xcrun altool "${upload_args[@]}"

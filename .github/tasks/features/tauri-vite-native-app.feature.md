@@ -125,8 +125,11 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] iOS CI fixed to use manual App Store signing with the installed provisioning profile.
 - [x] iOS CI signing wrapper fixed to bake Team ID and provisioning profile values before Tauri invokes `xcodebuild`.
 - [x] iOS CI signing wrapper escaped Bash array expansion so GitHub Actions does not parse it as an expression.
+- [x] iOS CI export fixed to replace Tauri's export plist with manual App Store signing options.
 - [x] macOS/iOS App Store Connect uploads switched to `altool` API key flags accepted by Xcode 16.4.
+- [x] macOS/iOS App Store Connect uploads updated with required `altool --upload-package` metadata.
 - [x] Linux Snapcraft invalid architecture-variable layout removed and snap icon selection tightened.
+- [x] Linux Snapcraft publish updated to use `SNAPCRAFT_STORE_CREDENTIALS` with `snapcraft upload`.
 - [x] Android Play Developer API enablement failure documented in the native release guide.
 - [x] Manual mobile: `pnpm --filter native tauri android dev --open`
 - [x] Manual mobile: `pnpm --filter native tauri ios dev --open`

@@ -84,6 +84,9 @@ Apple App Store Connect:
 | `APP_STORE_CONNECT_KEY_ID`                | App Store Connect API key ID                       |
 | `APP_STORE_CONNECT_ISSUER_ID`             | App Store Connect issuer ID                        |
 | `APP_STORE_CONNECT_PRIVATE_KEY_BASE64`    | Base64 `AuthKey_<KEY_ID>.p8`                       |
+| `APP_STORE_CONNECT_IOS_APPLE_ID`          | Numeric App Store Connect Apple ID for the iOS app |
+| `APP_STORE_CONNECT_MACOS_APPLE_ID`        | Numeric App Store Connect Apple ID for the macOS app |
+| `APP_STORE_CONNECT_ASC_PUBLIC_ID`         | Optional provider public ID when the ASC account has multiple providers |
 
 Android Play Console:
 
@@ -125,8 +128,10 @@ Apple:
 2. In Keychain Access, export the Apple Distribution certificate as `.p12`.
 3. Export the Mac Installer certificate as `.p12`.
 4. In App Store Connect, create an API key under `Users and Access > Integrations > App Store Connect API`, then copy the key ID, issuer ID, and base64 the downloaded `.p8`.
-5. Copy the exact signing identity names from `security find-identity -v -p codesigning`.
-6. The iOS workflow installs the profile by UUID and forces manual signing with `Apple Distribution`, so the profile must not be an iOS App Development profile.
+5. Copy the numeric Apple ID from each App Store Connect app page into `APP_STORE_CONNECT_IOS_APPLE_ID` and `APP_STORE_CONNECT_MACOS_APPLE_ID`.
+6. If the App Store Connect account has more than one provider, run `xcrun altool --list-providers --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>` and save the provider public ID in `APP_STORE_CONNECT_ASC_PUBLIC_ID`.
+7. Copy the exact signing identity names from `security find-identity -v -p codesigning`.
+8. The iOS workflow installs the profile by UUID and forces manual signing with `Apple Distribution`, so the profile must not be an iOS App Development profile.
 
 Android:
 
@@ -163,6 +168,9 @@ snapcraft export-login --snaps malanghub --acls package_upload,package_release s
 Copy the full `snapcraft-login.txt` contents into `SNAPCRAFT_STORE_CREDENTIALS`.
 The Snapcraft build installs `pnpm` locally inside the part build directory
 because the Node snap used by Snapcraft does not expose `corepack`.
+The Linux workflow publishes with `snapcraft upload` and passes the exported
+login through the `SNAPCRAFT_STORE_CREDENTIALS` environment variable, matching
+newer Snapcraft versions that no longer accept `snapcraft login --with`.
 
 Windows:
 

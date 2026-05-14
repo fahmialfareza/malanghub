@@ -147,6 +147,8 @@ jobs:
           fi
 
       - name: Configure iOS store bundle override
+        env:
+          MALANGHUB_IOS_EXPORT_METHOD: ${{ inputs.export_method }}
         run: |
           set -euo pipefail
           test -n "$APPLE_DEVELOPMENT_TEAM"
@@ -157,6 +159,7 @@ jobs:
           export wrapper_dir
           python3 - <<'PY'
           import os
+          import plistlib
           import shlex
           from pathlib import Path
 
@@ -167,20 +170,65 @@ jobs:
           identity = os.environ.get("MALANGHUB_IOS_CODE_SIGN_IDENTITY") or "Apple Distribution"
           profile_uuid = os.environ["MALANGHUB_IOS_PROFILE_UUID"]
           profile_name = os.environ["MALANGHUB_IOS_PROFILE_NAME"]
-          passthrough_args = '"${' + 'args[@]' + '}"'
+          export_method = os.environ.get("MALANGHUB_IOS_EXPORT_METHOD") or "app-store-connect"
+          export_options = wrapper_dir / "ExportOptions.plist"
+          with export_options.open("wb") as file:
+              plistlib.dump(
+                  {
+                      "destination": "export",
+                      "manageAppVersionAndBuildNumber": False,
+                      "method": export_method,
+                      "provisioningProfiles": {bundle_id: profile_name},
+                      "signingCertificate": identity,
+                      "signingStyle": "manual",
+                      "stripSwiftSymbols": True,
+                      "teamID": team_id,
+                      "uploadSymbols": True,
+                  },
+                  file,
+              )
+          filtered_args = '"${' + 'filtered_args[@]' + '}"'
           script = f"""#!/bin/bash
           set -euo pipefail
-          args=()
+          is_export_archive=0
+          has_export_options=0
+          skip_next=0
+          filtered_args=()
           for arg in "$@"; do
+            if [ "$skip_next" = "1" ]; then
+              skip_next=0
+              continue
+            fi
             case "$arg" in
               PRODUCT_BUNDLE_IDENTIFIER=*|CODE_SIGN_STYLE=*|DEVELOPMENT_TEAM=*|CODE_SIGN_IDENTITY=*|PROVISIONING_PROFILE=*|PROVISIONING_PROFILE_SPECIFIER=*)
                 ;;
+              -allowProvisioningUpdates)
+                ;;
+              -exportArchive)
+                is_export_archive=1
+                filtered_args+=("$arg")
+                ;;
+              -exportOptionsPlist)
+                has_export_options=1
+                skip_next=1
+                filtered_args+=("-exportOptionsPlist" {shlex.quote(str(export_options))})
+                ;;
+              -exportOptionsPlist=*)
+                has_export_options=1
+                filtered_args+=("-exportOptionsPlist" {shlex.quote(str(export_options))})
+                ;;
               *)
-                args+=("$arg")
+                filtered_args+=("$arg")
                 ;;
             esac
           done
-          exec /usr/bin/xcodebuild {passthrough_args} \\
+          if [ "$is_export_archive" = "1" ]; then
+            if [ "$has_export_options" = "0" ]; then
+              filtered_args+=("-exportOptionsPlist" {shlex.quote(str(export_options))})
+            fi
+            exec /usr/bin/xcodebuild {filtered_args}
+          fi
+          exec /usr/bin/xcodebuild {filtered_args} \\
             PRODUCT_BUNDLE_IDENTIFIER={shlex.quote(bundle_id)} \\
             CODE_SIGN_STYLE=Manual \\
             DEVELOPMENT_TEAM={shlex.quote(team_id)} \\
@@ -223,10 +271,24 @@ jobs:
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_IOS_APPLE_ID: ${{ secrets.APP_STORE_CONNECT_IOS_APPLE_ID }}
+          APP_STORE_CONNECT_ASC_PUBLIC_ID: ${{ secrets.APP_STORE_CONNECT_ASC_PUBLIC_ID }}
         run: |
           set -euo pipefail
           test -n "$APP_STORE_CONNECT_KEY_ID"
           test -n "$APP_STORE_CONNECT_ISSUER_ID"
-          xcrun altool --upload-package "$IPA_PATH" \
-            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+          test -n "$APP_STORE_CONNECT_IOS_APPLE_ID"
+          upload_args=(
+            --upload-package "$IPA_PATH"
+            --type ios
+            --apple-id "$APP_STORE_CONNECT_IOS_APPLE_ID"
+            --bundle-id "$MALANGHUB_IOS_BUNDLE_ID"
+            --bundle-version "$BUILD_NUMBER"
+            --bundle-short-version-string "$RELEASE_VERSION"
+            --apiKey "$APP_STORE_CONNECT_KEY_ID"
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
+          )
+          if [ -n "${APP_STORE_CONNECT_ASC_PUBLIC_ID:-}" ]; then
+            upload_args+=(--asc-public-id "$APP_STORE_CONNECT_ASC_PUBLIC_ID")
+          fi
+          xcrun altool "${upload_args[@]}"
