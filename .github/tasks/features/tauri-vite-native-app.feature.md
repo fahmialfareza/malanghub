@@ -128,6 +128,8 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] iOS CI export fixed to replace Tauri's export plist with manual App Store signing options.
 - [x] macOS/iOS App Store Connect uploads switched to `altool` API key flags accepted by Xcode 16.4.
 - [x] macOS/iOS App Store Connect uploads updated with required `altool --upload-package` metadata.
+- [x] iOS App Store workflow moved to the `macos-26` runner and validates iPhoneOS SDK 26+ before upload.
+- [x] iOS App Store workflow now uses the IPA `CFBundleVersion` for upload metadata and avoids duplicate Tauri build-number injection.
 - [x] Linux Snapcraft invalid architecture-variable layout removed and snap icon selection tightened.
 - [x] Linux Snapcraft publish updated to use `SNAPCRAFT_STORE_CREDENTIALS` with `snapcraft upload`.
 - [x] Android Play Developer API enablement failure documented in the native release guide.

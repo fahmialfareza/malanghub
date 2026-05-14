@@ -66,6 +66,11 @@ pnpm --filter native mobile:init ios
 For a local iOS App Store archive, also mimic the workflow's `xcodebuild`
 bundle-ID wrapper or use `pnpm release ios <build-number>` so the final archive
 does not fall back to the internal `com.malanghub.mobile` generator ID.
+The iOS App Store workflow runs on `macos-26` and verifies the selected iPhoneOS
+SDK is 26 or newer before building. The workflow writes `CFBundleVersion` through
+`pnpm --filter native release:version <version> <build-number>` and does not pass
+Tauri's extra `--build-number` flag, so App Store Connect receives the same build
+number that is embedded in the IPA.
 
 Apple App Store Connect:
 

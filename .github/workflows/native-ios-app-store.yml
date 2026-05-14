@@ -28,7 +28,7 @@ concurrency:
 jobs:
   build-and-upload:
     name: Build iOS IPA and upload to App Store Connect
-    runs-on: macos-latest
+    runs-on: macos-26
     env:
       RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
@@ -61,6 +61,28 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios
+
+      - name: Select Xcode 26 SDK
+        run: |
+          set -euo pipefail
+          if [ -d /Applications/Xcode_26.4.1.app ]; then
+            sudo xcode-select -s /Applications/Xcode_26.4.1.app/Contents/Developer
+          elif [ -d /Applications/Xcode_26.2.app ]; then
+            sudo xcode-select -s /Applications/Xcode_26.2.app/Contents/Developer
+          else
+            sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+          fi
+          xcodebuild -version
+          iphoneos_sdk="$(xcodebuild -sdk iphoneos -version SDKVersion)"
+          case "$iphoneos_sdk" in
+            26.*|2[7-9].*)
+              echo "Using iPhoneOS SDK $iphoneos_sdk"
+              ;;
+            *)
+              echo "App Store uploads require iOS SDK 26 or later; found $iphoneos_sdk."
+              exit 1
+              ;;
+          esac
 
       - name: Cache Rust
         uses: swatinem/rust-cache@v2
@@ -244,21 +266,41 @@ jobs:
 
       - name: Build IPA
         run: |
+          set -euo pipefail
           pnpm --filter native mobile:store-id ios
           pnpm --filter native tauri ios build \
             --target aarch64 \
             --export-method "${{ inputs.export_method }}" \
-            --build-number "$BUILD_NUMBER" \
             --config src-tauri/tauri.mobile-ci.conf.json \
             --ci
           ipa_path="$(find apps/native/src-tauri/gen/apple -name '*.ipa' -type f | head -n 1)"
           test -n "$ipa_path"
+          ipa_extract_dir="$RUNNER_TEMP/malanghub-ipa"
+          rm -rf "$ipa_extract_dir"
+          mkdir -p "$ipa_extract_dir"
+          unzip -q "$ipa_path" -d "$ipa_extract_dir"
+          app_info="$(find "$ipa_extract_dir/Payload" -path '*.app/Info.plist' -type f | head -n 1)"
+          test -n "$app_info"
+          ipa_bundle_version="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$app_info")"
+          ipa_sdk_name="$(/usr/libexec/PlistBuddy -c 'Print :DTSDKName' "$app_info")"
+          if [ "$ipa_bundle_version" != "$BUILD_NUMBER" ]; then
+            echo "IPA CFBundleVersion is $ipa_bundle_version, but release build number is $BUILD_NUMBER."
+            exit 1
+          fi
+          sdk_version="${ipa_sdk_name#iphoneos}"
+          sdk_major="${sdk_version%%.*}"
+          if ! [[ "$sdk_major" =~ ^[0-9]+$ ]] || [ "$sdk_major" -lt 26 ]; then
+            echo "IPA was built with $ipa_sdk_name, but App Store uploads require iphoneos26 or later."
+            exit 1
+          fi
           archive_info="$(find apps/native/src-tauri/gen/apple/build -path '*.xcarchive/Info.plist' -type f | head -n 1 || true)"
           if [ -n "$archive_info" ]; then
             bundle_id="$(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleIdentifier' "$archive_info")"
             test "$bundle_id" = "$MALANGHUB_IOS_BUNDLE_ID"
           fi
           echo "IPA_PATH=$ipa_path" >> "$GITHUB_ENV"
+          echo "IOS_BUNDLE_VERSION=$ipa_bundle_version" >> "$GITHUB_ENV"
+          echo "IOS_SDK_NAME=$ipa_sdk_name" >> "$GITHUB_ENV"
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
@@ -283,7 +325,7 @@ jobs:
             --type ios
             --apple-id "$APP_STORE_CONNECT_IOS_APPLE_ID"
             --bundle-id "$MALANGHUB_IOS_BUNDLE_ID"
-            --bundle-version "$BUILD_NUMBER"
+            --bundle-version "$IOS_BUNDLE_VERSION"
             --bundle-short-version-string "$RELEASE_VERSION"
             --apiKey "$APP_STORE_CONNECT_KEY_ID"
             --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"
