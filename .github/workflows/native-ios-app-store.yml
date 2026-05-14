@@ -29,18 +29,16 @@ jobs:
   build-and-upload:
     name: Build iOS IPA and upload to App Store Connect
     runs-on: macos-latest
-    environment: app-store-connect
     env:
       RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
       APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
-      VITE_API_ADDRESS: ${{ vars.VITE_API_ADDRESS }}
-      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      VITE_API_ADDRESS: ${{ secrets.VITE_API_ADDRESS }}
+      VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
       VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
-      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ vars.VITE_GOOGLE_ANDROID_CLIENT_ID }}
-      VITE_GOOGLE_IOS_CLIENT_ID: ${{ vars.VITE_GOOGLE_IOS_CLIENT_ID }}
-      VITE_GOOGLE_ANDROID_REDIRECT_URI: ${{ vars.VITE_GOOGLE_ANDROID_REDIRECT_URI }}
-      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ vars.VITE_GOOGLE_IOS_REDIRECT_URI }}
+      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ secrets.VITE_GOOGLE_ANDROID_CLIENT_ID }}
+      VITE_GOOGLE_IOS_CLIENT_ID: ${{ secrets.VITE_GOOGLE_IOS_CLIENT_ID }}
+      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ secrets.VITE_GOOGLE_IOS_REDIRECT_URI }}
       VITE_TINY_API_KEY: ${{ secrets.VITE_TINY_API_KEY }}
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
     steps:

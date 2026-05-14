@@ -7,3 +7,4 @@ src-tauri/tauri.ios.conf.json
 src-tauri/tauri.android.conf.json
 src-tauri/target
 src-tauri/gen
+credentials

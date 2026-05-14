@@ -31,7 +31,6 @@ jobs:
   build-and-publish:
     name: Build and publish Snap package (${{ matrix.arch }})
     runs-on: ${{ matrix.runner }}
-    environment: snapcraft
     strategy:
       fail-fast: false
       matrix:

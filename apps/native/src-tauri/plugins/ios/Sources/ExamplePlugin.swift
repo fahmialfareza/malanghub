@@ -35,7 +35,7 @@ class GoogleAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding 
     }
 
     let redirectUri = args.redirectUri?.trimmingCharacters(in: .whitespacesAndNewlines)
-      ?? "com.malanghub.app:/oauth2redirect/google"
+      ?? "com.malanghub.native:/oauth2redirect/google"
     guard let redirectURL = URL(string: redirectUri), let callbackScheme = redirectURL.scheme else {
       invoke.reject("Google redirect URI iOS tidak valid.")
       return

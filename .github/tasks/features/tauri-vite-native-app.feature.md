@@ -69,8 +69,8 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] `pnpm --filter native build`
 - [x] `pnpm --filter native tauri ios build --debug --target aarch64-sim --no-sign --ci --archive-only`
 - [x] `pnpm --filter native tauri android build --debug --target aarch64 --apk --ci`
-- [x] Verified generated iOS `CFBundleURLTypes` contains `com.malanghub.app`.
-- [x] Verified generated Android manifest contains `com.malanghub.app` deep-link intent filter.
+- [x] Verified generated iOS `CFBundleURLTypes` contains `com.malanghub.native`.
+- [x] Verified generated Android manifest contains `com.malanghub.native` deep-link intent filter.
 - [x] Added `native` iOS real-device dev helper so Tauri uses the Mac LAN IP instead of `localhost`.
 - [x] Native iOS Xcode build phase PATH updated so GUI Xcode can find `npm` and `cargo`.
 - [x] Native mobile device dev helper added for iOS and Android so generated platform configs use the Mac LAN IP instead of `localhost`.
@@ -116,5 +116,8 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] GitHub Actions added for Windows MSIX artifact builds for manual Microsoft Partner Center upload.
 - [x] Root `pnpm release <platform> <build-number>` dispatcher added for native release workflows.
 - [x] Native release guide added with required GitHub variables, secrets, and credential setup steps.
-- [ ] Manual mobile: `pnpm --filter native tauri android dev --open`
-- [ ] Manual mobile: `pnpm --filter native tauri ios dev --open`
+- [x] Native release workflows switched shared build configuration from GitHub variables to GitHub secrets.
+- [x] Native bundle/package identifier migrated to `com.malanghub.native`.
+- [x] Windows MSIX Partner Center identity moved into GitHub Secrets; PFX kept optional for sideload signing only.
+- [x] Manual mobile: `pnpm --filter native tauri android dev --open`
+- [x] Manual mobile: `pnpm --filter native tauri ios dev --open`

@@ -42,11 +42,6 @@ const workflows = {
     inputs: {
       version: releaseVersion,
       build_number: buildNumber,
-      identity_name:
-        process.env.MALANGHUB_WINDOWS_IDENTITY_NAME || "Malanghub.Malanghub",
-      publisher: process.env.MALANGHUB_WINDOWS_PUBLISHER || "CN=Malanghub",
-      publisher_display_name:
-        process.env.MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME || "Malanghub",
     },
   },
 };

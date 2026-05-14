@@ -21,19 +21,17 @@ jobs:
   build-and-upload:
     name: Build macOS package and upload to App Store Connect
     runs-on: macos-latest
-    environment: app-store-connect
     env:
       RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
       APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
       APPLE_SIGNING_IDENTITY: ${{ secrets.MACOS_APP_SIGNING_IDENTITY }}
-      VITE_API_ADDRESS: ${{ vars.VITE_API_ADDRESS }}
-      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      VITE_API_ADDRESS: ${{ secrets.VITE_API_ADDRESS }}
+      VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
       VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
-      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ vars.VITE_GOOGLE_ANDROID_CLIENT_ID }}
-      VITE_GOOGLE_IOS_CLIENT_ID: ${{ vars.VITE_GOOGLE_IOS_CLIENT_ID }}
-      VITE_GOOGLE_ANDROID_REDIRECT_URI: ${{ vars.VITE_GOOGLE_ANDROID_REDIRECT_URI }}
-      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ vars.VITE_GOOGLE_IOS_REDIRECT_URI }}
+      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ secrets.VITE_GOOGLE_ANDROID_CLIENT_ID }}
+      VITE_GOOGLE_IOS_CLIENT_ID: ${{ secrets.VITE_GOOGLE_IOS_CLIENT_ID }}
+      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ secrets.VITE_GOOGLE_IOS_REDIRECT_URI }}
       VITE_TINY_API_KEY: ${{ secrets.VITE_TINY_API_KEY }}
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
     steps:
@@ -123,7 +121,7 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$APPLE_TEAM_ID"
-          /usr/libexec/PlistBuddy -c "Set :com.apple.application-identifier ${APPLE_TEAM_ID}.com.malanghub.app" apps/native/src-tauri/Entitlements.appstore.plist
+          /usr/libexec/PlistBuddy -c "Set :com.apple.application-identifier ${APPLE_TEAM_ID}.com.malanghub.native" apps/native/src-tauri/Entitlements.appstore.plist
           /usr/libexec/PlistBuddy -c "Set :com.apple.developer.team-identifier ${APPLE_TEAM_ID}" apps/native/src-tauri/Entitlements.appstore.plist
           node -e "const fs=require('fs'); const file='apps/native/src-tauri/tauri.appstore.conf.json'; const config=JSON.parse(fs.readFileSync(file,'utf8')); config.bundle ??= {}; config.bundle.macOS ??= {}; config.bundle.macOS.bundleVersion=process.env.BUILD_NUMBER; fs.writeFileSync(file, JSON.stringify(config, null, 2) + '\n');"
 

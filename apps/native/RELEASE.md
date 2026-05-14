@@ -22,28 +22,6 @@ MALANGHUB_ANDROID_TRACK=internal MALANGHUB_ANDROID_STATUS=draft pnpm release and
 MALANGHUB_SNAP_CHANNEL=edge pnpm release linux 100
 ```
 
-Windows MSIX needs the exact Partner Center package identity values:
-
-```bash
-MALANGHUB_WINDOWS_IDENTITY_NAME="your-package-name" \
-MALANGHUB_WINDOWS_PUBLISHER="CN=your-publisher-id" \
-MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME="Your Publisher Name" \
-pnpm release windows 100
-```
-
-## GitHub Variables
-
-Add these in GitHub repository settings:
-`Settings > Secrets and variables > Actions > Variables`.
-
-| Name | Used by | Value |
-| --- | --- | --- |
-| `VITE_API_ADDRESS` | All native builds | Backend API base URL, for example `https://api.malanghub.com` |
-| `VITE_GOOGLE_CLIENT_ID` | Desktop Google OAuth | Desktop OAuth client ID |
-| `VITE_GOOGLE_ANDROID_CLIENT_ID` | Android Google OAuth | Android OAuth client ID |
-| `VITE_GOOGLE_IOS_CLIENT_ID` | iOS Google OAuth | iOS OAuth client ID |
-| `VITE_GOOGLE_IOS_REDIRECT_URI` | iOS Google OAuth | Usually `com.malanghub.app:/oauth2redirect/google` |
-
 ## GitHub Secrets
 
 Add these in GitHub repository settings:
@@ -51,50 +29,59 @@ Add these in GitHub repository settings:
 
 Shared:
 
-| Name | Notes |
-| --- | --- |
-| `VITE_TINY_API_KEY` | TinyMCE API key |
-| `VITE_SENTRY_DSN` | Optional Sentry DSN |
+| Name                            | Notes                                                         |
+| ------------------------------- | ------------------------------------------------------------- |
+| `VITE_API_ADDRESS`              | Backend API base URL, for example `https://api.malanghub.com` |
+| `VITE_GOOGLE_CLIENT_ID`         | Desktop OAuth client ID                                       |
+| `VITE_GOOGLE_CLIENT_SECRET`     | Optional desktop OAuth secret if the client type requires it  |
+| `VITE_GOOGLE_ANDROID_CLIENT_ID` | Android OAuth client ID                                       |
+| `VITE_GOOGLE_IOS_CLIENT_ID`     | iOS OAuth client ID                                           |
+| `VITE_GOOGLE_IOS_REDIRECT_URI`  | Usually `com.malanghub.native:/oauth2redirect/google`         |
+| `VITE_TINY_API_KEY`             | TinyMCE API key                                               |
+| `VITE_SENTRY_DSN`               | Optional Sentry DSN                                           |
 
 Apple App Store Connect:
 
-| Name | Notes |
-| --- | --- |
-| `APPLE_TEAM_ID` | Apple Developer Team ID |
-| `APPLE_DISTRIBUTION_CERTIFICATE_BASE64` | Base64 `.p12` Apple Distribution certificate |
-| `APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password used when exporting that `.p12` |
-| `APPLE_KEYCHAIN_PASSWORD` | Any strong temporary CI keychain password |
-| `IOS_PROVISIONING_PROFILE_BASE64` | Base64 iOS App Store provisioning profile |
-| `MACOS_PROVISIONING_PROFILE_BASE64` | Base64 Mac App Store provisioning profile |
-| `MACOS_APP_SIGNING_IDENTITY` | Usually `3rd Party Mac Developer Application: ...` |
-| `MACOS_INSTALLER_CERTIFICATE_BASE64` | Base64 `.p12` Mac Installer certificate |
-| `MACOS_INSTALLER_CERTIFICATE_PASSWORD` | Password used when exporting the installer `.p12` |
-| `MACOS_INSTALLER_SIGNING_IDENTITY` | Usually `3rd Party Mac Developer Installer: ...` |
-| `APP_STORE_CONNECT_KEY_ID` | App Store Connect API key ID |
-| `APP_STORE_CONNECT_ISSUER_ID` | App Store Connect issuer ID |
-| `APP_STORE_CONNECT_PRIVATE_KEY_BASE64` | Base64 `AuthKey_<KEY_ID>.p8` |
+| Name                                      | Notes                                              |
+| ----------------------------------------- | -------------------------------------------------- |
+| `APPLE_TEAM_ID`                           | Apple Developer Team ID                            |
+| `APPLE_DISTRIBUTION_CERTIFICATE_BASE64`   | Base64 `.p12` Apple Distribution certificate       |
+| `APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password used when exporting that `.p12`           |
+| `APPLE_KEYCHAIN_PASSWORD`                 | Any strong temporary CI keychain password          |
+| `IOS_PROVISIONING_PROFILE_BASE64`         | Base64 iOS App Store provisioning profile          |
+| `MACOS_PROVISIONING_PROFILE_BASE64`       | Base64 Mac App Store provisioning profile          |
+| `MACOS_APP_SIGNING_IDENTITY`              | Usually `3rd Party Mac Developer Application: ...` |
+| `MACOS_INSTALLER_CERTIFICATE_BASE64`      | Base64 `.p12` Mac Installer certificate            |
+| `MACOS_INSTALLER_CERTIFICATE_PASSWORD`    | Password used when exporting the installer `.p12`  |
+| `MACOS_INSTALLER_SIGNING_IDENTITY`        | Usually `3rd Party Mac Developer Installer: ...`   |
+| `APP_STORE_CONNECT_KEY_ID`                | App Store Connect API key ID                       |
+| `APP_STORE_CONNECT_ISSUER_ID`             | App Store Connect issuer ID                        |
+| `APP_STORE_CONNECT_PRIVATE_KEY_BASE64`    | Base64 `AuthKey_<KEY_ID>.p8`                       |
 
 Android Play Console:
 
-| Name | Notes |
-| --- | --- |
-| `ANDROID_KEYSTORE_BASE64` | Base64 upload keystore |
-| `ANDROID_KEYSTORE_PASSWORD` | Upload keystore password |
-| `ANDROID_KEY_ALIAS` | Upload key alias |
-| `ANDROID_KEY_PASSWORD` | Optional; defaults to `ANDROID_KEYSTORE_PASSWORD` |
-| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Full Play Console service account JSON |
+| Name                               | Notes                                             |
+| ---------------------------------- | ------------------------------------------------- |
+| `ANDROID_KEYSTORE_BASE64`          | Base64 upload keystore                            |
+| `ANDROID_KEYSTORE_PASSWORD`        | Upload keystore password                          |
+| `ANDROID_KEY_ALIAS`                | Upload key alias                                  |
+| `ANDROID_KEY_PASSWORD`             | Optional; defaults to `ANDROID_KEYSTORE_PASSWORD` |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` | Full Play Console service account JSON            |
 
 Snapcraft:
 
-| Name | Notes |
-| --- | --- |
+| Name                          | Notes                                         |
+| ----------------------------- | --------------------------------------------- |
 | `SNAPCRAFT_STORE_CREDENTIALS` | Contents of the exported Snapcraft login file |
 
 Windows MSIX:
 
-| Name | Notes |
-| --- | --- |
-| `WINDOWS_PFX_BASE64` | Optional signing `.pfx`; Partner Center signs Store submissions |
+| Name                   | Notes                                                           |
+| ---------------------- | --------------------------------------------------------------- |
+| `MALANGHUB_WINDOWS_IDENTITY_NAME` | Partner Center package identity `Name` |
+| `MALANGHUB_WINDOWS_PUBLISHER` | Partner Center package identity `Publisher`, for example `CN=...` |
+| `MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME` | Partner Center publisher display name |
+| `WINDOWS_PFX_BASE64` | Optional `.pfx` for sideload/local install signing |
 | `WINDOWS_PFX_PASSWORD` | Optional password for `WINDOWS_PFX_BASE64` |
 
 ## How to Create the Secrets
@@ -107,7 +94,7 @@ base64 < path/to/file | tr -d '\n' | pbcopy
 
 Apple:
 
-1. In Apple Developer, create/download the iOS App Store and Mac App Store provisioning profiles for `com.malanghub.app`.
+1. In Apple Developer, create/download the iOS App Store and Mac App Store provisioning profiles for `com.malanghub.native`.
 2. In Keychain Access, export the Apple Distribution certificate as `.p12`.
 3. Export the Mac Installer certificate as `.p12`.
 4. In App Store Connect, create an API key under `Users and Access > Integrations > App Store Connect API`, then copy the key ID, issuer ID, and base64 the downloaded `.p8`.
@@ -143,5 +130,7 @@ Windows:
 
 1. In Partner Center, create the MSIX/PWA product.
 2. Copy the package identity `Name`, `Publisher`, and publisher display name.
-3. Use those values through the `MALANGHUB_WINDOWS_*` environment variables when dispatching the workflow.
+3. Save those values in `MALANGHUB_WINDOWS_IDENTITY_NAME`, `MALANGHUB_WINDOWS_PUBLISHER`, and `MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME` GitHub Secrets.
 4. Download the x64 and arm64 MSIX artifacts from the GitHub Actions run and upload them manually in Partner Center.
+
+`WINDOWS_PFX_BASE64` is not required for the Partner Center artifact flow. It is only useful if you want the GitHub artifact to be signed for sideload testing before Store submission.

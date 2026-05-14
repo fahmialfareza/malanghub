@@ -114,7 +114,7 @@ class GoogleAuthPlugin(private val activity: Activity): Plugin(activity) {
         return when (statusCode) {
             7 -> "Google login gagal karena koneksi jaringan."
             10 -> "Google login gagal karena konfigurasi OAuth Android belum cocok. " +
-                "Periksa package com.malanghub.app, SHA-1, dan VITE_GOOGLE_ANDROID_CLIENT_ID."
+                "Periksa package com.malanghub.native, SHA-1, dan VITE_GOOGLE_ANDROID_CLIENT_ID."
             12500 -> "Google login gagal karena konfigurasi Google Sign-In belum lengkap."
             12501 -> "Google login dibatalkan."
             else -> "Google login gagal ($statusCode)."

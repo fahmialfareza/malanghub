@@ -12,21 +12,6 @@ on:
         description: "MSIX fourth version part."
         required: true
         type: string
-      identity_name:
-        description: "Partner Center Package/Identity/Name value."
-        required: true
-        default: Malanghub.Malanghub
-        type: string
-      publisher:
-        description: "Partner Center Package/Identity/Publisher value, for example CN=..."
-        required: true
-        default: CN=Malanghub
-        type: string
-      publisher_display_name:
-        description: "Partner Center publisher display name."
-        required: true
-        default: Malanghub
-        type: string
 
 concurrency:
   group: native-windows-msix
@@ -50,15 +35,17 @@ jobs:
       RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
       MSIX_VERSION: ${{ format('{0}.{1}', inputs.version, inputs.build_number) }}
-      VITE_API_ADDRESS: ${{ vars.VITE_API_ADDRESS }}
-      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      VITE_API_ADDRESS: ${{ secrets.VITE_API_ADDRESS }}
+      VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
       VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
-      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ vars.VITE_GOOGLE_ANDROID_CLIENT_ID }}
-      VITE_GOOGLE_IOS_CLIENT_ID: ${{ vars.VITE_GOOGLE_IOS_CLIENT_ID }}
-      VITE_GOOGLE_ANDROID_REDIRECT_URI: ${{ vars.VITE_GOOGLE_ANDROID_REDIRECT_URI }}
-      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ vars.VITE_GOOGLE_IOS_REDIRECT_URI }}
+      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ secrets.VITE_GOOGLE_ANDROID_CLIENT_ID }}
+      VITE_GOOGLE_IOS_CLIENT_ID: ${{ secrets.VITE_GOOGLE_IOS_CLIENT_ID }}
+      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ secrets.VITE_GOOGLE_IOS_REDIRECT_URI }}
       VITE_TINY_API_KEY: ${{ secrets.VITE_TINY_API_KEY }}
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+      MALANGHUB_WINDOWS_IDENTITY_NAME: ${{ secrets.MALANGHUB_WINDOWS_IDENTITY_NAME }}
+      MALANGHUB_WINDOWS_PUBLISHER: ${{ secrets.MALANGHUB_WINDOWS_PUBLISHER }}
+      MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME: ${{ secrets.MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -107,12 +94,16 @@ jobs:
         env:
           WINDOWS_PFX_PASSWORD: ${{ secrets.WINDOWS_PFX_PASSWORD }}
         run: |
+          if (-not $env:MALANGHUB_WINDOWS_IDENTITY_NAME) { throw "MALANGHUB_WINDOWS_IDENTITY_NAME secret is required." }
+          if (-not $env:MALANGHUB_WINDOWS_PUBLISHER) { throw "MALANGHUB_WINDOWS_PUBLISHER secret is required." }
+          if (-not $env:MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME) { throw "MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME secret is required." }
+
           $msixPath = Join-Path $env:RUNNER_TEMP "Malanghub-$env:MSIX_VERSION-${{ matrix.arch }}.msix"
           $pfxPath = if ($env:WINDOWS_PFX_PATH) { $env:WINDOWS_PFX_PATH } else { "" }
           .\apps\native\scripts\create-msix.ps1 `
-            -IdentityName "${{ inputs.identity_name }}" `
-            -Publisher "${{ inputs.publisher }}" `
-            -PublisherDisplayName "${{ inputs.publisher_display_name }}" `
+            -IdentityName "$env:MALANGHUB_WINDOWS_IDENTITY_NAME" `
+            -Publisher "$env:MALANGHUB_WINDOWS_PUBLISHER" `
+            -PublisherDisplayName "$env:MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME" `
             -Version "$env:MSIX_VERSION" `
             -ProcessorArchitecture "${{ matrix.processor }}" `
             -OutputPath "$msixPath" `

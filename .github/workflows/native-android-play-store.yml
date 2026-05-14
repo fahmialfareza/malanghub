@@ -40,18 +40,16 @@ jobs:
   build-and-upload:
     name: Build Android AAB and upload to Play Console
     runs-on: ubuntu-latest
-    environment: play-store
     env:
       ANDROID_NDK_VERSION: 29.0.13113456
       RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
-      VITE_API_ADDRESS: ${{ vars.VITE_API_ADDRESS }}
-      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      VITE_API_ADDRESS: ${{ secrets.VITE_API_ADDRESS }}
+      VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
       VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
-      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ vars.VITE_GOOGLE_ANDROID_CLIENT_ID }}
-      VITE_GOOGLE_IOS_CLIENT_ID: ${{ vars.VITE_GOOGLE_IOS_CLIENT_ID }}
-      VITE_GOOGLE_ANDROID_REDIRECT_URI: ${{ vars.VITE_GOOGLE_ANDROID_REDIRECT_URI }}
-      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ vars.VITE_GOOGLE_IOS_REDIRECT_URI }}
+      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ secrets.VITE_GOOGLE_ANDROID_CLIENT_ID }}
+      VITE_GOOGLE_IOS_CLIENT_ID: ${{ secrets.VITE_GOOGLE_IOS_CLIENT_ID }}
+      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ secrets.VITE_GOOGLE_IOS_REDIRECT_URI }}
       VITE_TINY_API_KEY: ${{ secrets.VITE_TINY_API_KEY }}
       VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
     steps:
@@ -152,7 +150,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.malanghub.app
+          packageName: com.malanghub.native
           releaseFiles: apps/native/src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
           track: ${{ inputs.track }}
           status: ${{ inputs.status }}

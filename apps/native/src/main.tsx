@@ -50,7 +50,7 @@ const googleAndroidClientId =
 const googleIosClientId = import.meta.env.VITE_GOOGLE_IOS_CLIENT_ID || "";
 const googleIosRedirectUri =
   import.meta.env.VITE_GOOGLE_IOS_REDIRECT_URI ||
-  "com.malanghub.app:/oauth2redirect/google";
+  "com.malanghub.native:/oauth2redirect/google";
 const tinyApiKey = import.meta.env.VITE_TINY_API_KEY || "";
 // Required when using a "Web application" OAuth client type in Google Cloud.
 // Leave empty if you created a "Desktop app" client (PKCE works without it).
