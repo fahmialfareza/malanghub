@@ -90,6 +90,27 @@ const formatDateTime = (value?: string | Date) => {
 
 const isAdmin = (user?: UserProfile) => Boolean(user?.role?.includes("admin"));
 
+const isNativeMobileApp = () => {
+  if (
+    typeof document !== "undefined" &&
+    document.body.classList.contains("malanghub-native-mobile")
+  ) {
+    return true;
+  }
+
+  if (typeof window === "undefined" || !("__TAURI_INTERNALS__" in window)) {
+    return false;
+  }
+
+  const userAgent = navigator.userAgent || "";
+  const platform = navigator.platform || "";
+
+  return (
+    /Android|iPad|iPhone|iPod/i.test(userAgent) ||
+    (/Mac/i.test(platform) && navigator.maxTouchPoints > 1)
+  );
+};
+
 const useThemeSnapshot = () => {
   const readTheme = () =>
     typeof document === "undefined"
@@ -162,6 +183,19 @@ const Modal = ({
   danger?: boolean;
 }) => {
   const theme = useThemeSnapshot();
+
+  useEffect(() => {
+    if (!open) {
+      return undefined;
+    }
+
+    document.body.classList.add("malanghub-modal-open");
+
+    return () => {
+      document.body.classList.remove("malanghub-modal-open");
+    };
+  }, [open]);
+
   if (!open) return null;
 
   return (
@@ -193,7 +227,7 @@ const Modal = ({
           </div>
         </div>
       </div>
-      <div className="modal-backdrop fade show" onClick={onClose} />
+      <div className="modal-backdrop fade show malanghub-modal-backdrop" onClick={onClose} />
     </>
   );
 };
@@ -206,11 +240,14 @@ const RichTextEditor = ({
   onChange(value: string): void;
 }) => {
   const adapters = useAdapters();
+  const editorIdRef = useRef(
+    `malanghub-richtext-${Math.random().toString(36).slice(2)}`,
+  );
 
-  if (!adapters.tinyApiKey) {
+  if (isNativeMobileApp() || !adapters.tinyApiKey) {
     return (
       <textarea
-        className="form-control"
+        className="form-control malanghub-richtext-fallback"
         rows={14}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -220,6 +257,8 @@ const RichTextEditor = ({
 
   return (
     <Editor
+      key={editorIdRef.current}
+      id={editorIdRef.current}
       apiKey={adapters.tinyApiKey}
       value={value}
       init={{

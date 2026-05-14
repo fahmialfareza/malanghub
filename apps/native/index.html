@@ -75,8 +75,13 @@
       }
 
       .malanghub-startup-splash__logo {
-        width: min(240px, 68vw);
+        display: block;
+        width: min(220px, 62vw);
+        max-width: 100%;
+        max-height: 84px;
         height: auto;
+        object-fit: contain;
+        object-position: center;
       }
 
       .malanghub-startup-splash__loader {
@@ -134,7 +139,10 @@
         const isAndroid = /Android/i.test(userAgent);
         const isIos =
           /iPad|iPhone|iPod/i.test(userAgent) ||
-          (platform === "MacIntel" && navigator.maxTouchPoints > 1);
+          (/AppleWebKit/i.test(userAgent) &&
+            /Mobile/i.test(userAgent) &&
+            !isAndroid) ||
+          (/Mac/i.test(platform) && navigator.maxTouchPoints > 1);
 
         if (!isAndroid && !isIos) {
           return;
@@ -155,8 +163,20 @@
         document.documentElement.dataset.splashStart = String(
           performance.now(),
         );
+        document.documentElement.dataset.splashPlatform = isIos
+          ? "ios"
+          : "android";
         document.body.classList.add("malanghub-splash-active");
-        window.setTimeout(hideSplash, 4500);
+
+        const failSafeTimeout = isIos ? 1200 : 2600;
+        const afterLoadDelay = isIos ? 180 : 700;
+
+        window.addEventListener(
+          "load",
+          () => window.setTimeout(hideSplash, afterLoadDelay),
+          { once: true },
+        );
+        window.setTimeout(hideSplash, failSafeTimeout);
       })();
     </script>
     <div

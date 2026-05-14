@@ -14,6 +14,7 @@
     "linux": "tauri dev",
     "ios": "node ./scripts/mobile-device-dev.mjs ios",
     "android": "node ./scripts/mobile-device-dev.mjs android",
+    "mobile:prepare": "node ./scripts/mobile-device-dev.mjs prepare",
     "mobile:config": "node ./scripts/mobile-device-dev.mjs config",
     "ios:device": "node ./scripts/mobile-device-dev.mjs ios",
     "android:device": "node ./scripts/mobile-device-dev.mjs android",

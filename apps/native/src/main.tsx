@@ -599,7 +599,9 @@ const NativeStartupSplash = () => {
     const splashStart = Number(
       document.documentElement.dataset.splashStart ?? 0,
     );
+    const splashPlatform = document.documentElement.dataset.splashPlatform;
     const elapsed = splashStart ? performance.now() - splashStart : 0;
+    const minimumDuration = splashPlatform === "ios" ? 180 : 620;
     let removeTimeout: number | undefined;
 
     const hideTimeout = window.setTimeout(
@@ -610,7 +612,7 @@ const NativeStartupSplash = () => {
           splash.remove();
         }, 220);
       },
-      Math.max(620 - elapsed, 0),
+      Math.max(minimumDuration - elapsed, 0),
     );
 
     return () => {

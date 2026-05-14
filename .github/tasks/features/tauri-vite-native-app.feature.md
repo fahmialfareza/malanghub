@@ -103,5 +103,10 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Contact map overlays working link/navigation hit areas on the embedded Google Maps controls without an extra button below the iframe.
 - [x] Android native Google auth no longer requires a Web OAuth client for native-device login.
 - [x] Android WebView `intent://` map navigations are intercepted and opened through native intents with browser fallback.
+- [x] Native mobile shared modals moved above app chrome with fixed header/footer and scrollable modal bodies.
+- [x] Native mobile modal form controls, file inputs, switches, and footer actions polished for all dashboard CRUD/profile/news forms.
+- [x] Native mobile news content forms use textarea instead of TinyMCE to avoid WebView modal reopen crashes.
+- [x] Native mobile splash logos added for iOS launch screen and Android/WebView startup without cropped artwork.
+- [x] Native iOS WebView startup splash fail-safe shortened so it cannot linger after app boot.
 - [ ] Manual mobile: `pnpm --filter native tauri android dev --open`
 - [ ] Manual mobile: `pnpm --filter native tauri ios dev --open`
