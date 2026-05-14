@@ -167,6 +167,7 @@ jobs:
           identity = os.environ.get("MALANGHUB_IOS_CODE_SIGN_IDENTITY") or "Apple Distribution"
           profile_uuid = os.environ["MALANGHUB_IOS_PROFILE_UUID"]
           profile_name = os.environ["MALANGHUB_IOS_PROFILE_NAME"]
+          passthrough_args = '"${' + 'args[@]' + '}"'
           script = f"""#!/bin/bash
           set -euo pipefail
           args=()
@@ -179,7 +180,7 @@ jobs:
                 ;;
             esac
           done
-          exec /usr/bin/xcodebuild "${{args[@]}}" \\
+          exec /usr/bin/xcodebuild {passthrough_args} \\
             PRODUCT_BUNDLE_IDENTIFIER={shlex.quote(bundle_id)} \\
             CODE_SIGN_STYLE=Manual \\
             DEVELOPMENT_TEAM={shlex.quote(team_id)} \\

@@ -124,6 +124,7 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Windows MSIX manifest fixed with a generated wide tile logo.
 - [x] iOS CI fixed to use manual App Store signing with the installed provisioning profile.
 - [x] iOS CI signing wrapper fixed to bake Team ID and provisioning profile values before Tauri invokes `xcodebuild`.
+- [x] iOS CI signing wrapper escaped Bash array expansion so GitHub Actions does not parse it as an expression.
 - [x] macOS/iOS App Store Connect uploads switched to `altool` API key flags accepted by Xcode 16.4.
 - [x] Linux Snapcraft invalid architecture-variable layout removed and snap icon selection tightened.
 - [x] Android Play Developer API enablement failure documented in the native release guide.
