@@ -75,7 +75,7 @@ Apple App Store Connect:
 | `APPLE_DISTRIBUTION_CERTIFICATE_BASE64`   | Base64 `.p12` Apple Distribution certificate       |
 | `APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password used when exporting that `.p12`           |
 | `APPLE_KEYCHAIN_PASSWORD`                 | Any strong temporary CI keychain password          |
-| `IOS_PROVISIONING_PROFILE_BASE64`         | Base64 iOS App Store provisioning profile          |
+| `IOS_PROVISIONING_PROFILE_BASE64`         | Base64 iOS App Store distribution provisioning profile for `com.malanghub.native` |
 | `MACOS_PROVISIONING_PROFILE_BASE64`       | Base64 Mac App Store provisioning profile          |
 | `MACOS_APP_SIGNING_IDENTITY`              | Usually `3rd Party Mac Developer Application: ...` |
 | `MACOS_INSTALLER_CERTIFICATE_BASE64`      | Base64 `.p12` Mac Installer certificate            |
@@ -121,11 +121,12 @@ base64 < path/to/file | tr -d '\n' | pbcopy
 
 Apple:
 
-1. In Apple Developer, create/download the iOS App Store and Mac App Store provisioning profiles for `com.malanghub.native`.
+1. In Apple Developer, create/download the iOS App Store distribution and Mac App Store provisioning profiles for `com.malanghub.native`.
 2. In Keychain Access, export the Apple Distribution certificate as `.p12`.
 3. Export the Mac Installer certificate as `.p12`.
 4. In App Store Connect, create an API key under `Users and Access > Integrations > App Store Connect API`, then copy the key ID, issuer ID, and base64 the downloaded `.p8`.
 5. Copy the exact signing identity names from `security find-identity -v -p codesigning`.
+6. The iOS workflow installs the profile by UUID and forces manual signing with `Apple Distribution`, so the profile must not be an iOS App Development profile.
 
 Android:
 

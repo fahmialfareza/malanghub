@@ -100,7 +100,32 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$APPLE_KEYCHAIN_PASSWORD" build.keychain
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -D > "$HOME/Library/MobileDevice/Provisioning Profiles/malanghub-ios.mobileprovision"
+          profile_path="$RUNNER_TEMP/malanghub-ios.mobileprovision"
+          profile_plist="$RUNNER_TEMP/malanghub-ios-profile.plist"
+          printf '%s' "$IOS_PROVISIONING_PROFILE_BASE64" | base64 -D > "$profile_path"
+          security cms -D -i "$profile_path" > "$profile_plist"
+
+          profile_uuid="$(/usr/libexec/PlistBuddy -c 'Print :UUID' "$profile_plist")"
+          profile_name="$(/usr/libexec/PlistBuddy -c 'Print :Name' "$profile_plist")"
+          profile_team="$(/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' "$profile_plist")"
+          profile_app_identifier="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' "$profile_plist")"
+          profile_bundle_id="${profile_app_identifier#"$profile_team."}"
+          profile_get_task_allow="$(/usr/libexec/PlistBuddy -c 'Print :Entitlements:get-task-allow' "$profile_plist" 2>/dev/null || echo false)"
+
+          test -n "$profile_uuid"
+          test -n "$profile_name"
+          test -n "$profile_team"
+          test "$profile_bundle_id" = "$MALANGHUB_IOS_BUNDLE_ID"
+          if [ "$profile_get_task_allow" = "true" ]; then
+            echo "IOS_PROVISIONING_PROFILE_BASE64 must be an App Store distribution profile, not a development profile."
+            exit 1
+          fi
+
+          cp "$profile_path" "$HOME/Library/MobileDevice/Provisioning Profiles/$profile_uuid.mobileprovision"
+          echo "MALANGHUB_IOS_PROFILE_UUID=$profile_uuid" >> "$GITHUB_ENV"
+          echo "MALANGHUB_IOS_PROFILE_NAME=$profile_name" >> "$GITHUB_ENV"
+          echo "APPLE_DEVELOPMENT_TEAM=${APPLE_DEVELOPMENT_TEAM:-$profile_team}" >> "$GITHUB_ENV"
+          echo "Installed iOS provisioning profile: $profile_name ($profile_uuid)"
 
       - name: Prepare App Store Connect API key
         env:
@@ -124,11 +149,21 @@ jobs:
       - name: Configure iOS store bundle override
         run: |
           set -euo pipefail
+          test -n "$APPLE_DEVELOPMENT_TEAM"
+          test -n "$MALANGHUB_IOS_PROFILE_UUID"
+          test -n "$MALANGHUB_IOS_PROFILE_NAME"
+
           wrapper_dir="$RUNNER_TEMP/malanghub-xcodebuild"
           mkdir -p "$wrapper_dir"
           cat > "$wrapper_dir/xcodebuild" <<'EOF'
           #!/bin/sh
-          exec /usr/bin/xcodebuild "$@" PRODUCT_BUNDLE_IDENTIFIER="${MALANGHUB_IOS_BUNDLE_ID:-com.malanghub.native}"
+          exec /usr/bin/xcodebuild "$@" \
+            PRODUCT_BUNDLE_IDENTIFIER="${MALANGHUB_IOS_BUNDLE_ID:-com.malanghub.native}" \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="${APPLE_DEVELOPMENT_TEAM}" \
+            CODE_SIGN_IDENTITY="${MALANGHUB_IOS_CODE_SIGN_IDENTITY:-Apple Distribution}" \
+            PROVISIONING_PROFILE="${MALANGHUB_IOS_PROFILE_UUID}" \
+            PROVISIONING_PROFILE_SPECIFIER="${MALANGHUB_IOS_PROFILE_NAME}"
           EOF
           chmod +x "$wrapper_dir/xcodebuild"
           echo "$wrapper_dir" >> "$GITHUB_PATH"

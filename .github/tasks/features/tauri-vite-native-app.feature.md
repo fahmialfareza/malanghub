@@ -122,5 +122,6 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Windows MSIX Partner Center identity moved into GitHub Secrets; PFX kept optional for sideload signing only.
 - [x] Linux Snapcraft build fixed to install `pnpm` without `corepack`.
 - [x] Windows MSIX manifest fixed with a generated wide tile logo.
+- [x] iOS CI fixed to use manual App Store signing with the installed provisioning profile.
 - [x] Manual mobile: `pnpm --filter native tauri android dev --open`
 - [x] Manual mobile: `pnpm --filter native tauri ios dev --open`
