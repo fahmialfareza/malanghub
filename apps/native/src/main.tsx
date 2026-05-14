@@ -113,6 +113,9 @@ function isMobilePlatform(value: Platform): value is "android" | "ios" {
 }
 
 const nativeNavigationEnabled = isMobilePlatform(nativePlatform);
+const nativeViewportContent =
+  "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
+const nativeZoomShortcutKeys = new Set(["+", "=", "-", "_", "0"]);
 
 function getNativeRouteKey(location: ReturnType<typeof useLocation>) {
   return `${location.pathname}${location.search}${location.hash}`;
@@ -581,6 +584,69 @@ const NativeMobileBodyClass = () => {
 
     return () => {
       document.body.classList.remove("malanghub-native-mobile");
+    };
+  }, []);
+
+  return null;
+};
+
+const NativeZoomLock = () => {
+  React.useEffect(() => {
+    if (!("__TAURI_INTERNALS__" in window)) {
+      return undefined;
+    }
+
+    let viewport = document.querySelector<HTMLMetaElement>(
+      'meta[name="viewport"]',
+    );
+
+    if (!viewport) {
+      viewport = document.createElement("meta");
+      viewport.name = "viewport";
+      document.head.appendChild(viewport);
+    }
+
+    const previousViewportContent = viewport.content;
+    viewport.content = nativeViewportContent;
+
+    const preventNativeZoomGesture = (event: Event) => {
+      event.preventDefault();
+    };
+
+    const preventZoomWheel = (event: WheelEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+      }
+    };
+
+    const preventZoomShortcut = (event: KeyboardEvent) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        nativeZoomShortcutKeys.has(event.key)
+      ) {
+        event.preventDefault();
+      }
+    };
+
+    document.addEventListener("gesturestart", preventNativeZoomGesture, {
+      passive: false,
+    });
+    document.addEventListener("gesturechange", preventNativeZoomGesture, {
+      passive: false,
+    });
+    document.addEventListener("gestureend", preventNativeZoomGesture, {
+      passive: false,
+    });
+    window.addEventListener("wheel", preventZoomWheel, { passive: false });
+    window.addEventListener("keydown", preventZoomShortcut, true);
+
+    return () => {
+      viewport.content = previousViewportContent;
+      document.removeEventListener("gesturestart", preventNativeZoomGesture);
+      document.removeEventListener("gesturechange", preventNativeZoomGesture);
+      document.removeEventListener("gestureend", preventNativeZoomGesture);
+      window.removeEventListener("wheel", preventZoomWheel);
+      window.removeEventListener("keydown", preventZoomShortcut, true);
     };
   }, []);
 
@@ -1172,6 +1238,7 @@ const NativeProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <MalanghubProviders apiBaseUrl={apiBaseUrl} adapters={adapters}>
       <NativeStartupSplash />
+      <NativeZoomLock />
       <NativeMobileBodyClass />
       <NativeExternalLinkHandler />
       <AppShell>{children}</AppShell>

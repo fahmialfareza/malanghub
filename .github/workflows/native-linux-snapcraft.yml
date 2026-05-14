@@ -1,0 +1,68 @@
+name: Native Linux Snapcraft
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, for example 1.0.0."
+        required: true
+        default: 1.0.0
+        type: string
+      build_number:
+        description: "Release build number for traceability."
+        required: true
+        type: string
+      channel:
+        description: "Snap Store channel."
+        required: true
+        default: stable
+        type: choice
+        options:
+          - edge
+          - beta
+          - candidate
+          - stable
+
+concurrency:
+  group: native-linux-snapcraft
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    name: Build and publish Snap package (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    environment: snapcraft
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply release version
+        run: |
+          sed -i "s/^version: .*/version: \"${{ inputs.version }}\"/" snap/snapcraft.yaml
+          echo "Snap release ${{ inputs.version }} (${{ inputs.build_number }}) for ${{ matrix.arch }}"
+
+      - name: Build Snap
+        id: snapcraft
+        uses: canonical/action-build@v1
+
+      - name: Upload Snap artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: malanghub-snap-${{ matrix.arch }}
+          path: ${{ steps.snapcraft.outputs.snap }}
+          if-no-files-found: error
+
+      - name: Publish Snap to Snapcraft
+        uses: canonical/action-publish@v1
+        with:
+          store_login: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: ${{ inputs.channel }}

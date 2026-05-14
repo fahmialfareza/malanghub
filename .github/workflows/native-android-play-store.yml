@@ -1,0 +1,158 @@
+name: Native Android Play Store
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, for example 1.0.0."
+        required: true
+        default: 1.0.0
+        type: string
+      build_number:
+        description: "Android versionCode."
+        required: true
+        type: string
+      track:
+        description: "Google Play release track."
+        required: true
+        default: internal
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      status:
+        description: "Google Play release status."
+        required: true
+        default: draft
+        type: choice
+        options:
+          - draft
+          - inProgress
+          - completed
+
+concurrency:
+  group: native-android-play-store
+  cancel-in-progress: false
+
+jobs:
+  build-and-upload:
+    name: Build Android AAB and upload to Play Console
+    runs-on: ubuntu-latest
+    environment: play-store
+    env:
+      ANDROID_NDK_VERSION: 29.0.13113456
+      RELEASE_VERSION: ${{ inputs.version }}
+      BUILD_NUMBER: ${{ inputs.build_number }}
+      VITE_API_ADDRESS: ${{ vars.VITE_API_ADDRESS }}
+      VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+      VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
+      VITE_GOOGLE_ANDROID_CLIENT_ID: ${{ vars.VITE_GOOGLE_ANDROID_CLIENT_ID }}
+      VITE_GOOGLE_IOS_CLIENT_ID: ${{ vars.VITE_GOOGLE_IOS_CLIENT_ID }}
+      VITE_GOOGLE_ANDROID_REDIRECT_URI: ${{ vars.VITE_GOOGLE_ANDROID_REDIRECT_URI }}
+      VITE_GOOGLE_IOS_REDIRECT_URI: ${{ vars.VITE_GOOGLE_IOS_REDIRECT_URI }}
+      VITE_TINY_API_KEY: ${{ secrets.VITE_TINY_API_KEY }}
+      VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.20.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.0
+          cache: pnpm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          sdkmanager --install \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "ndk;${ANDROID_NDK_VERSION}"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${ANDROID_NDK_VERSION}" >> "$GITHUB_ENV"
+          echo "NDK_HOME=$ANDROID_HOME/ndk/${ANDROID_NDK_VERSION}" >> "$GITHUB_ENV"
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Cache Rust
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: apps/native/src-tauri -> target
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply release version
+        run: pnpm --filter native release:version "$RELEASE_VERSION" "$BUILD_NUMBER"
+
+      - name: Initialize Android project
+        run: |
+          if [ ! -d apps/native/src-tauri/gen/android ]; then
+            pnpm --filter native tauri android init
+          fi
+
+      - name: Configure Android release signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          test -n "$ANDROID_KEY_ALIAS"
+
+          keystore_path="$RUNNER_TEMP/malanghub-upload-key.jks"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore_path"
+          key_password="${ANDROID_KEY_PASSWORD:-$ANDROID_KEYSTORE_PASSWORD}"
+
+          cat > apps/native/src-tauri/gen/android/keystore.properties <<EOF
+          storeFile=$keystore_path
+          storePassword=$ANDROID_KEYSTORE_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          keyPassword=$key_password
+          EOF
+
+          pnpm --filter native android:release-signing
+
+      - name: Build Android App Bundle
+        run: |
+          pnpm --filter native tauri android build --aab --ci
+          aab_path="$(find apps/native/src-tauri/gen/android/app/build/outputs/bundle -name '*.aab' -type f | head -n 1)"
+          test -n "$aab_path"
+          echo "AAB_PATH=$aab_path" >> "$GITHUB_ENV"
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: malanghub-android-aab
+          path: apps/native/src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
+          if-no-files-found: error
+
+      - name: Upload AAB to Play Console
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.malanghub.app
+          releaseFiles: apps/native/src-tauri/gen/android/app/build/outputs/bundle/**/*.aab
+          track: ${{ inputs.track }}
+          status: ${{ inputs.status }}

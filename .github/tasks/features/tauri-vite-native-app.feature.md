@@ -8,7 +8,7 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 
 - Affected app or package: `apps/frontend`, new `apps/native`, new `packages/core`, new `packages/ui`.
 - In scope: shared API/types/query contracts, shared React UI/adapters, Vite/Tauri app scaffold, native route parity for the main web flows, localStorage token auth for native, direct backend support needed by native profile editing.
-- Out of scope: native app-store OAuth/deep-link release hardening, replacing web SEO/PWA/RSS/sitemap behavior, app store signing/release automation.
+- Out of scope: replacing web SEO/PWA/RSS/sitemap behavior.
 
 ## Constraints
 
@@ -108,5 +108,13 @@ Create a shared Malanghub UI/data architecture while keeping the current Next.js
 - [x] Native mobile news content forms use textarea instead of TinyMCE to avoid WebView modal reopen crashes.
 - [x] Native mobile splash logos added for iOS launch screen and Android/WebView startup without cropped artwork.
 - [x] Native iOS WebView startup splash fail-safe shortened so it cannot linger after app boot.
+- [x] Native Tauri zoom locked through viewport, touch-action, and desktop zoom shortcut guards.
+- [x] GitHub Actions added for iOS App Store Connect upload.
+- [x] GitHub Actions added for macOS App Store Connect package upload.
+- [x] GitHub Actions added for Android Play Store AAB upload.
+- [x] GitHub Actions added for Linux Snapcraft publish.
+- [x] GitHub Actions added for Windows MSIX artifact builds for manual Microsoft Partner Center upload.
+- [x] Root `pnpm release <platform> <build-number>` dispatcher added for native release workflows.
+- [x] Native release guide added with required GitHub variables, secrets, and credential setup steps.
 - [ ] Manual mobile: `pnpm --filter native tauri android dev --open`
 - [ ] Manual mobile: `pnpm --filter native tauri ios dev --open`

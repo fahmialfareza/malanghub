@@ -13,6 +13,7 @@
     "native:linux": "pnpm --filter native run linux",
     "native:ios": "pnpm --filter native run ios",
     "native:android": "pnpm --filter native run android",
+    "release": "node ./scripts/release-native.mjs",
     "clean": "rm -rf node_modules && rm -rf apps/**/node_modules && rm -rf packages/**/node_modules && rm -rf dist && rm -rf apps/**/dist && rm -rf packages/**/dist && rm -rf .turbo && rm -rf pnpm-lock.yaml",
     "reset": "pnpm run clean && pnpm install"
   },

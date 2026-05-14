@@ -1,0 +1,69 @@
+name: malanghub
+base: core24
+version: "0.1.0"
+summary: Malanghub native app
+description: |
+  Malanghub native desktop app.
+grade: stable
+confinement: strict
+
+apps:
+  malanghub:
+    command: usr/bin/malanghub-native
+    extensions:
+      - gnome
+    desktop: usr/share/applications/malanghub.desktop
+    plugs:
+      - browser-support
+      - desktop
+      - desktop-legacy
+      - home
+      - network
+      - opengl
+      - wayland
+      - x11
+
+parts:
+  malanghub:
+    plugin: nil
+    source: .
+    build-snaps:
+      - node/24/stable
+      - rustup/latest/stable
+    build-packages:
+      - build-essential
+      - curl
+      - file
+      - libayatana-appindicator3-dev
+      - librsvg2-dev
+      - libssl-dev
+      - libwebkit2gtk-4.1-dev
+      - patchelf
+      - pkg-config
+    stage-packages:
+      - libayatana-appindicator3-1
+      - libwebkit2gtk-4.1-0
+    override-build: |
+      set -eu
+      rustup default stable
+      corepack enable
+      corepack prepare pnpm@10.20.0 --activate
+      pnpm install --frozen-lockfile
+      pnpm --filter native tauri build --bundles deb --ci
+
+      deb="$(find apps/native/src-tauri/target -path '*/bundle/deb/*.deb' -type f | head -n 1)"
+      if [ -z "$deb" ]; then
+        echo "Tauri did not produce a Debian bundle."
+        exit 1
+      fi
+
+      dpkg -x "$deb" "$SNAPCRAFT_PART_INSTALL"
+      desktop_file="$(find "$SNAPCRAFT_PART_INSTALL/usr/share/applications" -name '*.desktop' -type f | head -n 1)"
+      if [ -n "$desktop_file" ]; then
+        cp "$desktop_file" "$SNAPCRAFT_PART_INSTALL/usr/share/applications/malanghub.desktop"
+        icon_file="$(find "$SNAPCRAFT_PART_INSTALL/usr/share/icons" -name '*.png' -type f | sort | tail -n 1 || true)"
+        if [ -n "$icon_file" ]; then
+          icon_path="/${icon_file#"$SNAPCRAFT_PART_INSTALL/"}"
+          sed -i "s|^Icon=.*|Icon=$icon_path|" "$SNAPCRAFT_PART_INSTALL/usr/share/applications/malanghub.desktop"
+        fi
+      fi
