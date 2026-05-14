@@ -7,10 +7,6 @@ description: |
 grade: stable
 confinement: strict
 
-layout:
-  /usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1:
-    bind: $SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET/webkit2gtk-4.1
-
 apps:
   malanghub:
     command: usr/bin/malanghub-native
@@ -66,7 +62,10 @@ parts:
       desktop_file="$(find "$SNAPCRAFT_PART_INSTALL/usr/share/applications" -name '*.desktop' -type f | head -n 1)"
       if [ -n "$desktop_file" ]; then
         cp "$desktop_file" "$SNAPCRAFT_PART_INSTALL/usr/share/applications/malanghub.desktop"
-        icon_file="$(find "$SNAPCRAFT_PART_INSTALL/usr/share/icons" -name '*.png' -type f | sort | tail -n 1 || true)"
+        icon_file="$(find "$SNAPCRAFT_PART_INSTALL/usr/share/icons/hicolor" -path '*/apps/*.png' -type f | sort -V | tail -n 1 || true)"
+        if [ -z "$icon_file" ]; then
+          icon_file="$(find "$SNAPCRAFT_PART_INSTALL/usr/share/icons" -iname '*malanghub*.png' -type f | sort -V | tail -n 1 || true)"
+        fi
         if [ -n "$icon_file" ]; then
           icon_path="/${icon_file#"$SNAPCRAFT_PART_INSTALL/"}"
           sed -i "s|^Icon=.*|Icon=$icon_path|" "$SNAPCRAFT_PART_INSTALL/usr/share/applications/malanghub.desktop"

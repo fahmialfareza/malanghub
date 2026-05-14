@@ -154,18 +154,43 @@ jobs:
           test -n "$MALANGHUB_IOS_PROFILE_NAME"
 
           wrapper_dir="$RUNNER_TEMP/malanghub-xcodebuild"
-          mkdir -p "$wrapper_dir"
-          cat > "$wrapper_dir/xcodebuild" <<'EOF'
-          #!/bin/sh
-          exec /usr/bin/xcodebuild "$@" \
-            PRODUCT_BUNDLE_IDENTIFIER="${MALANGHUB_IOS_BUNDLE_ID:-com.malanghub.native}" \
-            CODE_SIGN_STYLE=Manual \
-            DEVELOPMENT_TEAM="${APPLE_DEVELOPMENT_TEAM}" \
-            CODE_SIGN_IDENTITY="${MALANGHUB_IOS_CODE_SIGN_IDENTITY:-Apple Distribution}" \
-            PROVISIONING_PROFILE="${MALANGHUB_IOS_PROFILE_UUID}" \
-            PROVISIONING_PROFILE_SPECIFIER="${MALANGHUB_IOS_PROFILE_NAME}"
-          EOF
-          chmod +x "$wrapper_dir/xcodebuild"
+          export wrapper_dir
+          python3 - <<'PY'
+          import os
+          import shlex
+          from pathlib import Path
+
+          wrapper_dir = Path(os.environ["wrapper_dir"])
+          wrapper_dir.mkdir(parents=True, exist_ok=True)
+          bundle_id = os.environ.get("MALANGHUB_IOS_BUNDLE_ID") or "com.malanghub.native"
+          team_id = os.environ["APPLE_DEVELOPMENT_TEAM"]
+          identity = os.environ.get("MALANGHUB_IOS_CODE_SIGN_IDENTITY") or "Apple Distribution"
+          profile_uuid = os.environ["MALANGHUB_IOS_PROFILE_UUID"]
+          profile_name = os.environ["MALANGHUB_IOS_PROFILE_NAME"]
+          script = f"""#!/bin/bash
+          set -euo pipefail
+          args=()
+          for arg in "$@"; do
+            case "$arg" in
+              PRODUCT_BUNDLE_IDENTIFIER=*|CODE_SIGN_STYLE=*|DEVELOPMENT_TEAM=*|CODE_SIGN_IDENTITY=*|PROVISIONING_PROFILE=*|PROVISIONING_PROFILE_SPECIFIER=*)
+                ;;
+              *)
+                args+=("$arg")
+                ;;
+            esac
+          done
+          exec /usr/bin/xcodebuild "${{args[@]}}" \\
+            PRODUCT_BUNDLE_IDENTIFIER={shlex.quote(bundle_id)} \\
+            CODE_SIGN_STYLE=Manual \\
+            DEVELOPMENT_TEAM={shlex.quote(team_id)} \\
+            CODE_SIGN_IDENTITY={shlex.quote(identity)} \\
+            PROVISIONING_PROFILE={shlex.quote(profile_uuid)} \\
+            PROVISIONING_PROFILE_SPECIFIER={shlex.quote(profile_name)}
+          """
+          path = wrapper_dir / "xcodebuild"
+          path.write_text(script)
+          path.chmod(0o755)
+          PY
           echo "$wrapper_dir" >> "$GITHUB_PATH"
 
       - name: Build IPA
@@ -199,6 +224,8 @@ jobs:
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
         run: |
           set -euo pipefail
+          test -n "$APP_STORE_CONNECT_KEY_ID"
+          test -n "$APP_STORE_CONNECT_ISSUER_ID"
           xcrun altool --upload-package "$IPA_PATH" \
-            --api-key "$APP_STORE_CONNECT_KEY_ID" \
-            --api-issuer "$APP_STORE_CONNECT_ISSUER_ID"
+            --apiKey "$APP_STORE_CONNECT_KEY_ID" \
+            --apiIssuer "$APP_STORE_CONNECT_ISSUER_ID"

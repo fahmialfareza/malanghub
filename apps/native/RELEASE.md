@@ -146,6 +146,13 @@ keytool -genkeypair \
 3. The Android OAuth client package name must remain `com.malanghub.native`; add the SHA-1 for the upload key or debug key you are testing.
 4. The first Play Console app/bundle upload may still need to be done manually before API uploads are accepted.
 
+If the Play upload fails with `Android Developer API has not been used in
+project ... or it is disabled`, enable the Google Play Android Developer API
+for the Google Cloud project that owns `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, then
+wait a few minutes and rerun the workflow. Also confirm the same service account
+is linked under `Play Console > Setup > API access` and has release permission
+for the `com.malanghub.native` app.
+
 Snapcraft:
 
 ```bash
