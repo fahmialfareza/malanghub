@@ -1,14 +1,19 @@
 import { spawnSync } from "node:child_process";
 
-const releaseVersion = process.env.MALANGHUB_RELEASE_VERSION || "1.0.0";
 const [platform, buildNumber] = process.argv.slice(2);
 const ref = process.env.MALANGHUB_RELEASE_REF || getCurrentBranch();
+
+if (!/^[1-9]\d*$/.test(buildNumber ?? "")) {
+  fail("Build number must be a positive integer, for example: pnpm release android 100");
+}
+
+const build = parseInt(buildNumber, 10);
+const releaseVersion = `${Math.floor(build / 100)}.${Math.floor((build % 100) / 10)}.${build % 10}`;
 
 const workflows = {
   android: {
     file: "native-android-play-store.yml",
     inputs: {
-      version: releaseVersion,
       build_number: buildNumber,
       track: process.env.MALANGHUB_ANDROID_TRACK || "production",
       status: process.env.MALANGHUB_ANDROID_STATUS || "draft",
@@ -17,7 +22,6 @@ const workflows = {
   ios: {
     file: "native-ios-app-store.yml",
     inputs: {
-      version: releaseVersion,
       build_number: buildNumber,
       export_method: process.env.MALANGHUB_IOS_EXPORT_METHOD || "app-store-connect",
     },
@@ -25,7 +29,6 @@ const workflows = {
   linux: {
     file: "native-linux-snapcraft.yml",
     inputs: {
-      version: releaseVersion,
       build_number: buildNumber,
       channel: process.env.MALANGHUB_SNAP_CHANNEL || "stable",
     },
@@ -33,14 +36,12 @@ const workflows = {
   macos: {
     file: "native-macos-app-store.yml",
     inputs: {
-      version: releaseVersion,
       build_number: buildNumber,
     },
   },
   windows: {
     file: "native-windows-msix.yml",
     inputs: {
-      version: releaseVersion,
       build_number: buildNumber,
     },
   },
@@ -50,14 +51,6 @@ if (!platform || !workflows[platform]) {
   fail(
     `Usage: pnpm release <${Object.keys(workflows).join("|")}> <build-number>`,
   );
-}
-
-if (!/^[1-9]\d*$/.test(buildNumber ?? "")) {
-  fail("Build number must be a positive integer, for example: pnpm release android 100");
-}
-
-if (!/^\d+\.\d+\.\d+$/.test(releaseVersion)) {
-  fail("MALANGHUB_RELEASE_VERSION must use MAJOR.MINOR.PATCH, for example 1.0.0");
 }
 
 run("gh", ["auth", "status"], {
