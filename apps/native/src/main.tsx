@@ -615,12 +615,6 @@ const NativeZoomLock = () => {
       event.preventDefault();
     };
 
-    const preventZoomWheel = (event: WheelEvent) => {
-      if (event.ctrlKey || event.metaKey) {
-        event.preventDefault();
-      }
-    };
-
     const preventZoomShortcut = (event: KeyboardEvent) => {
       if (
         (event.ctrlKey || event.metaKey) &&
@@ -649,7 +643,6 @@ const NativeZoomLock = () => {
       });
     }
 
-    window.addEventListener("wheel", preventZoomWheel, { passive: false });
     window.addEventListener("keydown", preventZoomShortcut, true);
 
     return () => {
@@ -667,7 +660,6 @@ const NativeZoomLock = () => {
         document.removeEventListener("gestureend", preventNativeZoomGesture);
       }
 
-      window.removeEventListener("wheel", preventZoomWheel);
       window.removeEventListener("keydown", preventZoomShortcut, true);
     };
   }, []);

@@ -170,6 +170,17 @@ jobs:
       - name: Generate app icons
         run: pnpm --filter native tauri icon src-tauri/icons/icon.png
 
+      - name: Strip alpha channel from iOS app icons
+        run: |
+          set -euo pipefail
+          icon_dir="apps/native/src-tauri/gen/apple/Assets.xcassets/AppIcon.appiconset"
+          if [ -d "$icon_dir" ]; then
+            while IFS= read -r -d '' f; do
+              sips -s format jpeg -s formatOptions 100 "$f" --out /tmp/malanghub_ios_icon_tmp.jpg 2>/dev/null
+              sips -s format png /tmp/malanghub_ios_icon_tmp.jpg --out "$f"
+            done < <(find "$icon_dir" -name "*.png" -print0)
+          fi
+
       - name: Configure iOS store bundle override
         env:
           MALANGHUB_IOS_EXPORT_METHOD: ${{ inputs.export_method }}
