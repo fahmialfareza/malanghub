@@ -73,8 +73,11 @@ jobs:
       - name: Apply release version
         run: |
           pnpm --filter native release:version "$env:BUILD_NUMBER"
-          $msixVersion = "$env:RELEASE_VERSION.$env:BUILD_NUMBER"
-          "MSIX_VERSION=$msixVersion" | Out-File -FilePath $env:GITHUB_ENV -Append
+          $build = [int]$env:BUILD_NUMBER
+          $major = [math]::Floor($build / 100)
+          $minor = [math]::Floor(($build % 100) / 10)
+          $patch = $build % 10
+          "MSIX_VERSION=$major.$minor.$patch.$env:BUILD_NUMBER" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Build Windows release executable
         run: pnpm --filter native tauri build --target ${{ matrix.target }} --no-bundle --ci

@@ -167,6 +167,9 @@ jobs:
             pnpm --filter native mobile:store-id ios
           fi
 
+      - name: Generate app icons
+        run: pnpm --filter native tauri icon src-tauri/icons/icon.png
+
       - name: Configure iOS store bundle override
         env:
           MALANGHUB_IOS_EXPORT_METHOD: ${{ inputs.export_method }}

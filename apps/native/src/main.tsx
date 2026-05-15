@@ -605,7 +605,9 @@ const NativeZoomLock = () => {
     }
 
     const previousViewportContent = viewport.content;
-    viewport.content = isMobilePlatform(nativePlatform)
+    // Android WebView (Chromium) handles user-scalable=no without breaking scroll.
+    // iOS and macOS both use WKWebView — user-scalable=no disables its native scroll mechanism.
+    viewport.content = nativePlatform === "android"
       ? "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
       : "width=device-width, initial-scale=1, viewport-fit=cover";
 
