@@ -628,23 +628,43 @@ const NativeZoomLock = () => {
       }
     };
 
-    document.addEventListener("gesturestart", preventNativeZoomGesture, {
-      passive: false,
-    });
-    document.addEventListener("gesturechange", preventNativeZoomGesture, {
-      passive: false,
-    });
-    document.addEventListener("gestureend", preventNativeZoomGesture, {
-      passive: false,
-    });
+    // Gesture events (gesturestart/change/end) fire on macOS trackpad at the
+    // moment two fingers make contact — before the browser classifies the
+    // gesture as a scroll vs. pinch. Calling preventDefault() there blocks
+    // scroll on macOS desktop. Restrict these listeners to iOS where they are
+    // needed to suppress in-WebView pinch-to-zoom.
+    const isIos = nativePlatform === "ios";
+
+    if (isIos) {
+      document.addEventListener("gesturestart", preventNativeZoomGesture, {
+        passive: false,
+      });
+      document.addEventListener("gesturechange", preventNativeZoomGesture, {
+        passive: false,
+      });
+      document.addEventListener("gestureend", preventNativeZoomGesture, {
+        passive: false,
+      });
+    }
+
     window.addEventListener("wheel", preventZoomWheel, { passive: false });
     window.addEventListener("keydown", preventZoomShortcut, true);
 
     return () => {
       viewport.content = previousViewportContent;
-      document.removeEventListener("gesturestart", preventNativeZoomGesture);
-      document.removeEventListener("gesturechange", preventNativeZoomGesture);
-      document.removeEventListener("gestureend", preventNativeZoomGesture);
+
+      if (isIos) {
+        document.removeEventListener(
+          "gesturestart",
+          preventNativeZoomGesture,
+        );
+        document.removeEventListener(
+          "gesturechange",
+          preventNativeZoomGesture,
+        );
+        document.removeEventListener("gestureend", preventNativeZoomGesture);
+      }
+
       window.removeEventListener("wheel", preventZoomWheel);
       window.removeEventListener("keydown", preventZoomShortcut, true);
     };

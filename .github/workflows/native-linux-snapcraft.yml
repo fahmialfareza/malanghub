@@ -48,6 +48,20 @@ jobs:
           sed -i "s/^version: .*/version: \"${{ inputs.version }}\"/" snap/snapcraft.yaml
           echo "Snap release ${{ inputs.version }} (${{ inputs.build_number }}) for ${{ matrix.arch }}"
 
+      - name: Write Vite environment for Snap build
+        env:
+          VITE_API_ADDRESS: ${{ secrets.VITE_API_ADDRESS }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
+          VITE_TINY_API_KEY: ${{ secrets.VITE_TINY_API_KEY }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
+        run: |
+          set -euo pipefail
+          printf 'VITE_API_ADDRESS=%s\nVITE_GOOGLE_CLIENT_ID=%s\nVITE_GOOGLE_CLIENT_SECRET=%s\nVITE_TINY_API_KEY=%s\nVITE_SENTRY_DSN=%s\n' \
+            "$VITE_API_ADDRESS" "$VITE_GOOGLE_CLIENT_ID" "$VITE_GOOGLE_CLIENT_SECRET" \
+            "$VITE_TINY_API_KEY" "$VITE_SENTRY_DSN" \
+            > apps/native/.env.local
+
       - name: Build Snap
         id: snapcraft
         uses: canonical/action-build@v1

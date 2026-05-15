@@ -19,6 +19,7 @@ apps:
       - desktop-legacy
       - home
       - network
+      - network-bind
       - opengl
       - wayland
       - x11
