@@ -12,7 +12,7 @@ import {
   useNavigationType,
   useParams,
 } from "react-router-dom";
-import { onBackButtonPress } from "@tauri-apps/api/app";
+import { getVersion, onBackButtonPress } from "@tauri-apps/api/app";
 import {
   AppShell,
   ContactPage,
@@ -1218,9 +1218,43 @@ const NativeBottomTabs = () => {
   );
 };
 
+// null = still fetching (treat as in-review to avoid a flash of Google button)
+const useAppStoreReviewFlag = (): boolean | null => {
+  const isReviewPlatform =
+    nativePlatform === "ios" || nativePlatform === "macos";
+  const [inReview, setInReview] = React.useState<boolean | null>(
+    isReviewPlatform ? null : false,
+  );
+
+  React.useEffect(() => {
+    if (!isReviewPlatform) return;
+    getVersion()
+      .then((version) =>
+        fetch(
+          `${apiBaseUrl}/api/native/review?platform=${encodeURIComponent(nativePlatform)}&version=${encodeURIComponent(version)}`,
+        ),
+      )
+      .then((res) => res.json())
+      .then((data: unknown) => {
+        setInReview(
+          data !== null &&
+            typeof data === "object" &&
+            "in_review" in data &&
+            data.in_review === true,
+        );
+      })
+      .catch(() => {
+        setInReview(false);
+      });
+  }, [isReviewPlatform]);
+
+  return inReview;
+};
+
 const NativeProviders = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const appStoreReview = useAppStoreReviewFlag();
 
   const adapters = React.useMemo<PlatformAdapters>(
     () => ({
@@ -1236,9 +1270,13 @@ const NativeProviders = ({ children }: { children: React.ReactNode }) => {
       requestGoogleAccessToken: isMobilePlatform(nativePlatform)
         ? undefined
         : requestGoogleAccessToken,
-      googleAuthAvailable: isMobilePlatform(nativePlatform)
-        ? !getNativeGoogleConfigError()
-        : Boolean(getGoogleClientId()),
+      googleAuthHidden: appStoreReview !== false,
+      googleAuthAvailable:
+        appStoreReview !== false
+          ? false
+          : isMobilePlatform(nativePlatform)
+            ? !getNativeGoogleConfigError()
+            : Boolean(getGoogleClientId()),
       googleAuthUnavailableMessage:
         getNativeGoogleConfigError() ??
         "Isi VITE_GOOGLE_CLIENT_ID untuk mengaktifkan Google login.",
@@ -1246,7 +1284,7 @@ const NativeProviders = ({ children }: { children: React.ReactNode }) => {
       apiBaseUrl,
       appName: "Malanghub",
     }),
-    [location.pathname, navigate],
+    [location.pathname, navigate, appStoreReview],
   );
 
   return (

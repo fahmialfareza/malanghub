@@ -1,6 +1,6 @@
 .malanghub-alert {
   position: fixed;
-  z-index: 10000;
+  z-index: 10060;
   top: 16px;
   left: 50%;
   display: flex;
@@ -12,6 +12,10 @@
   padding: 12px 14px;
   color: #fff;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+}
+
+body.malanghub-native-mobile .malanghub-alert {
+  top: calc(env(safe-area-inset-top) + 82px);
 }
 
 .malanghub-alert button {
@@ -76,6 +80,13 @@
   color: var(--primary-color, #0085ad);
 }
 
+.malanghub-auth-logo {
+  display: block;
+  max-width: 180px;
+  height: auto;
+  margin: 0 auto;
+}
+
 .malanghub-native-note {
   border-left: 4px solid #0085ad;
   margin: 12px 0 18px;
@@ -100,7 +111,7 @@
 
 .malanghub-offline-banner {
   position: fixed;
-  z-index: 10001;
+  z-index: 10005;
   bottom: 0;
   left: 0;
   right: 0;

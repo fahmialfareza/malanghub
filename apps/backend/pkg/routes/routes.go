@@ -62,6 +62,9 @@ func Register(r *gin.Engine) {
 			tags.DELETE("/:id", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.DeleteTag)
 		}
 
+		// native app feature flags
+		api.GET("/native/review", controllers.NativeReviewStatus)
+
 		// images (simple upload endpoint)
 		images := api.Group("/upload")
 		{

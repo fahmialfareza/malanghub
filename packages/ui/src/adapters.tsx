@@ -38,6 +38,7 @@ export interface PlatformAdapters {
   requestGoogleAccessToken?(): Promise<string>;
   analytics?: React.ReactNode;
   googleAuthAvailable?: boolean;
+  googleAuthHidden?: boolean;
   googleAuthUnavailableMessage?: string;
   offlineBannerEnabled?: boolean;
   tinyApiKey?: string;

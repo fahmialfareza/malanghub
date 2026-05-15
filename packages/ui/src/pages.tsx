@@ -817,6 +817,8 @@ const GoogleAuthButton = ({
   const { api, notify } = useMalanghubRuntime();
   const adapters = useAdapters();
   const [loading, setLoading] = useState(false);
+  if (adapters.googleAuthHidden) return null;
+
   const available =
     Boolean(adapters.googleAuthAvailable) &&
     Boolean(adapters.requestGoogleAuth || adapters.requestGoogleAccessToken);
@@ -925,7 +927,15 @@ export const SignInPage = () => {
         <h3 className="section-title-left">Masuk</h3>
         <div className="contact-grids d-grid">
           <div className="contact-left m-auto">
-            <GoogleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
+            {adapters.googleAuthHidden ? (
+              <img
+                src="/logo.png"
+                alt={adapters.appName ?? "Malanghub"}
+                className="malanghub-auth-logo"
+              />
+            ) : (
+              <GoogleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
+            )}
           </div>
           <div className="contact-right">
             <form onSubmit={submit} className="signin-form">
@@ -1019,7 +1029,15 @@ export const SignUpPage = () => {
         <h3 className="section-title-left">Daftar</h3>
         <div className="contact-grids d-grid">
           <div className="contact-left m-auto">
-            <GoogleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
+            {adapters.googleAuthHidden ? (
+              <img
+                src="/logo.png"
+                alt={adapters.appName ?? "Malanghub"}
+                className="malanghub-auth-logo"
+              />
+            ) : (
+              <GoogleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
+            )}
           </div>
           <div className="contact-right">
             <form onSubmit={submit} className="signin-form">
