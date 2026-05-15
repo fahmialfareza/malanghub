@@ -1,16 +1,17 @@
-import { readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const releaseVersion = process.argv[2];
-const buildNumber = process.argv[3];
-
-if (!/^\d+\.\d+\.\d+$/.test(releaseVersion ?? "")) {
-  throw new Error("Release version must use MAJOR.MINOR.PATCH, for example 1.0.0.");
-}
+const buildNumber = process.argv[2];
 
 if (!/^[1-9]\d*$/.test(buildNumber ?? "")) {
   throw new Error("Build number must be a positive integer, for example 100.");
 }
+
+const build = parseInt(buildNumber, 10);
+const major = Math.floor(build / 100);
+const minor = Math.floor((build % 100) / 10);
+const patch = build % 10;
+const releaseVersion = `${major}.${minor}.${patch}`;
 
 const repoRoot = resolve(import.meta.dirname, "../../..");
 const nativeDir = resolve(repoRoot, "apps/native");
@@ -51,5 +52,9 @@ const snapcraftYaml = readFileSync(snapcraftPath, "utf8").replace(
   `version: "${releaseVersion}"`,
 );
 writeFileSync(snapcraftPath, snapcraftYaml);
+
+if (process.env.GITHUB_ENV) {
+  appendFileSync(process.env.GITHUB_ENV, `RELEASE_VERSION=${releaseVersion}\n`);
+}
 
 console.log(`Prepared native release ${releaseVersion} (${buildNumber}).`);

@@ -3,11 +3,6 @@ name: Native Linux Snapcraft
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version, for example 1.0.0."
-        required: true
-        default: 1.0.0
-        type: string
       build_number:
         description: "Release build number for traceability."
         required: true
@@ -45,8 +40,13 @@ jobs:
 
       - name: Apply release version
         run: |
-          sed -i "s/^version: .*/version: \"${{ inputs.version }}\"/" snap/snapcraft.yaml
-          echo "Snap release ${{ inputs.version }} (${{ inputs.build_number }}) for ${{ matrix.arch }}"
+          build="${{ inputs.build_number }}"
+          major=$((build / 100))
+          minor=$(((build % 100) / 10))
+          patch=$((build % 10))
+          version="${major}.${minor}.${patch}"
+          sed -i "s/^version: .*/version: \"${version}\"/" snap/snapcraft.yaml
+          echo "Snap release ${version} (${build}) for ${{ matrix.arch }}"
 
       - name: Write Vite environment for Snap build
         env:
@@ -56,11 +56,20 @@ jobs:
           VITE_TINY_API_KEY: ${{ secrets.VITE_TINY_API_KEY }}
           VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN }}
         run: |
-          set -euo pipefail
           printf 'VITE_API_ADDRESS=%s\nVITE_GOOGLE_CLIENT_ID=%s\nVITE_GOOGLE_CLIENT_SECRET=%s\nVITE_TINY_API_KEY=%s\nVITE_SENTRY_DSN=%s\n' \
             "$VITE_API_ADDRESS" "$VITE_GOOGLE_CLIENT_ID" "$VITE_GOOGLE_CLIENT_SECRET" \
             "$VITE_TINY_API_KEY" "$VITE_SENTRY_DSN" \
             > apps/native/.env.local
+
+      - name: Cache Rust registry for Snap build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+          key: snap-rust-registry-${{ matrix.arch }}-${{ hashFiles('apps/native/src-tauri/Cargo.lock') }}
+          restore-keys: snap-rust-registry-${{ matrix.arch }}-
 
       - name: Build Snap
         id: snapcraft

@@ -3,11 +3,6 @@ name: Native iOS App Store
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version, for example 1.0.0."
-        required: true
-        default: 1.0.0
-        type: string
       build_number:
         description: "CFBundleVersion for this upload."
         required: true
@@ -30,7 +25,6 @@ jobs:
     name: Build iOS IPA and upload to App Store Connect
     runs-on: macos-26
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
       APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
       MALANGHUB_IOS_BUNDLE_ID: com.malanghub.native
@@ -61,6 +55,11 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-apple-ios
+
+      - name: Activate Rust toolchain
+        run: |
+          rustup default stable
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
 
       - name: Select Xcode 26 SDK
         run: |
@@ -93,7 +92,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Apply release version
-        run: pnpm --filter native release:version "$RELEASE_VERSION" "$BUILD_NUMBER"
+        run: pnpm --filter native release:version "$BUILD_NUMBER"
 
       - name: Import Apple signing assets
         env:

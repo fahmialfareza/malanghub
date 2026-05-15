@@ -3,11 +3,6 @@ name: Native macOS App Store
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: "Release version, for example 1.0.0."
-        required: true
-        default: 1.0.0
-        type: string
       build_number:
         description: "CFBundleVersion for this upload."
         required: true
@@ -22,7 +17,6 @@ jobs:
     name: Build macOS package and upload to App Store Connect
     runs-on: macos-latest
     env:
-      RELEASE_VERSION: ${{ inputs.version }}
       BUILD_NUMBER: ${{ inputs.build_number }}
       APPLE_DEVELOPMENT_TEAM: ${{ secrets.APPLE_TEAM_ID }}
       APPLE_SIGNING_IDENTITY: ${{ secrets.MACOS_APP_SIGNING_IDENTITY }}
@@ -63,7 +57,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Apply release version
-        run: pnpm --filter native release:version "$RELEASE_VERSION" "$BUILD_NUMBER"
+        run: pnpm --filter native release:version "$BUILD_NUMBER"
 
       - name: Import Apple signing assets
         env:

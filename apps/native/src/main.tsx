@@ -113,8 +113,6 @@ function isMobilePlatform(value: Platform): value is "android" | "ios" {
 }
 
 const nativeNavigationEnabled = isMobilePlatform(nativePlatform);
-const nativeViewportContent =
-  "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover";
 const nativeZoomShortcutKeys = new Set(["+", "=", "-", "_", "0"]);
 
 function getNativeRouteKey(location: ReturnType<typeof useLocation>) {
@@ -607,7 +605,9 @@ const NativeZoomLock = () => {
     }
 
     const previousViewportContent = viewport.content;
-    viewport.content = nativeViewportContent;
+    viewport.content = isMobilePlatform(nativePlatform)
+      ? "width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+      : "width=device-width, initial-scale=1, viewport-fit=cover";
 
     const preventNativeZoomGesture = (event: Event) => {
       event.preventDefault();
