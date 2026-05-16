@@ -340,7 +340,8 @@ const ProfileHero = ({
                 <span className="fa fa-sign-out-alt mr-2" />
                 Keluar
               </button>
-              <button className="btn btn-link text-danger malanghub-delete-account-btn" type="button" onClick={onDeleteAccount}>
+              <button className="btn btn-outline-danger malanghub-delete-account-btn" type="button" onClick={onDeleteAccount}>
+                <span className="fa fa-trash mr-2" aria-hidden="true" />
                 Hapus Akun
               </button>
             </div>
@@ -548,25 +549,28 @@ const DeleteAccountModal = ({
     title="Hapus Akun"
     open={open}
     onClose={onClose}
+    danger
     footer={
       <>
         <button className="btn btn-outline-secondary" type="button" onClick={onClose} disabled={isPending}>
           Batal
         </button>
         <button className="btn btn-danger" type="button" onClick={onConfirm} disabled={isPending}>
-          {isPending ? "Menghapus..." : "Hapus Akun"}
+          <span className="fa fa-trash mr-2" aria-hidden="true" />
+          {isPending ? "Menghapus..." : "Ya, Hapus Akun"}
         </button>
       </>
     }
   >
     <div className="malanghub-delete-account-warning">
-      <span className="fa fa-exclamation-triangle fa-2x text-danger mb-3" aria-hidden="true" />
-      <p>
-        <strong>Apakah kamu yakin ingin menghapus akun?</strong>
-      </p>
-      <p>
-        Semua data akun kamu akan dihapus secara permanen dan tidak dapat
-        dipulihkan. Tindakan ini tidak dapat dibatalkan.
+      <div className="malanghub-delete-account-icon-wrap">
+        <span className="fa fa-trash" aria-hidden="true" />
+      </div>
+      <h5 className="malanghub-delete-account-title">Hapus Akun Permanen?</h5>
+      <p className="malanghub-delete-account-desc">
+        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Semua data
+        profil, artikel, dan aktivitas kamu akan dihapus selamanya dan tidak
+        bisa dipulihkan.
       </p>
     </div>
   </Modal>
