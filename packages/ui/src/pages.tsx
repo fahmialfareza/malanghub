@@ -1624,8 +1624,20 @@ export interface DownloadLink {
   status?: string;
 }
 
+const STORE_BADGE: Record<string, [string, string]> = {
+  iOS: ["Download on the", "App Store"],
+  macOS: ["Download on the", "Mac App Store"],
+  Android: ["Get it on", "Google Play"],
+  Windows: ["Get it from", "Microsoft"],
+  Linux: ["Get it from the", "Snap Store"],
+};
+
 const DownloadCard = ({ item }: { item: DownloadLink }) => {
   const isExternal = Boolean(item.href && /^(https?:)?\/\//.test(item.href));
+  const [badgeTop, badgeBottom] = STORE_BADGE[item.platform] ?? [
+    "Unduh dari",
+    item.platform,
+  ];
 
   return (
     <article
@@ -1639,13 +1651,19 @@ const DownloadCard = ({ item }: { item: DownloadLink }) => {
         <p>{item.description}</p>
         {item.href ? (
           <a
-            className="btn btn-primary"
+            className="malanghub-store-badge"
             href={item.href}
             target={isExternal ? "_blank" : undefined}
             rel={isExternal ? "noreferrer" : undefined}
           >
-            <span className="fa fa-download mr-2" aria-hidden="true" />
-            Unduh
+            <span
+              className={`malanghub-store-badge-icon fa ${item.icon}`}
+              aria-hidden="true"
+            />
+            <span className="malanghub-store-badge-text">
+              <span className="malanghub-store-badge-top">{badgeTop}</span>
+              <span className="malanghub-store-badge-bottom">{badgeBottom}</span>
+            </span>
           </a>
         ) : (
           <span className="malanghub-download-status">
@@ -1713,6 +1731,85 @@ export const DownloadPage = ({ links }: { links: DownloadLink[] }) => {
         </div>
       </section>
     </>
+  );
+};
+
+export const AppDownloadBanner = ({
+  links,
+}: {
+  links: DownloadLink[];
+}) => {
+  const [visible, setVisible] = React.useState(false);
+  const [match, setMatch] = React.useState<DownloadLink | null>(null);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    if ("__TAURI_INTERNALS__" in window) return;
+    if (window.location.pathname === "/download") return;
+    if (sessionStorage.getItem("mh-banner-dismissed")) return;
+
+    const ua = navigator.userAgent;
+    let platform: string | null = null;
+    if (/iPhone|iPad|iPod/i.test(ua)) platform = "iOS";
+    else if (/Android/i.test(ua)) platform = "Android";
+    else if (/Win/i.test(ua)) platform = "Windows";
+    else if (/Macintosh|Mac OS X/i.test(ua)) platform = "macOS";
+    else if (/Linux/i.test(ua)) platform = "Linux";
+
+    if (!platform) return;
+    const link = links.find((l) => l.platform === platform && l.href);
+    if (!link) return;
+
+    setMatch(link);
+    setVisible(true);
+  }, [links]);
+
+  const dismiss = () => {
+    sessionStorage.setItem("mh-banner-dismissed", "1");
+    setVisible(false);
+  };
+
+  if (!visible || !match) return null;
+
+  const [badgeTop, badgeBottom] = STORE_BADGE[match.platform] ?? [
+    "Unduh dari",
+    match.platform,
+  ];
+  const isExternal = /^(https?:)?\/\//.test(match.href!);
+
+  return (
+    <div className="malanghub-download-banner">
+      <div className="malanghub-download-banner-icon">
+        <span className={`fa ${match.icon}`} aria-hidden="true" />
+      </div>
+      <div className="malanghub-download-banner-body">
+        <strong>Download Malanghub</strong>
+        <span>{match.description}</span>
+      </div>
+      <a
+        className="malanghub-store-badge malanghub-download-banner-badge"
+        href={match.href}
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noreferrer" : undefined}
+        onClick={dismiss}
+      >
+        <span
+          className={`malanghub-store-badge-icon fa ${match.icon}`}
+          aria-hidden="true"
+        />
+        <span className="malanghub-store-badge-text">
+          <span className="malanghub-store-badge-top">{badgeTop}</span>
+          <span className="malanghub-store-badge-bottom">{badgeBottom}</span>
+        </span>
+      </a>
+      <button
+        className="malanghub-download-banner-close"
+        onClick={dismiss}
+        aria-label="Tutup"
+      >
+        &times;
+      </button>
+    </div>
   );
 };
 

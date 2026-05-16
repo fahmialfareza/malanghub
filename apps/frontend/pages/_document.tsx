@@ -47,6 +47,7 @@ class MyDocument extends Document {
           <meta name="theme-color" content="#0085ad" />
           <meta name="mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-title" content="Malanghub" />
+          <meta name="apple-itunes-app" content="app-id=6769426628" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta
             name="apple-mobile-web-app-status-bar-style"
