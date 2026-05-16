@@ -69,6 +69,25 @@ body.malanghub-native-mobile .malanghub-alert {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
+}
+
+.malanghub-delete-account-btn {
+  font-size: 13px;
+  padding: 0;
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.malanghub-delete-account-warning {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.malanghub-delete-account-warning p {
+  margin-bottom: 12px;
+  color: var(--font-color, #5f6675);
+  line-height: 1.6;
 }
 
 .malanghub-auth-switch {

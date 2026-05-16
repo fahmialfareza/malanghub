@@ -193,6 +193,57 @@ func UpdateProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": u})
 }
 
+// DeleteAccount soft-deletes the authenticated user's account.
+func DeleteAccount(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.DeleteAccount")()
+
+	v, ok := c.Get("userID")
+	if !ok {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
+		return
+	}
+
+	idStr, _ := v.(string)
+	oid, err := primitive.ObjectIDFromHex(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
+		return
+	}
+
+	coll := db.GetCollection("users")
+	if coll == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
+		return
+	}
+
+	deleted := true
+	update := bson.M{
+		"$set": bson.M{
+			"deleted":    &deleted,
+			"name":       "User Dihapus",
+			"email":      "deleted_" + oid.Hex() + "@malanghub.com",
+			"password":   "",
+			"photo":      "",
+			"motto":      "",
+			"bio":        "",
+			"instagram":  "",
+			"facebook":   "",
+			"twitter":    "",
+			"tiktok":     "",
+			"linkedin":   "",
+			"updated_at": time.Now().UTC(),
+		},
+	}
+
+	res, err := coll.UpdateOne(c, bson.M{"_id": oid}, update)
+	if err != nil || res.MatchedCount == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "account deleted"})
+}
+
 // GetUser returns a user by id (public view)
 func GetUser(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetUser")()

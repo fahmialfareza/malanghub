@@ -146,11 +146,30 @@ function patchAndroid() {
 
   updateFile(
     resolve(androidRoot, "app/src/main/AndroidManifest.xml"),
-    (source) =>
-      source.replace(
+    (source) => {
+      let result = source.replace(
         /android:scheme="com\.malanghub\.(?:app|mobile|native)"/g,
         `android:scheme="${storeIdentifier}"`,
-      ),
+      );
+
+      // Inject camera permissions required for <input type="file"> camera access.
+      const cameraEntries = [
+        '    <uses-permission android:name="android.permission.CAMERA" />',
+        '    <uses-feature android:name="android.hardware.camera" android:required="false" />',
+        '    <uses-feature android:name="android.hardware.camera.front" android:required="false" />',
+      ];
+      for (const entry of cameraEntries) {
+        const nameMatch = entry.match(/android:name="([^"]+)"/);
+        if (nameMatch && !result.includes(nameMatch[1])) {
+          result = result.replace(
+            '    <uses-permission android:name="android.permission.INTERNET" />',
+            `    <uses-permission android:name="android.permission.INTERNET" />\n${entry}`,
+          );
+        }
+      }
+
+      return result;
+    },
   );
 
   updateFile(
@@ -200,6 +219,34 @@ function patchIos() {
       source.replace(knownIdentifierPattern, storeIdentifier),
     );
   }
+
+  // Inject camera and photo library usage descriptions required for
+  // <input type="file"> camera/gallery access on iOS/iPadOS.
+  updateFile(
+    resolve(appleRoot, "malanghub-native_iOS/Info.plist"),
+    (source) => {
+      let result = source;
+      const iosPermissions = [
+        [
+          "NSCameraUsageDescription",
+          "Malanghub needs camera access to update your profile photo.",
+        ],
+        [
+          "NSPhotoLibraryUsageDescription",
+          "Malanghub needs photo library access to update your profile photo.",
+        ],
+      ];
+      for (const [key, value] of iosPermissions) {
+        if (!result.includes(`<key>${key}</key>`)) {
+          result = result.replace(
+            "</dict>\n</plist>",
+            `\t<key>${key}</key>\n\t<string>${value}</string>\n</dict>\n</plist>`,
+          );
+        }
+      }
+      return result;
+    },
+  );
 
   console.log(`Prepared iOS generated project for bundle ${storeIdentifier}.`);
 }

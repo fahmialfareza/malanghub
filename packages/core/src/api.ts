@@ -53,6 +53,7 @@ export interface ApiClient {
     me(): Promise<ApiEnvelope<UserProfile>>;
     get(id: string): Promise<ApiEnvelope<UserProfile>>;
     update(data: UpdateProfileRequest): Promise<ApiEnvelope<UserProfile>>;
+    deleteAccount(): Promise<void>;
   };
   news: {
     list(params?: NewsListParams): Promise<PaginatedResponse<News>>;
@@ -323,6 +324,8 @@ export const createApiClient = ({
           body: formData,
         });
       },
+      deleteAccount: () =>
+        request<void>("/api/users", { method: "DELETE" }),
     },
     news: {
       list: (params) =>

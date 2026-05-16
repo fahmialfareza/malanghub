@@ -23,6 +23,7 @@ import {
   useTags,
   useUpdateCategoryMutation,
   useUpdateDraftMutation,
+  useDeleteAccountMutation,
   useUpdateProfileMutation,
   useUpdateTagMutation,
 } from "@malanghub/core";
@@ -296,10 +297,12 @@ const ProfileHero = ({
   user,
   onEdit,
   onLogout,
+  onDeleteAccount,
 }: {
   user?: UserProfile;
   onEdit(): void;
   onLogout(): void | Promise<void>;
+  onDeleteAccount(): void;
 }) => {
   const { Image } = useAdapters();
 
@@ -336,6 +339,9 @@ const ProfileHero = ({
               <button className="btn btn-outline-danger" type="button" onClick={onLogout}>
                 <span className="fa fa-sign-out-alt mr-2" />
                 Keluar
+              </button>
+              <button className="btn btn-link text-danger malanghub-delete-account-btn" type="button" onClick={onDeleteAccount}>
+                Hapus Akun
               </button>
             </div>
           </div>
@@ -526,6 +532,45 @@ const EditProfileModal = ({
     </Modal>
   );
 };
+
+const DeleteAccountModal = ({
+  open,
+  onClose,
+  onConfirm,
+  isPending,
+}: {
+  open: boolean;
+  onClose(): void;
+  onConfirm(): void;
+  isPending: boolean;
+}) => (
+  <Modal
+    title="Hapus Akun"
+    open={open}
+    onClose={onClose}
+    footer={
+      <>
+        <button className="btn btn-outline-secondary" type="button" onClick={onClose} disabled={isPending}>
+          Batal
+        </button>
+        <button className="btn btn-danger" type="button" onClick={onConfirm} disabled={isPending}>
+          {isPending ? "Menghapus..." : "Hapus Akun"}
+        </button>
+      </>
+    }
+  >
+    <div className="malanghub-delete-account-warning">
+      <span className="fa fa-exclamation-triangle fa-2x text-danger mb-3" aria-hidden="true" />
+      <p>
+        <strong>Apakah kamu yakin ingin menghapus akun?</strong>
+      </p>
+      <p>
+        Semua data akun kamu akan dihapus secara permanen dan tidak dapat
+        dipulihkan. Tindakan ini tidak dapat dibatalkan.
+      </p>
+    </div>
+  </Modal>
+);
 
 const TextInput = ({
   label,
@@ -1437,7 +1482,9 @@ export const DashboardPage = () => {
   const { Meta } = adapters;
   const [hasToken, setHasToken] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const currentUser = useCurrentUser(api, hasToken);
+  const deleteAccount = useDeleteAccountMutation(api);
 
   useEffect(() => {
     void Promise.resolve(authStorage.getToken()).then((token) => {
@@ -1454,6 +1501,26 @@ export const DashboardPage = () => {
     adapters.navigate("/signin");
   };
 
+  const onConfirmDeleteAccount = () => {
+    deleteAccount.mutate(undefined, {
+      onSuccess: async () => {
+        setDeleteModalOpen(false);
+        await signOut();
+        setHasToken(false);
+        refreshAuth();
+        notify("Akun berhasil dihapus", "success");
+        adapters.navigate("/");
+      },
+      onError: (error) => {
+        adapters.reportError?.(error);
+        notify(
+          error instanceof Error ? error.message : "Gagal menghapus akun",
+          "danger",
+        );
+      },
+    });
+  };
+
   if (currentUser.isLoading) return <Spinner />;
 
   return (
@@ -1468,9 +1535,16 @@ export const DashboardPage = () => {
         user={currentUser.data}
         onEdit={() => setProfileModalOpen(true)}
         onLogout={onLogout}
+        onDeleteAccount={() => setDeleteModalOpen(true)}
       />
       {currentUser.data && <DashboardWorkbench user={currentUser.data} />}
       <EditProfileModal user={currentUser.data} open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
+      <DeleteAccountModal
+        open={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={onConfirmDeleteAccount}
+        isPending={deleteAccount.isPending}
+      />
     </>
   );
 };

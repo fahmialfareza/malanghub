@@ -190,6 +190,11 @@ export const useUpdateProfileMutation = (api: ApiClient) => {
   });
 };
 
+export const useDeleteAccountMutation = (api: ApiClient) =>
+  useMutation({
+    mutationFn: () => api.users.deleteAccount(),
+  });
+
 export const useCreateCategoryMutation = (api: ApiClient) => {
   const queryClient = useQueryClient();
 
