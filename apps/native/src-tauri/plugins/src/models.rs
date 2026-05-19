@@ -23,3 +23,11 @@ pub struct SignInResponse {
     pub name: Option<String>,
     pub photo_url: Option<String>,
 }
+
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppleSignInResponse {
+    pub identity_token: Option<String>,
+    pub email: Option<String>,
+    pub name: Option<String>,
+}

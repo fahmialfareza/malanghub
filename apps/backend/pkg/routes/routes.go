@@ -16,6 +16,7 @@ func Register(r *gin.Engine) {
 		auth.POST("/signup", controllers.Signup)
 		auth.POST("/signin", controllers.Signin)
 		auth.POST("/google", controllers.GoogleSignIn)
+		auth.POST("/apple", controllers.AppleSignIn)
 
 		users := api.Group("/users")
 		// Mirror original Node routes: GET /api/users returns profile when authenticated
@@ -23,6 +24,7 @@ func Register(r *gin.Engine) {
 		users.POST("/signup", controllers.Signup)
 		users.POST("/signin", controllers.Signin)
 		users.POST("/google", controllers.GoogleSignIn)
+		users.POST("/apple", controllers.AppleSignIn)
 		users.PUT("", authpkg.JWTMiddleware(), controllers.UpdateProfile)
 		users.DELETE("", authpkg.JWTMiddleware(), controllers.DeleteAccount)
 		// Admin listing endpoint kept at /all

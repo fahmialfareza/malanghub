@@ -37,6 +37,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
     Builder::new("google-auth")
         .invoke_handler(tauri::generate_handler![
             commands::sign_in,
+            commands::apple_sign_in,
             commands::open_external_url
         ])
         .on_navigation(|_webview, _url| {

@@ -20,6 +20,7 @@ type User struct {
 	Twitter   string             `json:"twitter,omitempty" bson:"twitter,omitempty"`
 	Tiktok    string             `json:"tiktok,omitempty" bson:"tiktok,omitempty"`
 	Linkedin  string             `json:"linkedin,omitempty" bson:"linkedin,omitempty"`
+	AppleSub  string             `json:"apple_sub,omitempty" bson:"apple_sub,omitempty"`
 	Deleted   *bool              `json:"deleted,omitempty" bson:"deleted,omitempty"`
 	CreatedAt time.Time          `json:"created_at,omitempty" bson:"created_at,omitempty"`
 	UpdatedAt time.Time          `json:"updated_at,omitempty" bson:"updated_at,omitempty"`

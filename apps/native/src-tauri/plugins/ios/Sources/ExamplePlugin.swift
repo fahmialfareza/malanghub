@@ -7,6 +7,13 @@ import Tauri
 import UIKit
 import WebKit
 
+// MARK: - Apple Sign In response
+private struct AppleSignInResult: Encodable {
+  let identityToken: String?
+  let email: String?
+  let name: String?
+}
+
 private struct SignInArgs: Decodable {
   let iosClientId: String?
   let redirectUri: String?
@@ -22,8 +29,14 @@ private struct GoogleTokenResponse: Decodable {
   }
 }
 
-class GoogleAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding {
+class GoogleAuthPlugin: Plugin,
+  ASWebAuthenticationPresentationContextProviding,
+  ASAuthorizationControllerDelegate,
+  ASAuthorizationControllerPresentationContextProviding
+{
   private var authSession: ASWebAuthenticationSession?
+  private var appleInvoke: Invoke?
+  private var appleController: ASAuthorizationController?
 
   @objc public func signIn(_ invoke: Invoke) throws {
     let args = try invoke.parseArgs(SignInArgs.self)
@@ -77,7 +90,7 @@ class GoogleAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding 
         }
 
         if let error = error {
-          invoke.reject("Google login gagal.", error: error)
+          invoke.reject("Google login gagal: \(error.localizedDescription)")
           return
         }
 
@@ -105,6 +118,76 @@ class GoogleAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding 
     }
   }
 
+  // MARK: - Apple Sign In
+
+  @objc public func appleSignIn(_ invoke: Invoke) throws {
+    self.appleInvoke = invoke
+
+    DispatchQueue.main.async {
+      let provider = ASAuthorizationAppleIDProvider()
+      let request = provider.createRequest()
+      request.requestedScopes = [.fullName, .email]
+
+      let controller = ASAuthorizationController(authorizationRequests: [request])
+      controller.delegate = self
+      controller.presentationContextProvider = self
+      self.appleController = controller
+      controller.performRequests()
+    }
+  }
+
+  // ASAuthorizationControllerDelegate
+
+  public func authorizationController(
+    controller: ASAuthorizationController,
+    didCompleteWithAuthorization authorization: ASAuthorization
+  ) {
+    guard let invoke = self.appleInvoke else { return }
+    self.appleInvoke = nil
+    self.appleController = nil
+
+    guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+      invoke.reject("Apple Sign In: credential tidak dikenali.")
+      return
+    }
+
+    let identityToken = credential.identityToken.flatMap { String(data: $0, encoding: .utf8) }
+    let email = credential.email
+    let nameParts = [credential.fullName?.givenName, credential.fullName?.familyName]
+      .compactMap { $0?.trimmingCharacters(in: .whitespaces) }
+      .filter { !$0.isEmpty }
+    let name = nameParts.isEmpty ? nil : nameParts.joined(separator: " ")
+
+    // Use [String: String] (non-optional values) so nil entries are omitted
+    // rather than boxed as Swift optionals which break Tauri's JSON serializer.
+    var result = [String: String]()
+    if let t = identityToken { result["identityToken"] = t }
+    if let e = email { result["email"] = e }
+    if let n = name { result["name"] = n }
+    invoke.resolve(result)
+  }
+
+  public func authorizationController(
+    controller: ASAuthorizationController,
+    didCompleteWithError error: Error
+  ) {
+    guard let invoke = self.appleInvoke else { return }
+    self.appleInvoke = nil
+    self.appleController = nil
+
+    if let authError = error as? ASAuthorizationError, authError.code == .canceled {
+      invoke.reject("Apple Sign In dibatalkan.")
+    } else {
+      invoke.reject("Apple Sign In gagal: \(error.localizedDescription)")
+    }
+  }
+
+  // ASAuthorizationControllerPresentationContextProviding
+  public func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+    manager.viewController?.view.window ?? ASPresentationAnchor()
+  }
+
+  // ASWebAuthenticationPresentationContextProviding
   public func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
     manager.viewController?.view.window ?? ASPresentationAnchor()
   }
@@ -171,7 +254,7 @@ class GoogleAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding 
     URLSession.shared.dataTask(with: request) { data, response, error in
       if let error = error {
         DispatchQueue.main.async {
-          invoke.reject("Google token exchange gagal.", error: error)
+          invoke.reject("Google token exchange gagal: \(error.localizedDescription)")
         }
         return
       }
@@ -195,14 +278,14 @@ class GoogleAuthPlugin: Plugin, ASWebAuthenticationPresentationContextProviding 
         }
 
         DispatchQueue.main.async {
-          invoke.resolve([
-            "idToken": token.idToken,
-            "accessToken": token.accessToken,
-          ])
+          var result = [String: String]()
+          if let id = token.idToken { result["idToken"] = id }
+          if let at = token.accessToken { result["accessToken"] = at }
+          invoke.resolve(result)
         }
       } catch {
         DispatchQueue.main.async {
-          invoke.reject("Google token response gagal diparse.", error: error)
+          invoke.reject("Google token response gagal diparse: \(error.localizedDescription)")
         }
       }
     }.resume()

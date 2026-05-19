@@ -31,6 +31,12 @@ impl<R: Runtime> GoogleAuth<R> {
             .map_err(Into::into)
     }
 
+    pub fn apple_sign_in(&self) -> crate::Result<AppleSignInResponse> {
+        self.0
+            .run_mobile_plugin("appleSignIn", ())
+            .map_err(Into::into)
+    }
+
     #[cfg(target_os = "android")]
     pub fn open_external_url(&self, url: String) -> crate::Result<()> {
         self.0

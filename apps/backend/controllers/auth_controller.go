@@ -1,13 +1,19 @@
 package controllers
 
 import (
+	"crypto/rsa"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
+	"math/big"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"time"
+
+	jwtv5 "github.com/golang-jwt/jwt/v5"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -371,4 +377,181 @@ func isGoogleEmailVerified(value any) bool {
 	default:
 		return false
 	}
+}
+
+// ──────────────────────────────────────────────
+// Apple Sign In
+// ──────────────────────────────────────────────
+
+type appleJWK struct {
+	Kty string `json:"kty"`
+	Kid string `json:"kid"`
+	Alg string `json:"alg"`
+	N   string `json:"n"`
+	E   string `json:"e"`
+}
+
+type appleJWKS struct {
+	Keys []appleJWK `json:"keys"`
+}
+
+func fetchApplePublicKeys(c *gin.Context) ([]appleJWK, error) {
+	req, err := http.NewRequestWithContext(c.Request.Context(), http.MethodGet, "https://appleid.apple.com/auth/keys", nil)
+	if err != nil {
+		return nil, err
+	}
+	req = newrelicpkg.InstrumentRequest(c, req)
+	client := newrelicpkg.InstrumentedHTTPClient(&http.Client{Timeout: 10 * time.Second})
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var jwks appleJWKS
+	if err := json.NewDecoder(resp.Body).Decode(&jwks); err != nil {
+		return nil, err
+	}
+	return jwks.Keys, nil
+}
+
+func jwkToRSAPublicKey(jwk appleJWK) (*rsa.PublicKey, error) {
+	nBytes, err := base64.RawURLEncoding.DecodeString(jwk.N)
+	if err != nil {
+		return nil, fmt.Errorf("decode N: %w", err)
+	}
+	eBytes, err := base64.RawURLEncoding.DecodeString(jwk.E)
+	if err != nil {
+		return nil, fmt.Errorf("decode E: %w", err)
+	}
+	return &rsa.PublicKey{
+		N: new(big.Int).SetBytes(nBytes),
+		E: int(new(big.Int).SetBytes(eBytes).Int64()),
+	}, nil
+}
+
+func verifyAppleIdentityToken(c *gin.Context, identityToken string) (jwtv5.MapClaims, error) {
+	keys, err := fetchApplePublicKeys(c)
+	if err != nil {
+		return nil, fmt.Errorf("fetch Apple JWKS: %w", err)
+	}
+
+	token, err := jwtv5.Parse(identityToken, func(token *jwtv5.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwtv5.SigningMethodRSA); !ok {
+			return nil, fmt.Errorf("unexpected alg: %v", token.Header["alg"])
+		}
+		kid, _ := token.Header["kid"].(string)
+		for _, k := range keys {
+			if k.Kid == kid {
+				return jwkToRSAPublicKey(k)
+			}
+		}
+		return nil, fmt.Errorf("no key for kid=%q", kid)
+	},
+		jwtv5.WithIssuer("https://appleid.apple.com"),
+		jwtv5.WithExpirationRequired(),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwtv5.MapClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("invalid Apple token claims")
+	}
+	return claims, nil
+}
+
+func tokenForAppleUser(c *gin.Context, appleSub, email, name string) (string, int, gin.H) {
+	coll := db.GetCollection("users")
+	if coll == nil {
+		return "", http.StatusInternalServerError, gin.H{"message": "db not initialized"}
+	}
+
+	var u models.User
+	// Prefer lookup by Apple sub (stable across email changes)
+	if err := coll.FindOne(c, bson.M{"apple_sub": appleSub}).Decode(&u); err != nil && email != "" {
+		_ = coll.FindOne(c, bson.M{"email": email}).Decode(&u)
+	}
+
+	now := time.Now().UTC()
+	if u.ID.IsZero() {
+		genEmail := email
+		if genEmail == "" {
+			genEmail = "apple_" + appleSub + "@privaterelay.appleid.com"
+		}
+		genName := strings.TrimSpace(name)
+		if genName == "" {
+			genName = "Apple User"
+		}
+		newU := models.User{
+			ID:        primitive.NewObjectID(),
+			Name:      genName,
+			Email:     genEmail,
+			AppleSub:  appleSub,
+			Role:      "user",
+			CreatedAt: now,
+			UpdatedAt: now,
+		}
+		if _, err := coll.InsertOne(c, newU); err != nil {
+			return "", http.StatusInternalServerError, gin.H{"message": "failed to create user"}
+		}
+		u = newU
+	} else if u.AppleSub == "" {
+		_, _ = coll.UpdateOne(c, bson.M{"_id": u.ID}, bson.M{"$set": bson.M{"apple_sub": appleSub, "updated_at": now}})
+	}
+
+	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
+	if err != nil {
+		return "", http.StatusInternalServerError, gin.H{"message": "failed to generate token"}
+	}
+	return token, http.StatusOK, gin.H{"token": token}
+}
+
+// AppleSignIn accepts { "identity_token": "...", "email": "...", "name": "..." }
+// from the native Apple Sign In SDK.
+func AppleSignIn(c *gin.Context) {
+	defer newrelicpkg.EndSegment(c, "controllers.AppleSignIn")()
+
+	var body struct {
+		IdentityToken string `form:"identity_token" json:"identity_token"`
+		Email         string `form:"email"          json:"email"`
+		Name          string `form:"name"           json:"name"`
+	}
+	if err := c.ShouldBind(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		return
+	}
+
+	identityToken := strings.TrimSpace(body.IdentityToken)
+	if identityToken == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "identity_token required"})
+		return
+	}
+
+	claims, err := verifyAppleIdentityToken(c, identityToken)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid Apple identity token: " + err.Error()})
+		return
+	}
+
+	sub, _ := claims["sub"].(string)
+	if sub == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Apple token missing sub claim"})
+		return
+	}
+
+	// Apple returns email only on first sign-in; fall back to body value
+	email, _ := claims["email"].(string)
+	if email == "" {
+		email = strings.TrimSpace(body.Email)
+	}
+
+	token, status, payload := tokenForAppleUser(c, sub, email, body.Name)
+	if status != http.StatusOK {
+		c.JSON(status, payload)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

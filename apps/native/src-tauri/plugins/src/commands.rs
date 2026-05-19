@@ -37,6 +37,13 @@ pub(crate) async fn sign_in<R: Runtime>(
 }
 
 #[command]
+pub(crate) async fn apple_sign_in<R: Runtime>(
+    app: AppHandle<R>,
+) -> Result<crate::models::AppleSignInResponse> {
+    app.google_auth().apple_sign_in()
+}
+
+#[command]
 pub(crate) fn open_external_url<R: Runtime>(
     app: AppHandle<R>,
     url: String,

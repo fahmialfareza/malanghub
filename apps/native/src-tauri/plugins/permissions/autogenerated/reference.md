@@ -19,6 +19,32 @@ Default permissions for the plugin
 <tr>
 <td>
 
+`google-auth:allow-apple-sign-in`
+
+</td>
+<td>
+
+Enables the apple_sign_in command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`google-auth:deny-apple-sign-in`
+
+</td>
+<td>
+
+Denies the apple_sign_in command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
 `google-auth:allow-open-external-url`
 
 </td>

@@ -1,5 +1,6 @@
 import type {
   ApiEnvelope,
+  AppleLoginRequest,
   ApproveNewsDraftRequest,
   AuthResponse,
   CategoryWithNews,
@@ -48,6 +49,7 @@ export interface ApiClient {
     signIn(data: SignInRequest): Promise<AuthResponse>;
     signUp(data: SignUpRequest): Promise<AuthResponse>;
     google(data: GoogleLoginRequest): Promise<AuthResponse>;
+    apple(data: AppleLoginRequest): Promise<AuthResponse>;
   };
   users: {
     me(): Promise<ApiEnvelope<UserProfile>>;
@@ -296,6 +298,11 @@ export const createApiClient = ({
         }),
       google: (data) =>
         request<AuthResponse>("/api/users/google", {
+          method: "POST",
+          body: data,
+        }),
+      apple: (data) =>
+        request<AuthResponse>("/api/users/apple", {
           method: "POST",
           body: data,
         }),

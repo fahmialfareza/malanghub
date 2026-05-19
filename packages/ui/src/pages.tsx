@@ -807,6 +807,52 @@ const AuthCard = ({ children }: { children: React.ReactNode }) => (
   </section>
 );
 
+const AppleAuthButton = ({
+  label,
+  onSuccess,
+}: {
+  label: "Masuk" | "Daftar";
+  onSuccess(data: AuthResponse): void | Promise<void>;
+}) => {
+  const { notify } = useMalanghubRuntime();
+  const adapters = useAdapters();
+  const [loading, setLoading] = useState(false);
+
+  if (!adapters.appleAuthAvailable || !adapters.requestAppleAuth) return null;
+
+  const onAppleAuth = async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    setLoading(true);
+    try {
+      const auth = await adapters.requestAppleAuth!();
+      await onSuccess(auth);
+    } catch (error) {
+      adapters.reportError?.(error);
+      const msg =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : typeof error === "string" && error.trim()
+            ? error
+            : "Apple Sign In gagal";
+      notify(msg, "danger");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <a
+      href="#apple"
+      onClick={onAppleAuth}
+      className="btn btn-dark btn-block btn-lg text-light malanghub-apple-signin-btn"
+      aria-disabled={loading}
+    >
+      <i className="fa fa-apple" />{" "}
+      {loading ? "Memproses..." : `${label} dengan`} <b>Apple</b>
+    </a>
+  );
+};
+
 const GoogleAuthButton = ({
   label,
   onSuccess,
@@ -817,7 +863,6 @@ const GoogleAuthButton = ({
   const { api, notify } = useMalanghubRuntime();
   const adapters = useAdapters();
   const [loading, setLoading] = useState(false);
-  if (adapters.googleAuthHidden) return null;
 
   const available =
     Boolean(adapters.googleAuthAvailable) &&
@@ -927,15 +972,10 @@ export const SignInPage = () => {
         <h3 className="section-title-left">Masuk</h3>
         <div className="contact-grids d-grid">
           <div className="contact-left m-auto">
-            {adapters.googleAuthHidden ? (
-              <img
-                src="/logo.png"
-                alt={adapters.appName ?? "Malanghub"}
-                className="malanghub-auth-logo"
-              />
-            ) : (
+            <div className="malanghub-auth-providers">
+              <AppleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
               <GoogleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
-            )}
+            </div>
           </div>
           <div className="contact-right">
             <form onSubmit={submit} className="signin-form">
@@ -1029,15 +1069,10 @@ export const SignUpPage = () => {
         <h3 className="section-title-left">Daftar</h3>
         <div className="contact-grids d-grid">
           <div className="contact-left m-auto">
-            {adapters.googleAuthHidden ? (
-              <img
-                src="/logo.png"
-                alt={adapters.appName ?? "Malanghub"}
-                className="malanghub-auth-logo"
-              />
-            ) : (
+            <div className="malanghub-auth-providers">
+              <AppleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
               <GoogleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
-            )}
+            </div>
           </div>
           <div className="contact-right">
             <form onSubmit={submit} className="signin-form">

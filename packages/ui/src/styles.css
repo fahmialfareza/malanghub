@@ -132,6 +132,22 @@ body.malanghub-native-mobile .malanghub-alert {
   margin: 0 auto;
 }
 
+.malanghub-auth-providers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.malanghub-apple-signin-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #111827 !important;
+  border-color: #111827 !important;
+}
+
 .malanghub-native-note {
   border-left: 4px solid #0085ad;
   margin: 12px 0 18px;

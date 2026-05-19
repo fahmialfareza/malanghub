@@ -113,6 +113,12 @@ export interface GoogleLoginRequest {
   id_token?: string;
 }
 
+export interface AppleLoginRequest {
+  identity_token: string;
+  email?: string;
+  name?: string;
+}
+
 export interface UpdateProfileRequest {
   name: string;
   photo?: Blob;

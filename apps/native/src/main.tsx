@@ -12,7 +12,7 @@ import {
   useNavigationType,
   useParams,
 } from "react-router-dom";
-import { getVersion, onBackButtonPress } from "@tauri-apps/api/app";
+import { onBackButtonPress } from "@tauri-apps/api/app";
 import {
   AppShell,
   ContactPage,
@@ -88,6 +88,12 @@ interface NativeGoogleSignInResponse {
   email?: string;
   name?: string;
   photoUrl?: string;
+}
+
+interface NativeAppleSignInResponse {
+  identityToken?: string;
+  email?: string;
+  name?: string;
 }
 
 function generateCodeVerifier(): string {
@@ -509,6 +515,44 @@ const requestNativeGoogleAuth = async (): Promise<AuthResponse> => {
 
   if (!response.ok) {
     throw new Error(getPayloadMessage(payload) ?? "Google login gagal");
+  }
+
+  if (!payload || typeof payload !== "object" || !("token" in payload)) {
+    throw new Error("Backend tidak mengembalikan token Malanghub.");
+  }
+
+  return payload as AuthResponse;
+};
+
+const requestNativeAppleAuth = async (): Promise<AuthResponse> => {
+  const credential = await invoke<NativeAppleSignInResponse>(
+    "plugin:google-auth|apple_sign_in",
+  );
+  const identityToken = credential.identityToken?.trim();
+
+  if (!identityToken) {
+    throw new Error("Apple tidak mengembalikan identity token.");
+  }
+
+  const response = await fetch(
+    new URL(
+      "/api/users/apple",
+      apiBaseUrl.endsWith("/") ? apiBaseUrl : `${apiBaseUrl}/`,
+    ),
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        identity_token: identityToken,
+        email: credential.email || undefined,
+        name: credential.name || undefined,
+      }),
+    },
+  );
+  const payload = await parseResponsePayload(response);
+
+  if (!response.ok) {
+    throw new Error(getPayloadMessage(payload) ?? "Apple Sign In gagal");
   }
 
   if (!payload || typeof payload !== "object" || !("token" in payload)) {
@@ -1218,43 +1262,9 @@ const NativeBottomTabs = () => {
   );
 };
 
-// null = still fetching (treat as in-review to avoid a flash of Google button)
-const useAppStoreReviewFlag = (): boolean | null => {
-  const isReviewPlatform =
-    nativePlatform === "ios" || nativePlatform === "macos";
-  const [inReview, setInReview] = React.useState<boolean | null>(
-    isReviewPlatform ? null : false,
-  );
-
-  React.useEffect(() => {
-    if (!isReviewPlatform) return;
-    getVersion()
-      .then((version) =>
-        fetch(
-          `${apiBaseUrl}/api/native/review?platform=${encodeURIComponent(nativePlatform)}&version=${encodeURIComponent(version)}`,
-        ),
-      )
-      .then((res) => res.json())
-      .then((data: unknown) => {
-        setInReview(
-          data !== null &&
-            typeof data === "object" &&
-            "in_review" in data &&
-            data.in_review === true,
-        );
-      })
-      .catch(() => {
-        setInReview(false);
-      });
-  }, [isReviewPlatform]);
-
-  return inReview;
-};
-
 const NativeProviders = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const appStoreReview = useAppStoreReviewFlag();
 
   const adapters = React.useMemo<PlatformAdapters>(
     () => ({
@@ -1270,21 +1280,23 @@ const NativeProviders = ({ children }: { children: React.ReactNode }) => {
       requestGoogleAccessToken: isMobilePlatform(nativePlatform)
         ? undefined
         : requestGoogleAccessToken,
-      googleAuthHidden: appStoreReview !== false,
-      googleAuthAvailable:
-        appStoreReview !== false
-          ? false
-          : isMobilePlatform(nativePlatform)
-            ? !getNativeGoogleConfigError()
-            : Boolean(getGoogleClientId()),
+      googleAuthAvailable: isMobilePlatform(nativePlatform)
+        ? !getNativeGoogleConfigError()
+        : Boolean(getGoogleClientId()),
       googleAuthUnavailableMessage:
         getNativeGoogleConfigError() ??
         "Isi VITE_GOOGLE_CLIENT_ID untuk mengaktifkan Google login.",
+      appleAuthAvailable:
+        nativePlatform === "ios" || nativePlatform === "macos",
+      requestAppleAuth:
+        nativePlatform === "ios" || nativePlatform === "macos"
+          ? requestNativeAppleAuth
+          : undefined,
       tinyApiKey,
       apiBaseUrl,
       appName: "Malanghub",
     }),
-    [location.pathname, navigate, appStoreReview],
+    [location.pathname, navigate],
   );
 
   return (

@@ -36,10 +36,12 @@ export interface PlatformAdapters {
   reportError?(error: unknown): void;
   requestGoogleAuth?(): Promise<AuthResponse>;
   requestGoogleAccessToken?(): Promise<string>;
+  requestAppleAuth?(): Promise<AuthResponse>;
   analytics?: React.ReactNode;
   googleAuthAvailable?: boolean;
   googleAuthHidden?: boolean;
   googleAuthUnavailableMessage?: string;
+  appleAuthAvailable?: boolean;
   offlineBannerEnabled?: boolean;
   tinyApiKey?: string;
   apiBaseUrl?: string;

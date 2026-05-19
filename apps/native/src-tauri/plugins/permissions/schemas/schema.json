@@ -295,6 +295,18 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the apple_sign_in command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-apple-sign-in",
+          "markdownDescription": "Enables the apple_sign_in command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the apple_sign_in command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-apple-sign-in",
+          "markdownDescription": "Denies the apple_sign_in command without any pre-configured scope."
+        },
+        {
           "description": "Enables the open_external_url command without any pre-configured scope.",
           "type": "string",
           "const": "allow-open-external-url",

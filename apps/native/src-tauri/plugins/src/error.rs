@@ -8,6 +8,8 @@ pub enum Error {
     Io(#[from] std::io::Error),
     #[error("native Google sign-in is only available on Android and iOS")]
     UnsupportedPlatform,
+    #[error("{0}")]
+    AppleSignInFailed(String),
     #[cfg(mobile)]
     #[error(transparent)]
     PluginInvoke(#[from] tauri::plugin::mobile::PluginInvokeError),
