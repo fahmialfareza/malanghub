@@ -167,6 +167,20 @@ jobs:
             pnpm --filter native mobile:store-id ios
           fi
 
+      - name: Inject Sign in with Apple entitlement
+        run: |
+          set -euo pipefail
+          entitlements="apps/native/src-tauri/gen/apple/malanghub-native_iOS/malanghub-native_iOS.entitlements"
+          test -f "$entitlements"
+          if /usr/libexec/PlistBuddy -c "Print :com.apple.developer.applesignin" "$entitlements" 2>/dev/null; then
+            echo "com.apple.developer.applesignin already present"
+          else
+            /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin array" "$entitlements"
+            /usr/libexec/PlistBuddy -c "Add :com.apple.developer.applesignin:0 string Default" "$entitlements"
+            echo "Injected com.apple.developer.applesignin"
+          fi
+          /usr/libexec/PlistBuddy -c "Print :com.apple.developer.applesignin" "$entitlements"
+
       - name: Generate app icons
         run: pnpm --filter native tauri icon src-tauri/icons/icon.png
 
