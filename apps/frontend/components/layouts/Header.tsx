@@ -248,15 +248,6 @@ const Header = ({
                   Kontak
                 </Link>
               </li>
-              <li
-                className={
-                  activeLink === "download" ? "nav-item active" : "nav-item"
-                }
-              >
-                <Link href="/download" className="nav-link">
-                  Download
-                </Link>
-              </li>
               {!user && guestHeader}
               {userLoading ? <Spinner /> : !userLoading && user && logoutLink}
             </ul>

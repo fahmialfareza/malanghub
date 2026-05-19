@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import assetsPath from "./Assets";
+import { downloadLinks } from "../../utils/downloadLinks";
 
 const Footer = () => {
   useEffect(() => {
@@ -21,6 +22,36 @@ const Footer = () => {
     <footer className="w3l-footer-16">
       <div className="footer-content py-lg-5 py-4 text-center">
         <div className="container">
+          <div className="mb-4">
+            <p className="mb-2" style={{ fontSize: "0.8rem", opacity: 0.7, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+              Download Sekarang
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.5rem" }}>
+              {downloadLinks.filter((l) => l.href).map((l) => (
+                <a
+                  key={l.platform}
+                  href={l.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.4rem",
+                    padding: "0.35rem 0.8rem",
+                    border: "1px solid rgba(255,255,255,0.25)",
+                    borderRadius: "6px",
+                    color: "inherit",
+                    fontSize: "0.8rem",
+                    textDecoration: "none",
+                    transition: "border-color 0.2s",
+                  }}
+                >
+                  <span className={`fa ${l.icon}`} aria-hidden="true" />
+                  {l.platform}
+                </a>
+              ))}
+            </div>
+          </div>
           <div className="copy-right">
             <h6>
               © <span>{new Date().getFullYear()}</span> Malanghub . Made with{" "}
@@ -34,12 +65,9 @@ const Footer = () => {
               </Link>
               <Link
                 href="/privacy"
-                style={{ color: "inherit", marginRight: "1rem" }}
+                style={{ color: "inherit" }}
               >
                 Kebijakan Privasi
-              </Link>
-              <Link href="/download" style={{ color: "inherit" }}>
-                Download
               </Link>
             </p>
           </div>

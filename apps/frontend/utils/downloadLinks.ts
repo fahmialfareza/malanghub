@@ -35,7 +35,9 @@ export const downloadLinks: DownloadLink[] = [
     group: "desktop",
     icon: "fa-windows",
     description: "Installer desktop untuk Windows.",
-    href: optionalUrl(process.env.NEXT_PUBLIC_DOWNLOAD_WINDOWS_URL),
+    href:
+      optionalUrl(process.env.NEXT_PUBLIC_DOWNLOAD_WINDOWS_URL) ??
+      "https://apps.microsoft.com/detail/9N1W77XV5TPQ",
   },
   {
     platform: "Linux",
