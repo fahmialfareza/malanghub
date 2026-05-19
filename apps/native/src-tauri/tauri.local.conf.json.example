@@ -1,0 +1,10 @@
+{
+  "bundle": {
+    "macOS": {
+      "signingIdentity": "Apple Development: Your Name (XXXXXXXXXX)",
+      "files": {
+        "embedded.provisionprofile": "./profiles/macos-development.provisionprofile"
+      }
+    }
+  }
+}

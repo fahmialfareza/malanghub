@@ -10,6 +10,7 @@
     "check-types": "tsc -p tsconfig.json --noEmit",
     "desktop": "tauri dev",
     "macos": "tauri dev",
+    "macos:build": "tauri build --debug --config src-tauri/tauri.local.conf.json && xattr -cr src-tauri/target/debug/bundle/macos/Malanghub.app && open src-tauri/target/debug/bundle/macos/Malanghub.app",
     "windows": "tauri dev",
     "linux": "tauri dev",
     "ios": "node ./scripts/mobile-device-dev.mjs ios",
