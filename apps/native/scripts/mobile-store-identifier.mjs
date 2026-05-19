@@ -220,6 +220,18 @@ function patchIos() {
     );
   }
 
+  // Inject Sign in with Apple entitlement required by ASAuthorizationAppleIDProvider.
+  updateFile(
+    resolve(appleRoot, "malanghub-native_iOS/malanghub-native_iOS.entitlements"),
+    (source) => {
+      if (source.includes("com.apple.developer.applesignin")) return source;
+      return source.replace(
+        "</dict>\n</plist>",
+        "\t<key>com.apple.developer.applesignin</key>\n\t<array>\n\t\t<string>Default</string>\n\t</array>\n</dict>\n</plist>",
+      );
+    },
+  );
+
   // Inject camera and photo library usage descriptions required for
   // <input type="file"> camera/gallery access on iOS/iPadOS.
   updateFile(
