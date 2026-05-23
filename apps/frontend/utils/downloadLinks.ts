@@ -10,7 +10,7 @@ export const downloadLinks: DownloadLink[] = [
     description: "Untuk iPhone dan iPad.",
     href:
       optionalUrl(process.env.NEXT_PUBLIC_DOWNLOAD_IOS_URL) ??
-      "https://apps.apple.com/us/app/malanghub/id6769426628",
+      "https://apps.apple.com/id/app/malanghub/id6769426628",
   },
   {
     platform: "Android",
@@ -28,7 +28,7 @@ export const downloadLinks: DownloadLink[] = [
     description: "Installer desktop untuk Mac.",
     href:
       optionalUrl(process.env.NEXT_PUBLIC_DOWNLOAD_MACOS_URL) ??
-      "https://apps.apple.com/us/app/malanghub/id6769426628",
+      "https://apps.apple.com/id/app/malanghub/id6769426628",
   },
   {
     platform: "Windows",
