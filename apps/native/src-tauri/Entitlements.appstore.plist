@@ -12,6 +12,8 @@
     <true/>
     <key>com.apple.security.network.client</key>
     <true/>
+    <!-- Required for desktop Google OAuth: the app briefly listens on localhost
+         for the loopback redirect, then closes the port after sign-in completes. -->
     <key>com.apple.security.network.server</key>
     <true/>
     <key>com.apple.developer.applesignin</key>

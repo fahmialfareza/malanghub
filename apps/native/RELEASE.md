@@ -74,24 +74,24 @@ number that is embedded in the IPA.
 
 Apple App Store Connect:
 
-| Name                                      | Notes                                              |
-| ----------------------------------------- | -------------------------------------------------- |
-| `APPLE_TEAM_ID`                           | Apple Developer Team ID                            |
-| `APPLE_DISTRIBUTION_CERTIFICATE_BASE64`   | Base64 `.p12` Apple Distribution certificate       |
-| `APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password used when exporting that `.p12`           |
-| `APPLE_KEYCHAIN_PASSWORD`                 | Any strong temporary CI keychain password          |
+| Name                                      | Notes                                                                             |
+| ----------------------------------------- | --------------------------------------------------------------------------------- |
+| `APPLE_TEAM_ID`                           | Apple Developer Team ID                                                           |
+| `APPLE_DISTRIBUTION_CERTIFICATE_BASE64`   | Base64 `.p12` Apple Distribution certificate                                      |
+| `APPLE_DISTRIBUTION_CERTIFICATE_PASSWORD` | Password used when exporting that `.p12`                                          |
+| `APPLE_KEYCHAIN_PASSWORD`                 | Any strong temporary CI keychain password                                         |
 | `IOS_PROVISIONING_PROFILE_BASE64`         | Base64 iOS App Store distribution provisioning profile for `com.malanghub.native` |
-| `MACOS_PROVISIONING_PROFILE_BASE64`       | Base64 Mac App Store provisioning profile          |
-| `MACOS_APP_SIGNING_IDENTITY`              | Usually `3rd Party Mac Developer Application: ...` |
-| `MACOS_INSTALLER_CERTIFICATE_BASE64`      | Base64 `.p12` Mac Installer certificate            |
-| `MACOS_INSTALLER_CERTIFICATE_PASSWORD`    | Password used when exporting the installer `.p12`  |
-| `MACOS_INSTALLER_SIGNING_IDENTITY`        | Usually `3rd Party Mac Developer Installer: ...`   |
-| `APP_STORE_CONNECT_KEY_ID`                | App Store Connect API key ID                       |
-| `APP_STORE_CONNECT_ISSUER_ID`             | App Store Connect issuer ID                        |
-| `APP_STORE_CONNECT_PRIVATE_KEY_BASE64`    | Base64 `AuthKey_<KEY_ID>.p8`                       |
-| `APP_STORE_CONNECT_IOS_APPLE_ID`          | Numeric App Store Connect Apple ID for the iOS app |
-| `APP_STORE_CONNECT_MACOS_APPLE_ID`        | Numeric App Store Connect Apple ID for the macOS app |
-| `APP_STORE_CONNECT_ASC_PUBLIC_ID`         | Optional provider public ID when the ASC account has multiple providers |
+| `MACOS_PROVISIONING_PROFILE_BASE64`       | Base64 Mac App Store provisioning profile                                         |
+| `MACOS_APP_SIGNING_IDENTITY`              | Usually `3rd Party Mac Developer Application: ...`                                |
+| `MACOS_INSTALLER_CERTIFICATE_BASE64`      | Base64 `.p12` Mac Installer certificate                                           |
+| `MACOS_INSTALLER_CERTIFICATE_PASSWORD`    | Password used when exporting the installer `.p12`                                 |
+| `MACOS_INSTALLER_SIGNING_IDENTITY`        | Usually `3rd Party Mac Developer Installer: ...`                                  |
+| `APP_STORE_CONNECT_KEY_ID`                | App Store Connect API key ID                                                      |
+| `APP_STORE_CONNECT_ISSUER_ID`             | App Store Connect issuer ID                                                       |
+| `APP_STORE_CONNECT_PRIVATE_KEY_BASE64`    | Base64 `AuthKey_<KEY_ID>.p8`                                                      |
+| `APP_STORE_CONNECT_IOS_APPLE_ID`          | Numeric App Store Connect Apple ID for the iOS app                                |
+| `APP_STORE_CONNECT_MACOS_APPLE_ID`        | Numeric App Store Connect Apple ID for the macOS app                              |
+| `APP_STORE_CONNECT_ASC_PUBLIC_ID`         | Optional provider public ID when the ASC account has multiple providers           |
 
 Android Play Console:
 
@@ -111,13 +111,13 @@ Snapcraft:
 
 Windows MSIX:
 
-| Name                   | Notes                                                           |
-| ---------------------- | --------------------------------------------------------------- |
-| `MALANGHUB_WINDOWS_IDENTITY_NAME` | Partner Center package identity `Name` |
-| `MALANGHUB_WINDOWS_PUBLISHER` | Partner Center package identity `Publisher`, for example `CN=...` |
-| `MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME` | Partner Center publisher display name |
-| `WINDOWS_PFX_BASE64` | Optional `.pfx` for sideload/local install signing |
-| `WINDOWS_PFX_PASSWORD` | Optional password for `WINDOWS_PFX_BASE64` |
+| Name                                       | Notes                                                             |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| `MALANGHUB_WINDOWS_IDENTITY_NAME`          | Partner Center package identity `Name`                            |
+| `MALANGHUB_WINDOWS_PUBLISHER`              | Partner Center package identity `Publisher`, for example `CN=...` |
+| `MALANGHUB_WINDOWS_PUBLISHER_DISPLAY_NAME` | Partner Center publisher display name                             |
+| `WINDOWS_PFX_BASE64`                       | Optional `.pfx` for sideload/local install signing                |
+| `WINDOWS_PFX_PASSWORD`                     | Optional password for `WINDOWS_PFX_BASE64`                        |
 
 ## How to Create the Secrets
 
@@ -137,6 +137,12 @@ Apple:
 6. If the App Store Connect account has more than one provider, run `xcrun altool --list-providers --apiKey <KEY_ID> --apiIssuer <ISSUER_ID>` and save the provider public ID in `APP_STORE_CONNECT_ASC_PUBLIC_ID`.
 7. Copy the exact signing identity names from `security find-identity -v -p codesigning`.
 8. The iOS workflow installs the profile by UUID and forces manual signing with `Apple Distribution`, so the profile must not be an iOS App Development profile.
+
+Mac App Review note:
+
+- The macOS App Store bundle keeps `com.apple.security.network.server` because desktop Google sign-in uses a temporary localhost OAuth callback listener.
+- The flow is implemented in `apps/native/src/main.tsx` via `plugin:oauth|start`, which opens a short-lived loopback port, waits for Google's redirect, then calls `plugin:oauth|cancel` to close it.
+- Reviewers can trigger it from the sign-in or sign-up screen by tapping the Google button. The app does not expose a general-purpose LAN or internet-facing server.
 
 Android:
 
