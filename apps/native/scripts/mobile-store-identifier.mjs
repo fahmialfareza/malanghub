@@ -259,6 +259,40 @@ function patchIos() {
           );
         }
       }
+      // Apps built with the iOS 27 SDK abort on launch unless they adopt the
+      // UIScene life cycle. tao provides TaoSceneDelegate; release builds rely
+      // on the patched tao in src-tauri/patches/tao (see MALANGHUB_PATCH.md).
+      // UIApplicationSupportsMultipleScenes must be true: tao 0.35 only attaches
+      // its window to the connected scene in that mode (otherwise it stays black).
+      result = result.replace(
+        /(<key>UIApplicationSupportsMultipleScenes<\/key>\s*)<false\/>/,
+        "$1<true/>",
+      );
+      if (!result.includes("<key>UIApplicationSceneManifest</key>")) {
+        const sceneManifest = [
+          "\t<key>UIApplicationSceneManifest</key>",
+          "\t<dict>",
+          "\t\t<key>UIApplicationSupportsMultipleScenes</key>",
+          "\t\t<true/>",
+          "\t\t<key>UISceneConfigurations</key>",
+          "\t\t<dict>",
+          "\t\t\t<key>UIWindowSceneSessionRoleApplication</key>",
+          "\t\t\t<array>",
+          "\t\t\t\t<dict>",
+          "\t\t\t\t\t<key>UISceneConfigurationName</key>",
+          "\t\t\t\t\t<string>Default Configuration</string>",
+          "\t\t\t\t\t<key>UISceneDelegateClassName</key>",
+          "\t\t\t\t\t<string>TaoSceneDelegate</string>",
+          "\t\t\t\t</dict>",
+          "\t\t\t</array>",
+          "\t\t</dict>",
+          "\t</dict>",
+        ].join("\n");
+        result = result.replace(
+          "</dict>\n</plist>",
+          `${sceneManifest}\n</dict>\n</plist>`,
+        );
+      }
       return result;
     },
   );
