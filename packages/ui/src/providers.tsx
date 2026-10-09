@@ -11,6 +11,7 @@ import {
   type PlatformAdapters,
   browserAdapters,
 } from "./adapters";
+import { cx } from "./primitives/cx";
 
 interface RuntimeContextValue {
   api: ApiClient;
@@ -46,10 +47,23 @@ const AlertBanner = ({
   if (!alert) return null;
 
   return (
-    <div className={`malanghub-alert malanghub-alert-${alert.type}`}>
+    <div
+      role="alert"
+      className={cx(
+        "fixed top-4 left-1/2 z-[10060] flex max-w-[min(520px,calc(100vw-32px))] -translate-x-1/2 items-center gap-4 rounded-xl border border-l-4 border-line bg-surface px-3.5 py-3 font-semibold text-fg shadow-pop native-mobile:top-[calc(env(safe-area-inset-top)+76px)]",
+        alert.type === "success" && "border-l-success",
+        alert.type === "danger" && "border-l-danger",
+        alert.type === "info" && "border-l-brand",
+      )}
+    >
       <span>{alert.message}</span>
-      <button type="button" aria-label="Close alert" onClick={onClose}>
-        x
+      <button
+        type="button"
+        aria-label="Tutup notifikasi"
+        onClick={onClose}
+        className="rounded-md border-0 bg-transparent px-2 py-0.5 font-bold text-muted hover:bg-surface-2 hover:text-fg"
+      >
+        <span aria-hidden="true">×</span>
       </button>
     </div>
   );
@@ -81,7 +95,10 @@ const OfflineBanner = () => {
 
   if (isOnline) return null;
   return (
-    <div className="malanghub-offline-banner" role="status">
+    <div
+      role="status"
+      className="fixed inset-x-0 bottom-0 z-[10005] bg-fg px-4 py-2 text-center text-sm text-bg native-mobile:bottom-[calc(66px+env(safe-area-inset-bottom))]"
+    >
       Tidak ada koneksi internet. Menampilkan data tersimpan.
     </div>
   );

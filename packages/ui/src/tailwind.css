@@ -14,6 +14,9 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Styles that only apply inside the Tauri iOS/Android app (main.tsx adds the class). */
+@custom-variant native-mobile (&:where(body.malanghub-native-mobile, body.malanghub-native-mobile *));
+
 :root {
   color-scheme: light;
 
@@ -147,6 +150,11 @@
   button:not(:disabled),
   [role="button"]:not(:disabled) {
     cursor: pointer;
+  }
+
+  /* Keep form text at 16px in the mobile app so iOS WebKit doesn't zoom on focus. */
+  body.malanghub-native-mobile :is(input, textarea, select) {
+    font-size: 16px !important;
   }
 
   ::selection {

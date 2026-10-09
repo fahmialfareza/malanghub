@@ -1,7 +1,6 @@
 /* Tailwind entry for the native (Tauri) app. Design tokens live in @malanghub/ui/tailwind.css. */
 @import "tailwindcss";
 @import "@malanghub/ui/tailwind.css";
-@import "@malanghub/ui/styles.css" layer(components);
 @import "../../frontend/public/assets/css/font-awesome.css" layer(components);
 
 @source "./";

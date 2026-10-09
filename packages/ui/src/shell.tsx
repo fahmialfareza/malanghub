@@ -157,7 +157,7 @@ const Header = () => {
   ) : null;
 
   return (
-    <header className="malanghub-header sticky top-0 z-[1030] border-b border-line bg-surface/90 shadow-card backdrop-blur-lg">
+    <header className="sticky top-0 native-mobile:pt-[env(safe-area-inset-top)] z-[1030] border-b border-line bg-surface/90 shadow-card backdrop-blur-lg">
       <Container className="flex h-16 items-center gap-2">
         <Link
           href="/"
@@ -178,7 +178,7 @@ const Header = () => {
 
         <nav
           aria-label="Navigasi utama"
-          className="malanghub-header-nav hidden items-center gap-1 lg:flex"
+          className="hidden items-center gap-1 lg:flex native-mobile:hidden!"
         >
           <Link href="/" className={navLinkClass(isActive("/"))}>
             Beranda
@@ -206,7 +206,7 @@ const Header = () => {
         <div className="flex items-center gap-1">
           <button
             type="button"
-            className={cx(iconButtonClass, "malanghub-header-nav")}
+            className={cx(iconButtonClass, "native-mobile:hidden!")}
             onClick={() => setSearchOpen(true)}
             aria-label="Cari berita"
             title="Cari berita"
@@ -215,13 +215,13 @@ const Header = () => {
           </button>
           <ThemeToggle />
           {userBadge && (
-            <div className="malanghub-header-nav ml-2 hidden max-w-52 lg:block">
+            <div className="ml-2 hidden max-w-52 lg:block native-mobile:hidden!">
               {userBadge}
             </div>
           )}
           <button
             type="button"
-            className={cx(iconButtonClass, "malanghub-header-nav lg:hidden")}
+            className={cx(iconButtonClass, "lg:hidden native-mobile:hidden!")}
             aria-controls="malanghub-mobile-menu"
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Tutup menu" : "Buka menu"}
@@ -238,7 +238,7 @@ const Header = () => {
       {menuOpen && (
         <div
           id="malanghub-mobile-menu"
-          className="malanghub-header-nav max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-surface lg:hidden"
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-surface lg:hidden native-mobile:hidden!"
         >
           <Container className="flex flex-col gap-1 py-3">
             {userBadge && (

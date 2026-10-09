@@ -36,6 +36,7 @@ import {
   type MetaProps,
   type PlatformAdapters,
   UserProfilePage,
+  cx,
   useMalanghubRuntime,
 } from "@malanghub/ui";
 import { invoke } from "@tauri-apps/api/core";
@@ -1033,6 +1034,66 @@ const NativeNavigationGestures = () => {
   return null;
 };
 
+const nativeBackdropClass = "fixed inset-0 z-[1045] flex items-end bg-overlay";
+
+/**
+ * Pins a bottom sheet to the part of the screen the on-screen keyboard leaves
+ * visible. iOS WKWebView doesn't shrink the layout viewport when the keyboard
+ * opens, so a `bottom: 0` sheet would sit underneath the keyboard.
+ */
+const useKeyboardAwareOverlay = (active: boolean) => {
+  const [style, setStyle] = React.useState<React.CSSProperties>();
+
+  React.useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!active || !viewport) {
+      setStyle(undefined);
+      return undefined;
+    }
+
+    const update = () =>
+      setStyle({
+        top: viewport.offsetTop,
+        height: viewport.height,
+        bottom: "auto",
+      });
+
+    update();
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+    };
+  }, [active]);
+
+  return style;
+};
+
+const nativeTabClass = (active: boolean) =>
+  cx(
+    "flex min-w-0 flex-1 basis-0 flex-col items-center justify-center gap-1 rounded-xl border-0 text-[11px] leading-none font-bold focus-visible:ring-[3px] focus-visible:ring-ring focus-visible:outline-none active:bg-brand-soft active:text-brand-hover",
+    active ? "bg-brand-soft text-brand" : "bg-transparent text-muted",
+  );
+
+const nativeSheetOptionClass = (active: boolean) =>
+  cx(
+    "flex w-full items-center gap-3 rounded-xl border-0 px-3.5 py-[13px] text-left text-base font-bold active:bg-brand-soft active:text-brand",
+    active ? "bg-brand-soft text-brand" : "bg-transparent text-body",
+  );
+
+const NativeTabIcon = ({ icon }: { icon: string }) => (
+  <span aria-hidden="true" className="text-[19px] leading-none">
+    <span className={cx("fa", icon)} />
+  </span>
+);
+
+const NativeSheetIcon = ({ icon }: { icon: string }) => (
+  <span aria-hidden="true" className="w-5 shrink-0 text-center text-brand">
+    <span className={cx("fa", icon)} />
+  </span>
+);
+
 const NativeActionSheet = ({
   title,
   children,
@@ -1043,7 +1104,7 @@ const NativeActionSheet = ({
   onClose(): void;
 }) => (
   <div
-    className="malanghub-native-sheet-backdrop"
+    className={nativeBackdropClass}
     onClick={(event) => {
       if (event.target === event.currentTarget) {
         onClose();
@@ -1051,18 +1112,25 @@ const NativeActionSheet = ({
     }}
   >
     <section
-      className="malanghub-native-action-sheet"
+      className="w-full rounded-t-[20px] border border-b-0 border-line bg-surface shadow-[0_-12px_40px_var(--mh-shadow-color)] max-h-[min(72vh,620px)] overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
-      <div className="malanghub-native-sheet-header">
-        <h2>{title}</h2>
-        <button type="button" onClick={onClose} aria-label="Tutup">
+      <div className="flex items-center justify-between gap-4 border-b border-line px-[18px] pt-[18px] pb-3">
+        <h2 className="m-0 text-lg font-extrabold text-fg">{title}</h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Tutup"
+          className="grid size-9 place-items-center rounded-full border-0 bg-surface-2 text-body"
+        >
           <span className="fa fa-times" aria-hidden="true" />
         </button>
       </div>
-      <div className="malanghub-native-sheet-body">{children}</div>
+      <div className="max-h-[calc(min(72vh,620px)-67px)] overflow-y-auto px-3.5 pt-2.5 pb-[calc(18px+env(safe-area-inset-bottom))]">
+        {children}
+      </div>
     </section>
   </div>
 );
@@ -1089,6 +1157,8 @@ const NativeBottomTabs = () => {
       searchInputRef.current?.focus();
     }
   }, [searchOpen]);
+
+  const searchOverlayStyle = useKeyboardAwareOverlay(searchOpen);
 
   if (!nativeNavigationEnabled) {
     return null;
@@ -1147,71 +1217,77 @@ const NativeBottomTabs = () => {
 
   return (
     <>
-      <nav className="malanghub-native-tabbar" aria-label="Navigasi utama">
+      <nav
+        className="fixed inset-x-0 bottom-0 z-[1040] flex min-h-[calc(66px+env(safe-area-inset-bottom))] items-stretch gap-0.5 border-t border-line bg-surface/95 px-2 pt-2 pb-[calc(8px+env(safe-area-inset-bottom))] shadow-[0_-8px_28px_var(--mh-shadow-color)] backdrop-blur-lg"
+        aria-label="Navigasi utama"
+      >
         <button
           type="button"
-          className={isActive("/") ? "active" : ""}
+          className={nativeTabClass(isActive("/"))}
           onClick={() => goTo("/")}
         >
-          <span className="fa fa-home" aria-hidden="true" />
+          <NativeTabIcon icon="fa-home" />
           <span>Beranda</span>
         </button>
         <button
           type="button"
-          className={isActive("/news") ? "active" : ""}
+          className={nativeTabClass(isActive("/news"))}
           onClick={() => {
             setSearchOpen(false);
             setCategoryOpen(true);
           }}
         >
-          <span className="fa fa-newspaper-o" aria-hidden="true" />
+          <NativeTabIcon icon="fa-newspaper-o" />
           <span>Berita</span>
         </button>
         <button
           type="button"
-          className={isActive("/search") ? "active" : ""}
+          className={nativeTabClass(isActive("/search"))}
           onClick={() => {
             setCategoryOpen(false);
             setSearchOpen(true);
           }}
         >
-          <span className="fa fa-search" aria-hidden="true" />
+          <NativeTabIcon icon="fa-search" />
           <span>Cari</span>
         </button>
         <button
           type="button"
-          className={isActive("/contact") ? "active" : ""}
+          className={nativeTabClass(isActive("/contact"))}
           onClick={() => goTo("/contact")}
         >
-          <span className="fa fa-envelope-o" aria-hidden="true" />
+          <NativeTabIcon icon="fa-envelope-o" />
           <span>Kontak</span>
         </button>
         <button
           type="button"
-          className={isActive("/profile") ? "active" : ""}
+          className={nativeTabClass(isActive("/profile"))}
           onClick={() => goTo(profileHref)}
         >
-          <span className="fa fa-user-circle-o" aria-hidden="true" />
+          <NativeTabIcon icon="fa-user-circle-o" />
           <span>{profileLabel}</span>
         </button>
       </nav>
-      <div className="malanghub-native-tabbar-spacer" aria-hidden="true" />
+      <div
+        className="hidden h-[calc(76px+env(safe-area-inset-bottom))] native-mobile:block"
+        aria-hidden="true"
+      />
       {categoryOpen && (
         <NativeActionSheet
           title="Kategori Berita"
           onClose={() => setCategoryOpen(false)}
         >
-          <div className="malanghub-native-sheet-options">
+          <div className="grid gap-2">
             <button
               type="button"
-              className={currentPath === "/news" ? "active" : ""}
+              className={nativeSheetOptionClass(currentPath === "/news")}
               onClick={() => goTo("/news")}
             >
-              <span className="fa fa-newspaper-o" aria-hidden="true" />
+              <NativeSheetIcon icon="fa-newspaper-o" />
               <span>Semua Berita</span>
             </button>
             {categories.isLoading && (
-              <div className="malanghub-native-sheet-note">
+              <div className="px-3.5 py-3 font-semibold text-muted">
                 Memuat kategori...
               </div>
             )}
@@ -1220,19 +1296,17 @@ const NativeBottomTabs = () => {
                 <button
                   key={category._id ?? category.slug}
                   type="button"
-                  className={
-                    currentPath === `/newsCategories/${category.slug}`
-                      ? "active"
-                      : ""
-                  }
+                  className={nativeSheetOptionClass(
+                    currentPath === `/newsCategories/${category.slug}`,
+                  )}
                   onClick={() => goTo(`/newsCategories/${category.slug}`)}
                 >
-                  <span className="fa fa-folder-o" aria-hidden="true" />
+                  <NativeSheetIcon icon="fa-folder-o" />
                   <span>{category.name}</span>
                 </button>
               ))}
             {!categories.isLoading && !categories.data?.length && (
-              <div className="malanghub-native-sheet-note">
+              <div className="px-3.5 py-3 font-semibold text-muted">
                 Kategori belum tersedia.
               </div>
             )}
@@ -1241,17 +1315,27 @@ const NativeBottomTabs = () => {
       )}
       {searchOpen && (
         <div
-          className="malanghub-native-search-backdrop"
+          className={nativeBackdropClass}
+          style={searchOverlayStyle}
           onClick={(event) => {
             if (event.target === event.currentTarget) {
               setSearchOpen(false);
             }
           }}
         >
-          <form className="malanghub-native-search-sheet" onSubmit={onSearch}>
-            <label htmlFor="native-search-input">Cari Berita</label>
-            <div>
+          <form
+            className="w-full rounded-t-[20px] border border-b-0 border-line bg-surface shadow-[0_-12px_40px_var(--mh-shadow-color)] px-[18px] pt-[18px] pb-[calc(18px+env(safe-area-inset-bottom))]"
+            onSubmit={onSearch}
+          >
+            <label
+              htmlFor="native-search-input"
+              className="mb-2.5 block font-extrabold text-fg"
+            >
+              Cari Berita
+            </label>
+            <div className="flex overflow-hidden rounded-[10px] border border-line bg-input focus-within:border-brand focus-within:ring-[3px] focus-within:ring-ring">
               <input
+                className="min-w-0 flex-1 border-0 bg-transparent p-3.5 text-base text-fg outline-none placeholder:text-muted"
                 ref={searchInputRef}
                 id="native-search-input"
                 type="search"
@@ -1259,7 +1343,11 @@ const NativeBottomTabs = () => {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
-              <button type="submit" aria-label="Cari">
+              <button
+                type="submit"
+                aria-label="Cari"
+                className="w-[54px] border-0 bg-brand text-brand-fg"
+              >
                 <span className="fa fa-search" aria-hidden="true" />
               </button>
             </div>

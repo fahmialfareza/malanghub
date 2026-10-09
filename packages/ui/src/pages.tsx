@@ -64,6 +64,10 @@ const MALANGHUB_MAPS_NAVIGATION_URL =
     MALANGHUB_ADDRESS,
   )}`;
 
+/** Invisible tap targets over the Google Maps embed's own buttons. */
+const mapHitAreaClass =
+  "absolute top-4 z-[5] block size-[74px] rounded-full text-[0px] text-transparent focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-brand sm:top-[22px] sm:size-[88px]";
+
 const titleLinkClass =
   "font-heading font-bold leading-snug text-fg no-underline transition-colors hover:text-brand";
 
@@ -1362,7 +1366,7 @@ export const ContactPage = () => {
               </ContactItem>
             </div>
           </Card>
-          <div className="malanghub-map-embed overflow-hidden rounded-xl border border-line shadow-card">
+          <div className="relative overflow-hidden rounded-xl border border-line shadow-card">
             <div className="relative aspect-square bg-surface-2">
               <iframe
                 title="Lokasi Malanghub"
@@ -1373,7 +1377,7 @@ export const ContactPage = () => {
               />
             </div>
             <a
-              className="malanghub-map-hitarea malanghub-map-hitarea-link"
+              className={cx(mapHitAreaClass, "left-[calc(100%-180px)] sm:left-[min(calc(100%-220px),450px)]")}
               target="_blank"
               rel="noreferrer"
               href={MALANGHUB_MAPS_PLACE_URL}
@@ -1382,7 +1386,7 @@ export const ContactPage = () => {
               Buka lokasi di Google Maps
             </a>
             <a
-              className="malanghub-map-hitarea malanghub-map-hitarea-navigation"
+              className={cx(mapHitAreaClass, "left-[calc(100%-96px)] sm:left-[min(calc(100%-112px),548px)]")}
               target="_blank"
               rel="noreferrer"
               href={MALANGHUB_MAPS_NAVIGATION_URL}
