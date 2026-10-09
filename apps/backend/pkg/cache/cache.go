@@ -48,6 +48,24 @@ func Get(ctx context.Context, key string) ([]byte, error) {
 	return client.Get(ctx, key).Bytes()
 }
 
+// TTL returns the remaining time to live of key. Returns redis.Nil when the
+// key is absent or Redis is not connected.
+func TTL(ctx context.Context, key string) (time.Duration, error) {
+	defer newrelicpkg.EndSegment(ctx, "cache.TTL")()
+	if client == nil {
+		return 0, redis.Nil
+	}
+	ttl, err := client.TTL(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+	// -2: key does not exist
+	if ttl == -2 {
+		return 0, redis.Nil
+	}
+	return ttl, nil
+}
+
 // Set JSON-encodes value and stores it at key with the given TTL.
 // A zero TTL means no expiry.
 func Set(ctx context.Context, key string, value interface{}, ttl time.Duration) error {

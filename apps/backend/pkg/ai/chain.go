@@ -13,8 +13,17 @@ import (
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
-// cooldown is how long a provider is skipped after it reports an exhausted quota.
-const cooldown = 10 * time.Minute
+const (
+	// quotaCooldown skips a provider after a 429; free-tier limits are often
+	// per minute, so keep it short.
+	quotaCooldown = time.Minute
+	// notFoundCooldown skips a provider whose model is missing (retired or
+	// misconfigured) until it is fixed or the backend restarts.
+	notFoundCooldown = 10 * time.Minute
+)
+
+// ErrAllCoolingDown is returned when every provider is temporarily skipped.
+var ErrAllCoolingDown = errors.New("ai: all providers are cooling down after recent failures")
 
 // Chain tries providers in order so the feature keeps working when one free
 // tier runs out. Embeddings only use the first provider that supports them,
@@ -33,6 +42,9 @@ var (
 func Default() *Chain {
 	chainOnce.Do(func() {
 		defaultChain = NewChain()
+		// a restart usually follows a config change (keys, models), so give
+		// every provider a fresh chance instead of honoring old cooldowns
+		_ = cache.DeleteByPattern(context.Background(), "ai:cooldown:*")
 	})
 	return defaultChain
 }
@@ -40,20 +52,25 @@ func Default() *Chain {
 // NewChain builds a chain from env vars.
 func NewChain() *Chain {
 	c := &Chain{}
+	var names []string
 	for _, name := range strings.Split(getEnv("AI_PROVIDERS", "gemini,groq"), ",") {
 		switch strings.TrimSpace(strings.ToLower(name)) {
 		case "gemini":
 			if p := NewGemini(); p != nil {
 				c.providers = append(c.providers, p)
+				names = append(names, p.Name()+"("+p.model+")")
 			}
 		case "groq":
 			if p := NewGroq(); p != nil {
 				c.providers = append(c.providers, p)
+				names = append(names, p.Name()+"("+p.model+")")
 			}
 		}
 	}
 	if len(c.providers) == 0 {
 		logger.Info("ai: no provider configured; Ask AI will return related articles only")
+	} else {
+		logger.Info("ai: providers:", strings.Join(names, ", "))
 	}
 	return c
 }
@@ -70,9 +87,10 @@ func (c *Chain) Generate(ctx context.Context, system, prompt string) (string, st
 		return "", "", ErrNoProvider
 	}
 
-	lastErr := ErrNoProvider
+	lastErr := ErrAllCoolingDown
 	for _, p := range c.providers {
-		if coolingDown(ctx, p.Name()) {
+		if ttl, ok := coolingDown(ctx, p.Name()); ok {
+			logger.Info("ai: skipping", p.Name(), "- cooling down for", ttl.Round(time.Second), "after a recent failure")
 			continue
 		}
 		text, err := p.Generate(ctx, system, prompt)
@@ -85,10 +103,11 @@ func (c *Chain) Generate(ctx context.Context, system, prompt string) (string, st
 		if ctx.Err() != nil {
 			return "", "", ctx.Err()
 		}
-		if errors.Is(err, ErrQuotaExceeded) || isModelNotFound(err) {
-			startCooldown(ctx, p.Name())
-		}
-		if isModelNotFound(err) {
+		switch {
+		case errors.Is(err, ErrQuotaExceeded):
+			startCooldown(ctx, p.Name(), quotaCooldown)
+		case isModelNotFound(err):
+			startCooldown(ctx, p.Name(), notFoundCooldown)
 			logger.Error("ai:", p.Name(), "model not found; it may be retired — update the *_MODEL env var")
 		}
 		logger.Error("ai: generate failed, trying next provider:", err)
@@ -104,7 +123,7 @@ func (c *Chain) Embed(ctx context.Context, texts []string, task TaskType) ([][]f
 		return nil, ErrNoProvider
 	}
 	for _, p := range c.providers {
-		if coolingDown(ctx, p.Name()+":embed") {
+		if _, ok := coolingDown(ctx, p.Name()+":embed"); ok {
 			return nil, ErrQuotaExceeded
 		}
 		vectors, err := p.Embed(ctx, texts, task)
@@ -112,7 +131,7 @@ func (c *Chain) Embed(ctx context.Context, texts []string, task TaskType) ([][]f
 			continue
 		}
 		if errors.Is(err, ErrQuotaExceeded) {
-			startCooldown(ctx, p.Name()+":embed")
+			startCooldown(ctx, p.Name()+":embed", quotaCooldown)
 		}
 		return vectors, err
 	}
@@ -127,11 +146,12 @@ func isModelNotFound(err error) bool {
 	return errors.As(err, &he) && he.Status == http.StatusNotFound
 }
 
-func coolingDown(ctx context.Context, name string) bool {
-	_, err := cache.Get(ctx, "ai:cooldown:"+name)
-	return err == nil
+// coolingDown reports whether name is being skipped and for how much longer.
+func coolingDown(ctx context.Context, name string) (time.Duration, bool) {
+	ttl, err := cache.TTL(ctx, "ai:cooldown:"+name)
+	return ttl, err == nil && ttl > 0
 }
 
-func startCooldown(ctx context.Context, name string) {
-	_ = cache.Set(ctx, "ai:cooldown:"+name, true, cooldown)
+func startCooldown(ctx context.Context, name string, d time.Duration) {
+	_ = cache.Set(ctx, "ai:cooldown:"+name, true, d)
 }

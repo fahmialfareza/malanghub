@@ -75,13 +75,18 @@ func AskAI(c *gin.Context) {
 	}
 
 	resp := askAIResponse{Sources: sources, Fallback: true}
-	if ai.Default().Enabled() && underDailyLimit(c) {
+	switch {
+	case !ai.Default().Enabled():
+		logger.Info("ai: no provider configured; returning related articles only")
+	case !underDailyLimit(c):
+		logger.Info("ai: AI_DAILY_LIMIT reached; returning related articles only")
+	default:
 		answer, provider, err := ai.Default().Generate(c, ai.SystemPrompt, ai.BuildPrompt(question, sources))
 		if err == nil {
 			resp.Answer, resp.Provider, resp.Fallback = answer, provider, false
 			_ = cache.Set(c, cacheKey, resp, aiAnswerTTL)
-		} else if err != ai.ErrNoProvider {
-			logger.Error("ai: all providers failed:", err)
+		} else {
+			logger.Error("ai: no answer, returning related articles only:", err)
 		}
 	}
 

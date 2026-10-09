@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -72,7 +73,7 @@ func (g *Groq) Generate(ctx context.Context, system, prompt string) (string, err
 		return "", err
 	}
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return "", ErrQuotaExceeded
+		return "", fmt.Errorf("%s: %w: %s", g.Name(), ErrQuotaExceeded, truncate(string(data), 300))
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return "", &httpError{Provider: g.Name(), Status: resp.StatusCode, Body: truncate(string(data), 300)}

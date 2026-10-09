@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -134,7 +135,7 @@ func (g *Gemini) post(ctx context.Context, path string, body interface{}, out in
 		return err
 	}
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return ErrQuotaExceeded
+		return fmt.Errorf("%s: %w: %s", g.Name(), ErrQuotaExceeded, truncate(string(data), 300))
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return &httpError{Provider: g.Name(), Status: resp.StatusCode, Body: truncate(string(data), 300)}
