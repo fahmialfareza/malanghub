@@ -42,8 +42,8 @@ const Categories = ({
     <>
       <section id="category" className="mb-12">
         <Container>
-          <div className="grid gap-6 lg:grid-cols-4">
-            <Card className="overflow-hidden lg:col-span-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            <Card className="min-w-0 overflow-hidden lg:col-span-3">
               <CardHeader
                 title="Kategori (Berita)"
                 actions={
@@ -75,7 +75,7 @@ const Categories = ({
                   ) : newsCategories && newsCategories.length > 0 ? (
                     newsCategories.map((category, index) => (
                       <CategoryTableItem
-                        key={category._id}
+                        key={category.id ?? category._id}
                         category={category}
                         index={index}
                         onEdit={() => setModal("edit")}

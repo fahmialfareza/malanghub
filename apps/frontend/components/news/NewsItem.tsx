@@ -12,8 +12,8 @@ const NewsItem = ({ news }: NewsItemProps) => {
   const [hero, ...rest] = news;
 
   return (
-    <div className="grid gap-8 md:grid-cols-12">
-      <div className="flex flex-col gap-6 md:col-span-7">
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-6">
         <NewsCard news={hero} variant="featured" headingLevel="h2" priority />
         <Link
           href="/news"
@@ -27,16 +27,9 @@ const NewsItem = ({ news }: NewsItemProps) => {
         </Link>
       </div>
       {rest.length > 0 && (
-        <div className="flex flex-col gap-6 md:col-span-5 md:border-l md:border-line md:pl-8">
-          {rest.map((item, index) => (
-            <NewsCard
-              key={item._id}
-              news={item}
-              variant="compact"
-              className={
-                index > 0 ? "border-t border-line pt-6" : undefined
-              }
-            />
+        <div className="grid gap-6 border-t border-line pt-8 sm:grid-cols-2">
+          {rest.map((item) => (
+            <NewsCard key={item._id} news={item} variant="compact" />
           ))}
         </div>
       )}

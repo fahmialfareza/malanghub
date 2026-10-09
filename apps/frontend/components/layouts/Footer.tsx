@@ -106,17 +106,19 @@ const Footer = () => {
 
         <div className="mt-12 flex flex-col gap-2 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
           <p className="m-0 text-sm text-muted">
-            © <span>{new Date().getFullYear()}</span> Malanghub . Made with{" "}
+            © <span>{new Date().getFullYear()}</span> Malanghub. Made with{" "}
             <span
               className="fa fa-heart text-danger"
               aria-hidden="true"
             ></span>
             , Designed by{" "}
             <a
-              href="https://w3layouts.com"
+              href="https://github.com/fahmialfareza"
+              target="_blank"
+              rel="noopener noreferrer"
               className="font-semibold text-body no-underline hover:text-brand"
             >
-              W3layouts
+              Fahmi Alfareza
             </a>
           </p>
         </div>

@@ -9,7 +9,7 @@ export const Container = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cx(
-      "mx-auto w-full max-w-6xl px-4 sm:px-6",
+      "mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8",
       className
     )}
     {...rest}
@@ -19,7 +19,7 @@ export const Container = ({
 );
 
 export const cardClass =
-  "rounded-xl border border-line bg-surface text-body shadow-card";
+  "min-w-0 rounded-xl border border-line bg-surface text-body shadow-card";
 
 export const Card = ({
   className,
@@ -86,7 +86,7 @@ export const Table = ({
   children,
   ...rest
 }: React.TableHTMLAttributes<HTMLTableElement>) => (
-  <div className="w-full overflow-x-auto">
+  <div className="relative w-full overflow-x-auto">
     <table
       className={cx(
         "w-full border-collapse text-left text-sm text-body",

@@ -29,8 +29,8 @@ const Tags = ({ newsTag: { newsTags }, getNewsTags }: TagsProps) => {
     <>
       <section id="tag" className="mb-12">
         <Container>
-          <div className="grid gap-6 lg:grid-cols-4">
-            <Card className="overflow-hidden lg:col-span-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
+            <Card className="min-w-0 overflow-hidden lg:col-span-3">
               <CardHeader
                 title="Tag (Berita)"
                 actions={
@@ -56,7 +56,7 @@ const Tags = ({ newsTag: { newsTags }, getNewsTags }: TagsProps) => {
                   {newsTags && newsTags.length > 0 ? (
                     newsTags.map((tag, index) => (
                       <TagTableItem
-                        key={tag._id}
+                        key={tag.id ?? tag._id}
                         tag={tag}
                         index={index}
                         onEdit={() => setModal("edit")}

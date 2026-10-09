@@ -110,7 +110,10 @@ export const SectionTitle = ({
   </Tag>
 );
 
-/** Main column + sticky sidebar, stacked on small screens. */
+/**
+ * Main column + sticky sidebar, stacked on small screens. The sidebar keeps a
+ * fixed, readable width on desktop; `wideMain` uses a slightly narrower one.
+ */
 export const TwoColumnLayout = ({
   main,
   aside,
@@ -122,18 +125,13 @@ export const TwoColumnLayout = ({
 }) => (
   <div
     className={cx(
-      "grid gap-10 lg:gap-12",
-      wideMain ? "lg:grid-cols-4" : "lg:grid-cols-3",
+      "grid gap-10 xl:gap-12",
+      wideMain
+        ? "lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_23rem]"
+        : "lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[minmax(0,1fr)_25rem]",
     )}
   >
-    <div
-      className={cx(
-        "min-w-0",
-        wideMain ? "lg:col-span-3" : "lg:col-span-2",
-      )}
-    >
-      {main}
-    </div>
+    <div className="min-w-0">{main}</div>
     <aside className="min-w-0">
       <div className="lg:sticky lg:top-24">{aside}</div>
     </aside>

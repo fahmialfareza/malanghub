@@ -1,4 +1,3 @@
-const withImages = require("next-images");
 const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
   cacheOnFrontEndNav: true,
@@ -14,7 +13,7 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
 ];
 
-const baseConfig = withImages({
+const baseConfig = {
   transpilePackages: ["@malanghub/core", "@malanghub/ui"],
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
@@ -50,7 +49,6 @@ const baseConfig = withImages({
     ];
   },
   images: {
-    disableStaticImages: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -67,7 +65,7 @@ const baseConfig = withImages({
     ],
   },
   compress: true,
-});
+};
 
 const sentryWrappedConfig = withSentryConfig(baseConfig, {
   silent: true,

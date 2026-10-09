@@ -118,8 +118,8 @@ const Home = ({
       </Head>
 
       <Container className="py-10 lg:py-14">
-        <div className="grid gap-10 lg:grid-cols-12">
-          <main className="min-w-0 lg:col-span-8 xl:col-span-9">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_23rem] xl:gap-12">
+          <main className="min-w-0">
             <SectionTitle as="h1">Berita Terbaru</SectionTitle>
             {newsLoading || recentNews === null ? (
               <LoadingBlock />
@@ -130,7 +130,7 @@ const Home = ({
             )}
           </main>
 
-          <aside className="lg:col-span-4 xl:col-span-3">
+          <aside className="min-w-0">
             <div className="lg:sticky lg:top-24">
               <TrendingPanel news={trendingNews} loading={newsLoading} />
             </div>

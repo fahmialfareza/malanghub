@@ -119,7 +119,7 @@ const Header = ({
   const categoryItems = [
     { key: "all", label: "Semua Berita", href: "/news" },
     ...(newsCategories ?? []).map((category) => ({
-      key: category._id,
+      key: category.id ?? category._id,
       label: category.name,
       href: `/newsCategories/${category.slug}`,
     })),

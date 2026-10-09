@@ -162,7 +162,9 @@ export const NewsCard = ({
         href={href}
         className={cx(
           imageLinkClass,
-          featured ? "aspect-video shadow-card" : "aspect-[16/10]",
+          featured
+            ? "aspect-video shadow-card lg:aspect-[2/1]"
+            : "aspect-[16/10]",
         )}
         aria-hidden
         tabIndex={-1}

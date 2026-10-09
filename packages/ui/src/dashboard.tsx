@@ -429,18 +429,18 @@ const ManagerLayout = ({
 }) => (
   <>
     <div className="mb-4 flex flex-wrap gap-2">{toolbar}</div>
-    <div className="grid gap-6 lg:grid-cols-4">
-      <Card className="min-w-0 overflow-hidden lg:col-span-3">
+    <div className="flex flex-col gap-6">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">{stats}</div>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader title={title} />
         {table}
       </Card>
-      <div className="flex flex-col gap-4">{stats}</div>
     </div>
   </>
 );
 
 const RowActions = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex flex-wrap justify-end gap-2">{children}</div>
+  <div className="ml-auto flex max-w-[15rem] flex-wrap justify-end gap-2">{children}</div>
 );
 
 const TableMessage = ({

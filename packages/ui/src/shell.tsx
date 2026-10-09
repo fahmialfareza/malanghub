@@ -105,7 +105,7 @@ const Header = () => {
   const categoryLinks = [
     { key: "all", label: "Semua Berita", href: "/news" },
     ...(categories.data ?? []).map((category) => ({
-      key: category._id,
+      key: category.id ?? category._id,
       label: category.name,
       href: `/newsCategories/${category.slug}`,
     })),
@@ -325,8 +325,13 @@ const Footer = () => {
           © <span>{new Date().getFullYear()}</span> Malanghub. Made with{" "}
           <span className="fa fa-heart text-danger" aria-hidden="true" />
           <span className="sr-only">love</span>, Designed by{" "}
-          <a href="https://w3layouts.com" className={footerLinkClass}>
-            W3layouts
+          <a
+            href="https://github.com/fahmialfareza"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={footerLinkClass}
+          >
+            Fahmi Alfareza
           </a>
         </p>
         <nav

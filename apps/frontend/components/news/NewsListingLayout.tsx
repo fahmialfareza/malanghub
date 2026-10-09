@@ -75,13 +75,15 @@ export const TrendingPanel = ({
     {loading || news === null ? (
       <LoadingBlock />
     ) : news?.length > 0 ? (
-      <ol className="m-0 flex list-none flex-col gap-5 p-0">
+      <ol className="m-0 grid list-none gap-x-8 gap-y-5 p-0 md:grid-cols-2 lg:grid-cols-1">
         {news.map((item, index) => (
           <li
             key={item._id}
-            className={
-              index > 0 ? "border-t border-line pt-5" : undefined
-            }
+            className={cx(
+              index > 0 && "border-t border-line pt-5",
+              // Second item starts the right column on tablets.
+              index === 1 && "md:border-t-0 md:pt-0 lg:border-t lg:pt-5",
+            )}
           >
             <TrendingNews news={item} index={index} />
           </li>
@@ -110,12 +112,12 @@ const NewsListingLayout = ({
   <>
     <Breadcrumbs items={breadcrumbs} renderLink={renderNextLink} />
     <Container className="py-10 lg:py-14">
-      <div className="grid gap-10 lg:grid-cols-12">
-        <main className="min-w-0 lg:col-span-8">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[minmax(0,1fr)_23rem] xl:gap-12">
+        <main className="min-w-0">
           <SectionTitle as="h1">{title}</SectionTitle>
           {children}
         </main>
-        <aside className="lg:col-span-4">
+        <aside className="min-w-0">
           <div className="lg:sticky lg:top-24">
             <TrendingPanel news={trendingNews} loading={trendingLoading} />
           </div>

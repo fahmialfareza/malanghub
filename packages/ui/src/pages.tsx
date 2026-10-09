@@ -308,22 +308,24 @@ const HomeNews = ({ news }: { news: News[] }) => {
   const [featured, ...rest] = news;
 
   return (
-    <div className="grid gap-8 md:grid-cols-12">
-      <div className="md:col-span-6 lg:col-span-5">
-        <NewsCard news={featured} />
+    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-12">
+      <div className="flex flex-col gap-4 xl:col-span-6">
+        {/* Wrapper keeps the card's h-full from pushing the button out. */}
+        <div>
+          <NewsCard news={featured} />
+        </div>
         <Link
           href="/news"
           className={buttonClass({
             variant: "secondary",
             block: true,
-            className: "mt-4",
           })}
         >
           Semua Berita
           <span className="fa fa-arrow-right" aria-hidden="true" />
         </Link>
       </div>
-      <div className="flex flex-col gap-6 md:col-span-6 lg:col-span-7">
+      <div className="flex flex-col gap-6 xl:col-span-6">
         {rest.map((item) => (
           <NewsListItem key={item._id} news={item} />
         ))}
@@ -1974,7 +1976,7 @@ export const NativeDraftEditorPage = () => {
             >
               <option value="">Pilih kategori</option>
               {categories.data?.map((category) => (
-                <option key={category._id} value={category.id ?? category._id}>
+                <option key={category.id ?? category._id} value={category.id ?? category._id}>
                   {category.name}
                 </option>
               ))}
@@ -1994,7 +1996,7 @@ export const NativeDraftEditorPage = () => {
               }
             >
               {tags.data?.map((tag) => (
-                <option key={tag._id} value={tag.id ?? tag._id}>
+                <option key={tag.id ?? tag._id} value={tag.id ?? tag._id}>
                   {tag.name}
                 </option>
               ))}
