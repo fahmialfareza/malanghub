@@ -1,0 +1,99 @@
+/*
+ * Malanghub design tokens, shared by apps/frontend and apps/native.
+ *
+ * Plain CSS variables (--mh-*) hold the real values so non-Tailwind CSS
+ * (CSS modules, legacy styles) can use them too. The @theme block maps them
+ * to Tailwind color/font/radius utilities. Dark mode follows the existing
+ * `data-theme="dark"` attribute on <html>.
+ *
+ * Dark mode uses layered slate-navy surfaces and softened text instead of
+ * pure black/white to keep contrast comfortable (WCAG AA) without glare.
+ */
+
+@source "./";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  color-scheme: light;
+
+  --mh-bg: #f6f7f9;
+  --mh-surface: #ffffff;
+  --mh-surface-2: #f1f3f6;
+  --mh-input: #ffffff;
+  --mh-border: #e2e6ec;
+  --mh-border-strong: #c9d0da;
+  --mh-fg: #1b2230;
+  --mh-text: #3a4354;
+  --mh-muted: #667085;
+  --mh-primary: #0085ad;
+  --mh-primary-hover: #006f91;
+  --mh-primary-fg: #ffffff;
+  --mh-primary-soft: #e6f4f8;
+  --mh-ring: rgb(0 133 173 / 0.35);
+  --mh-danger: #c53030;
+  --mh-danger-soft: #fdecec;
+  --mh-success: #1f8a5b;
+  --mh-success-soft: #e7f6ee;
+  --mh-warning: #b7791f;
+  --mh-warning-soft: #fdf5e6;
+  --mh-overlay: rgb(15 19 32 / 0.55);
+  --mh-shadow-color: rgb(16 24 40 / 0.08);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --mh-bg: #0f1320;
+  --mh-surface: #161b2b;
+  --mh-surface-2: #1d2336;
+  --mh-input: #1a2032;
+  --mh-border: #2a3148;
+  --mh-border-strong: #3a4360;
+  --mh-fg: #e4e8f0;
+  --mh-text: #c3cad6;
+  --mh-muted: #94a0b4;
+  --mh-primary: #38b2d8;
+  --mh-primary-hover: #5cc3e3;
+  --mh-primary-fg: #0b1622;
+  --mh-primary-soft: rgb(56 178 216 / 0.14);
+  --mh-ring: rgb(56 178 216 / 0.45);
+  --mh-danger: #f28b8b;
+  --mh-danger-soft: rgb(242 139 139 / 0.12);
+  --mh-success: #5fcf96;
+  --mh-success-soft: rgb(95 207 150 / 0.12);
+  --mh-warning: #e0b04a;
+  --mh-warning-soft: rgb(224 176 74 / 0.12);
+  --mh-overlay: rgb(4 6 12 / 0.7);
+  --mh-shadow-color: rgb(0 0 0 / 0.35);
+}
+
+@theme inline {
+  --color-bg: var(--mh-bg);
+  --color-surface: var(--mh-surface);
+  --color-surface-2: var(--mh-surface-2);
+  --color-input: var(--mh-input);
+  --color-line: var(--mh-border);
+  --color-line-strong: var(--mh-border-strong);
+  --color-fg: var(--mh-fg);
+  --color-body: var(--mh-text);
+  --color-muted: var(--mh-muted);
+  --color-brand: var(--mh-primary);
+  --color-brand-hover: var(--mh-primary-hover);
+  --color-brand-fg: var(--mh-primary-fg);
+  --color-brand-soft: var(--mh-primary-soft);
+  --color-ring: var(--mh-ring);
+  --color-danger: var(--mh-danger);
+  --color-danger-soft: var(--mh-danger-soft);
+  --color-success: var(--mh-success);
+  --color-success-soft: var(--mh-success-soft);
+  --color-warning: var(--mh-warning);
+  --color-warning-soft: var(--mh-warning-soft);
+  --color-overlay: var(--mh-overlay);
+
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Cabin", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px var(--mh-shadow-color), 0 4px 16px var(--mh-shadow-color);
+  --shadow-pop: 0 12px 40px var(--mh-shadow-color);
+}

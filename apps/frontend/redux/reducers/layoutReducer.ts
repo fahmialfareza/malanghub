@@ -10,7 +10,11 @@ import { LayoutReducerState } from "../types";
 const initialState: LayoutReducerState = {
   activeLink: "home",
   alert: null,
-  theme: typeof window !== "undefined" ? localStorage.getItem("theme") : null,
+  // The inline script in _document.tsx resolves the saved/OS theme before paint.
+  theme:
+    typeof document !== "undefined"
+      ? document.documentElement.getAttribute("data-theme")
+      : null,
 };
 
 const layoutReducer = (state = initialState, action: PayloadAction<any>) => {

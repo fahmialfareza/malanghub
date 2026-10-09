@@ -41,7 +41,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { platform, type Platform } from "@tauri-apps/plugin-os";
 import { open as openBrowser } from "@tauri-apps/plugin-shell";
-import "@malanghub/ui/styles.css";
+import "./app.css";
 
 const apiBaseUrl = import.meta.env.VITE_API_ADDRESS || "http://localhost:8080";
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";

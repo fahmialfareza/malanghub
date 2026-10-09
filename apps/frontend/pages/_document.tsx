@@ -17,6 +17,12 @@ class MyDocument extends Document {
       <Html lang="id">
         <Head>
           <meta charSet="utf-8" />
+          {/* Apply the saved (or OS) theme before first paint to avoid a flash. */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var t=localStorage.getItem("theme");if(t!=="dark"&&t!=="light"){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"}document.documentElement.setAttribute("data-theme",t)}catch(e){}})();`,
+            }}
+          />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta
             name="keywords"
@@ -137,17 +143,6 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800&display=swap"
             rel="stylesheet"
           />
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
-            integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l"
-            crossOrigin="anonymous"
-          />
-          <link
-            rel="stylesheet"
-            href="https://cdnjs.cloudflare.com/ajax/libs/nprogress/0.2.0/nprogress.min.css"
-          />
-          <link rel="stylesheet" href="/assets/css/style-starter.css" />
 
           {/* Cloudflare Web Analytics */}
           <script

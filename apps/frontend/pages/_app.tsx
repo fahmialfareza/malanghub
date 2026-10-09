@@ -11,7 +11,7 @@ import { downloadLinks } from "../utils/downloadLinks";
 import Header from "../components/layouts/Header";
 import Footer from "../components/layouts/Footer";
 import Alert from "../components/layouts/Alert";
-import "@malanghub/ui/styles.css";
+import "../styles/app.css";
 
 function MyApp({ Component, ...rest }: AppProps) {
   const { store, props } = wrapper.useWrappedStore(rest);

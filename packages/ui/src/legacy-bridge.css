@@ -1,0 +1,46 @@
+/*
+ * Temporary bridge while Bootstrap/style-starter is still loaded.
+ * Points the old template variables at the new design tokens and fixes
+ * the high-contrast white form controls in dark mode. Delete together with
+ * the legacy layer once the Bootstrap migration is finished.
+ */
+@layer base {
+  :root,
+  [data-theme="dark"] {
+    --primary-color: var(--mh-primary);
+    --font-color: var(--mh-text);
+    --bg-color: var(--mh-bg);
+    --heading-color: var(--mh-fg);
+    --border-color: var(--mh-border-strong);
+    --border-light: var(--mh-border);
+    --nav-color: var(--mh-fg);
+    --breadcrumb-bg: var(--mh-surface-2);
+  }
+
+  [data-theme="dark"] .form-control,
+  [data-theme="dark"] .custom-select,
+  [data-theme="dark"] .custom-file-label,
+  [data-theme="dark"] .input-grids input.form-control,
+  [data-theme="dark"] .contact-grids input,
+  [data-theme="dark"] .contact-grids textarea,
+  [data-theme="dark"] .leave-comment-form textarea.form-control {
+    background-color: var(--mh-input);
+    border-color: var(--mh-border);
+    color: var(--mh-fg);
+  }
+
+  [data-theme="dark"] .form-control::placeholder {
+    color: var(--mh-muted);
+  }
+
+  .form-control:focus,
+  .custom-select:focus {
+    border-color: var(--mh-primary);
+    box-shadow: 0 0 0 3px var(--mh-ring);
+  }
+
+  [data-theme="dark"] .modal-content {
+    background-color: var(--mh-surface);
+    border-color: var(--mh-border);
+  }
+}

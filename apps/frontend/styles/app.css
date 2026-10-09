@@ -1,0 +1,37 @@
+/*
+ * Tailwind entry for the web app.
+ *
+ * Migration note: while pages move off Bootstrap, the old template CSS
+ * (which bundles Bootstrap 4) lives in the lowest `legacy` layer, and
+ * Tailwind utilities use the `tw:` prefix with no preflight so they never
+ * collide with Bootstrap class names such as `container` or `mb-3`.
+ */
+@layer legacy, theme, base, components, utilities;
+
+@import "../public/assets/css/style-starter.css" layer(legacy);
+@import "tailwindcss/theme.css" layer(theme) prefix(tw);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "@malanghub/ui/tailwind.css";
+@import "@malanghub/ui/styles.css" layer(components);
+@import "@malanghub/ui/legacy-bridge.css";
+@import "nprogress/nprogress.css" layer(components);
+
+@source "../components";
+@source "../pages";
+
+@layer components {
+  #nprogress .bar {
+    background: var(--mh-primary);
+  }
+
+  #nprogress .peg {
+    box-shadow:
+      0 0 10px var(--mh-primary),
+      0 0 5px var(--mh-primary);
+  }
+
+  #nprogress .spinner-icon {
+    border-top-color: var(--mh-primary);
+    border-left-color: var(--mh-primary);
+  }
+}
