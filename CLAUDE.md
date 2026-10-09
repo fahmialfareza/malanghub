@@ -10,7 +10,8 @@ This repository supports Claude Code. Use this file as the entrypoint, but treat
 
 ## Project Rules
 
-- Primary apps are `apps/backend` and `apps/frontend`.
+- Primary apps are `apps/backend`, `apps/frontend`, and `apps/native` (Tauri), with shared code in `packages/core` and `packages/ui`.
+- UI uses Tailwind v4 only (no Bootstrap, no new CSS modules).
 - `apps/server` is deprecated; avoid new work there unless explicitly requested.
 - Prefer focused edits over broad rewrites.
 - Use `pnpm` for frontend dependency or script work.

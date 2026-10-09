@@ -8,7 +8,12 @@ This file is the shared source of truth for AI coding agents working in this rep
 - Primary apps:
   - `apps/backend`: Go backend using Gin Gonic.
   - `apps/frontend`: Next.js frontend using `pnpm`.
-  - `apps/server`: older Express server that is being phased out. Avoid new work here unless explicitly requested.
+  - `apps/native`: Tauri v2 app (macOS, Windows, Linux, iOS, Android) built from the shared packages.
+  - `apps/server`:
+- Shared packages:
+  - `packages/core`: API client, types, and React Query hooks.
+  - `packages/ui`: shared pages, shell, primitives, and Tailwind design tokens (`src/tailwind.css`).
+- UI is styled with Tailwind v4 utilities and the shared `--mh-*` tokens; do not add Bootstrap or new CSS modules. Features meant for every platform should live in the shared packages so web and native stay in sync. older Express server that is being phased out. Avoid new work here unless explicitly requested.
 
 ## Working Rules
 
