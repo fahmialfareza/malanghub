@@ -12,14 +12,14 @@ const NewsItem = ({ news }: NewsItemProps) => {
   const [hero, ...rest] = news;
 
   return (
-    <div className="tw:grid tw:gap-8 tw:md:grid-cols-12">
-      <div className="tw:flex tw:flex-col tw:gap-6 tw:md:col-span-7">
+    <div className="grid gap-8 md:grid-cols-12">
+      <div className="flex flex-col gap-6 md:col-span-7">
         <NewsCard news={hero} variant="featured" headingLevel="h2" priority />
         <Link
           href="/news"
           className={buttonClass({
             variant: "secondary",
-            className: "tw:self-start",
+            className: "self-start",
           })}
         >
           Semua Berita
@@ -27,14 +27,14 @@ const NewsItem = ({ news }: NewsItemProps) => {
         </Link>
       </div>
       {rest.length > 0 && (
-        <div className="tw:flex tw:flex-col tw:gap-6 tw:md:col-span-5 tw:md:border-l tw:md:border-line tw:md:pl-8">
+        <div className="flex flex-col gap-6 md:col-span-5 md:border-l md:border-line md:pl-8">
           {rest.map((item, index) => (
             <NewsCard
               key={item._id}
               news={item}
               variant="compact"
               className={
-                index > 0 ? "tw:border-t tw:border-line tw:pt-6" : undefined
+                index > 0 ? "border-t border-line pt-6" : undefined
               }
             />
           ))}

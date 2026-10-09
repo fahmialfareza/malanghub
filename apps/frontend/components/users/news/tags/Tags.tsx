@@ -27,10 +27,10 @@ const Tags = ({ newsTag: { newsTags }, getNewsTags }: TagsProps) => {
 
   return (
     <>
-      <section id="tag" className="tw:mb-12">
+      <section id="tag" className="mb-12">
         <Container>
-          <div className="tw:grid tw:gap-6 tw:lg:grid-cols-4">
-            <Card className="tw:overflow-hidden tw:lg:col-span-3">
+          <div className="grid gap-6 lg:grid-cols-4">
+            <Card className="overflow-hidden lg:col-span-3">
               <CardHeader
                 title="Tag (Berita)"
                 actions={
@@ -48,7 +48,7 @@ const Tags = ({ newsTag: { newsTags }, getNewsTags }: TagsProps) => {
                     <th>Dibuat</th>
                     <th>Diperbaharui</th>
                     <th>
-                      <span className="tw:sr-only">Aksi</span>
+                      <span className="sr-only">Aksi</span>
                     </th>
                   </tr>
                 </thead>
@@ -67,7 +67,7 @@ const Tags = ({ newsTag: { newsTags }, getNewsTags }: TagsProps) => {
                     <tr>
                       <td
                         colSpan={5}
-                        className="tw:py-10! tw:text-center tw:text-muted"
+                        className="py-10! text-center text-muted"
                       >
                         Belum ada tag.
                       </td>
@@ -76,7 +76,7 @@ const Tags = ({ newsTag: { newsTags }, getNewsTags }: TagsProps) => {
                 </tbody>
               </Table>
             </Card>
-            <div className="tw:order-first tw:lg:order-none">
+            <div className="order-first lg:order-none">
               <StatTile
                 label="Tag"
                 icon="fa fa-tag"

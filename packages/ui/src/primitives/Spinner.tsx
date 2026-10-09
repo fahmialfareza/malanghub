@@ -12,28 +12,28 @@ export const Spinner = ({
   <span
     role="status"
     aria-live="polite"
-    className={cx("tw:inline-flex tw:items-center tw:gap-2", className)}
+    className={cx("inline-flex items-center gap-2", className)}
   >
     <span
       aria-hidden
       className={cx(
-        "tw:inline-block tw:animate-spin tw:rounded-full tw:border-2 tw:border-current tw:border-r-transparent tw:text-brand",
-        size === "sm" && "tw:size-4",
-        size === "md" && "tw:size-6",
-        size === "lg" && "tw:size-10 tw:border-[3px]"
+        "inline-block animate-spin rounded-full border-2 border-current border-r-transparent text-brand",
+        size === "sm" && "size-4",
+        size === "md" && "size-6",
+        size === "lg" && "size-10 border-[3px]"
       )}
     />
     {label ? (
-      <span className="tw:text-sm tw:text-muted">{label}</span>
+      <span className="text-sm text-muted">{label}</span>
     ) : (
-      <span className="tw:sr-only">Memuat...</span>
+      <span className="sr-only">Memuat...</span>
     )}
   </span>
 );
 
 /** Centered spinner for loading sections or pages. */
 export const LoadingBlock = ({ label }: { label?: string }) => (
-  <div className="tw:flex tw:justify-center tw:py-10">
+  <div className="flex justify-center py-10">
     <Spinner size="lg" label={label} />
   </div>
 );

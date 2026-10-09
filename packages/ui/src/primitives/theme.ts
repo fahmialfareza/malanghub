@@ -24,7 +24,9 @@ export const applyTheme = (theme: ThemeName) => {
  * changes it (Redux in the web app, the shared shell in the native app).
  */
 export const useTheme = () => {
-  const [theme, setThemeState] = useState<ThemeName>(readTheme);
+  // Start as "light" on server and client so hydration matches, then sync
+  // with the real attribute (set before paint by the inline theme script).
+  const [theme, setThemeState] = useState<ThemeName>("light");
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;

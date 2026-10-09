@@ -40,19 +40,19 @@ const Dashboard = ({
         : "news";
 
   return (
-    <section className="tw:bg-bg tw:pb-12">
+    <section className="bg-bg pb-12">
       <Container>
-        <Card className="tw:mb-6 tw:p-4 tw:sm:p-5">
-          <div className="tw:flex tw:flex-col tw:gap-4 tw:sm:flex-row tw:sm:items-center tw:sm:justify-between">
-            <h2 className="tw:m-0 tw:flex tw:items-center tw:gap-2 tw:font-heading tw:text-xl tw:font-semibold tw:text-fg tw:sm:text-2xl">
-              <i className="fa fa-cog tw:text-brand" aria-hidden="true"></i>
+        <Card className="mb-6 p-4 sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 className="m-0 flex items-center gap-2 font-heading text-xl font-semibold text-fg sm:text-2xl">
+              <i className="fa fa-cog text-brand" aria-hidden="true"></i>
               Dashboard
             </h2>
             {!userLoading && user && (
               <div
                 role="tablist"
                 aria-label="Bagian dashboard"
-                className="tw:flex tw:gap-1 tw:overflow-x-auto tw:rounded-xl tw:bg-surface-2 tw:p-1"
+                className="flex gap-1 overflow-x-auto rounded-xl bg-surface-2 p-1"
               >
                 {tabs.map((tab) => {
                   const isActive = tab.key === active;
@@ -66,10 +66,10 @@ const Dashboard = ({
                       aria-controls={`dashboard-panel-${tab.key}`}
                       onClick={() => setSelected(tab.key)}
                       className={cx(
-                        "tw:flex tw:flex-1 tw:items-center tw:justify-center tw:gap-2 tw:whitespace-nowrap tw:rounded-lg tw:border-0 tw:px-4 tw:py-2 tw:text-sm tw:font-semibold tw:transition-colors tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring tw:sm:flex-none",
+                        "flex flex-1 items-center justify-center gap-2 whitespace-nowrap rounded-lg border-0 px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring sm:flex-none",
                         isActive
-                          ? "tw:bg-surface tw:text-brand tw:shadow-card"
-                          : "tw:bg-transparent tw:text-muted tw:hover:text-fg",
+                          ? "bg-surface text-brand shadow-card"
+                          : "bg-transparent text-muted hover:text-fg",
                       )}
                     >
                       <i className={`fa ${tab.icon}`} aria-hidden="true"></i>

@@ -6,8 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./styles.css": "./src/styles.css",
-    "./tailwind.css": "./src/tailwind.css",
-    "./legacy-bridge.css": "./src/legacy-bridge.css"
+    "./tailwind.css": "./src/tailwind.css"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json --noEmit",

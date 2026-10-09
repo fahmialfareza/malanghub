@@ -151,7 +151,7 @@ const AddNews = ({
           onChange={(event) => setTitle(event.target.value)}
           required
         />
-        <div className="tw:grid tw:gap-x-4 tw:md:grid-cols-2">
+        <div className="grid gap-x-4 md:grid-cols-2">
           <Select
             label="Kategori *"
             id="exampleFormControlSelect1"
@@ -184,7 +184,7 @@ const AddNews = ({
             required
           />
         </div>
-        <div className="tw:mb-4">
+        <div className="mb-4">
           <div className={labelClass}>Konten *</div>
           <Editor
             key={theme}
@@ -240,11 +240,11 @@ const AddNews = ({
             onEditorChange={(text) => setContent(text)}
           />
         </div>
-        <fieldset className="tw:m-0 tw:min-w-0 tw:border-0 tw:p-0">
+        <fieldset className="m-0 min-w-0 border-0 p-0">
           <legend className={labelClass}>
             Pilih tag (harus memilih salah satu atau lebih) *
           </legend>
-          <div className="tw:flex tw:flex-wrap tw:gap-x-5 tw:gap-y-1">
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
             {newsTags &&
               newsTags.map((tag) => (
                 <Checkbox

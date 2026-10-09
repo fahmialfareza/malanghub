@@ -1,21 +1,21 @@
 import { useEffect } from "react";
 import { connect } from "react-redux";
 import { ToastContainer, toast } from "react-toastify";
+import { useTheme } from "@malanghub/ui";
 import "react-toastify/dist/ReactToastify.css";
 
-type LayoutState = {
-  alert: {
-    message: string;
-    type: string;
-  };
-  theme: string | null;
-};
-
 type Props = {
-  layout: LayoutState;
+  layout: {
+    alert: {
+      message: string;
+      type: string;
+    };
+  };
 };
 
-const Alert: React.FC<Props> = ({ layout: { alert, theme } }) => {
+const Alert: React.FC<Props> = ({ layout: { alert } }) => {
+  const { theme } = useTheme();
+
   useEffect(() => {
     if (alert?.type === "success") {
       toast.success(alert?.message);
@@ -28,12 +28,19 @@ const Alert: React.FC<Props> = ({ layout: { alert, theme } }) => {
 
   return (
     <>
-      <ToastContainer theme={theme === "dark" ? "dark" : "light"} />
+      <ToastContainer theme={theme} />
     </>
   );
 };
 
-const mapStateToProps = (state: { layout: LayoutState }) => ({
+const mapStateToProps = (state: {
+  layout: {
+    alert: {
+      message: string;
+      type: string;
+    };
+  };
+}) => ({
   layout: state.layout,
 });
 

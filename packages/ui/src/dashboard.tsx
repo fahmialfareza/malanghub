@@ -119,8 +119,8 @@ const FieldGroup = ({
   label: React.ReactNode;
   children: React.ReactNode;
 }) => (
-  <fieldset className="tw:m-0 tw:mb-4 tw:min-w-0 tw:border-0 tw:p-0">
-    <legend className={cx(labelClass, "tw:float-none tw:w-auto tw:p-0")}>
+  <fieldset className="m-0 mb-4 min-w-0 border-0 p-0">
+    <legend className={cx(labelClass, "float-none w-auto p-0")}>
       {label}
     </legend>
     {children}
@@ -144,7 +144,7 @@ const RichTextEditor = ({
     return (
       <textarea
         aria-label="Konten"
-        className={cx(controlClass, "tw:min-h-80 tw:resize-y")}
+        className={cx(controlClass, "min-h-80 resize-y")}
         rows={14}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -153,7 +153,7 @@ const RichTextEditor = ({
   }
 
   return (
-    <div className="tw:overflow-hidden tw:rounded-lg tw:border tw:border-line">
+    <div className="overflow-hidden rounded-lg border border-line">
       <Editor
         key={theme}
         id={`${editorIdRef.current}-${theme}`}
@@ -293,7 +293,7 @@ const EditProfileModal = ({
           value={form.bio}
           onChange={(event) => setForm({ ...form, bio: event.target.value })}
         />
-        <div className="tw:grid tw:gap-x-4 tw:sm:grid-cols-2">
+        <div className="grid gap-x-4 sm:grid-cols-2">
           <Input label="Instagram" placeholder="malanghub" {...field("instagram")} />
           <Input label="Facebook" placeholder="https://www.facebook.com/malanghub" {...field("facebook")} />
           <Input label="Twitter" placeholder="malanghub" {...field("twitter")} />
@@ -301,7 +301,7 @@ const EditProfileModal = ({
           <Input
             label="Linkedin"
             placeholder="https://linkedin.com/in/malanghub"
-            wrapperClassName="tw:sm:col-span-2"
+            wrapperClassName="sm:col-span-2"
             {...field("linkedin")}
           />
         </div>
@@ -339,15 +339,15 @@ const DeleteAccountModal = ({
       </>
     }
   >
-    <div className="tw:flex tw:flex-col tw:items-center tw:px-2 tw:pt-2 tw:text-center">
-      <div className="tw:mb-5 tw:flex tw:size-16 tw:items-center tw:justify-center tw:rounded-full tw:bg-danger-soft tw:text-2xl tw:text-danger">
+    <div className="flex flex-col items-center px-2 pt-2 text-center">
+      <div className="mb-5 flex size-16 items-center justify-center rounded-full bg-danger-soft text-2xl text-danger">
         <span className="fa fa-trash" aria-hidden="true" />
       </div>
-      <h3 className="tw:m-0 tw:mb-3 tw:font-heading tw:text-lg tw:font-bold tw:text-fg">
+      <h3 className="m-0 mb-3 font-heading text-lg font-bold text-fg">
         Hapus Akun Permanen?
       </h3>
-      <p className="tw:max-w-sm tw:leading-relaxed tw:text-body">
-        Tindakan ini <strong className="tw:text-fg">tidak dapat dibatalkan</strong>. Semua data
+      <p className="max-w-sm leading-relaxed text-body">
+        Tindakan ini <strong className="text-fg">tidak dapat dibatalkan</strong>. Semua data
         profil, artikel, dan aktivitas kamu akan dihapus selamanya dan tidak
         bisa dipulihkan.
       </p>
@@ -357,10 +357,10 @@ const DeleteAccountModal = ({
 
 const tabClass = (active: boolean) =>
   cx(
-    "tw:inline-flex tw:h-10 tw:items-center tw:gap-2 tw:rounded-lg tw:border-0 tw:px-4 tw:text-sm tw:font-semibold tw:transition-colors tw:cursor-pointer tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring",
+    "inline-flex h-10 items-center gap-2 rounded-lg border-0 px-4 text-sm font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring",
     active
-      ? "tw:bg-surface tw:text-brand tw:shadow-card"
-      : "tw:bg-transparent tw:text-body tw:hover:text-fg",
+      ? "bg-surface text-brand shadow-card"
+      : "bg-transparent text-body hover:text-fg",
   );
 
 const DashboardWorkbench = ({ user }: { user: UserProfile }) => {
@@ -385,12 +385,12 @@ const DashboardWorkbench = ({ user }: { user: UserProfile }) => {
 
   return (
     <PageSection>
-      <div className="tw:mb-6 tw:flex tw:flex-col tw:gap-4 tw:sm:flex-row tw:sm:items-center tw:sm:justify-between">
-        <h2 className="tw:m-0 tw:flex tw:items-center tw:gap-3 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg">
-          <span className="fa fa-cog tw:text-brand" aria-hidden="true" /> Dashboard
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="m-0 flex items-center gap-3 font-heading text-2xl font-bold text-fg">
+          <span className="fa fa-cog text-brand" aria-hidden="true" /> Dashboard
         </h2>
         <div
-          className="tw:inline-flex tw:gap-1 tw:self-start tw:rounded-xl tw:bg-surface-2 tw:p-1"
+          className="inline-flex gap-1 self-start rounded-xl bg-surface-2 p-1"
           role="group"
           aria-label="Bagian dashboard"
         >
@@ -428,19 +428,19 @@ const ManagerLayout = ({
   stats: React.ReactNode;
 }) => (
   <>
-    <div className="tw:mb-4 tw:flex tw:flex-wrap tw:gap-2">{toolbar}</div>
-    <div className="tw:grid tw:gap-6 tw:lg:grid-cols-4">
-      <Card className="tw:min-w-0 tw:overflow-hidden tw:lg:col-span-3">
+    <div className="mb-4 flex flex-wrap gap-2">{toolbar}</div>
+    <div className="grid gap-6 lg:grid-cols-4">
+      <Card className="min-w-0 overflow-hidden lg:col-span-3">
         <CardHeader title={title} />
         {table}
       </Card>
-      <div className="tw:flex tw:flex-col tw:gap-4">{stats}</div>
+      <div className="flex flex-col gap-4">{stats}</div>
     </div>
   </>
 );
 
 const RowActions = ({ children }: { children: React.ReactNode }) => (
-  <div className="tw:flex tw:flex-wrap tw:justify-end tw:gap-2">{children}</div>
+  <div className="flex flex-wrap justify-end gap-2">{children}</div>
 );
 
 const TableMessage = ({
@@ -451,7 +451,7 @@ const TableMessage = ({
   children: React.ReactNode;
 }) => (
   <tr>
-    <td colSpan={colSpan} className="tw:py-8! tw:text-center tw:text-muted">
+    <td colSpan={colSpan} className="py-8! text-center text-muted">
       {children}
     </td>
   </tr>
@@ -504,7 +504,7 @@ const CategoryManager = () => {
                 <th>Dibuat</th>
                 <th>Diperbaharui</th>
                 <th>
-                  <span className="tw:sr-only">Aksi</span>
+                  <span className="sr-only">Aksi</span>
                 </th>
               </tr>
             </thead>
@@ -517,7 +517,7 @@ const CategoryManager = () => {
                 categories.data?.map((category, index) => (
                   <tr key={getId(category)}>
                     <td>{index + 1}</td>
-                    <td className="tw:font-semibold tw:text-fg">{category.name}</td>
+                    <td className="font-semibold text-fg">{category.name}</td>
                     <td>{formatDate(category.created_at)}</td>
                     <td>{formatDate(category.updated_at ?? category.created_at)}</td>
                     <td>
@@ -590,7 +590,7 @@ const TagManager = () => {
                 <th>Dibuat</th>
                 <th>Diperbaharui</th>
                 <th>
-                  <span className="tw:sr-only">Aksi</span>
+                  <span className="sr-only">Aksi</span>
                 </th>
               </tr>
             </thead>
@@ -603,7 +603,7 @@ const TagManager = () => {
                 tags.data?.map((tag, index) => (
                   <tr key={getId(tag)}>
                     <td>{index + 1}</td>
-                    <td className="tw:font-semibold tw:text-fg">{tag.name}</td>
+                    <td className="font-semibold text-fg">{tag.name}</td>
                     <td>{formatDate(tag.created_at)}</td>
                     <td>{formatDate(tag.updated_at ?? tag.created_at)}</td>
                     <td>
@@ -650,21 +650,21 @@ const StatCard = ({
 }) => (
   <Card
     className={cx(
-      "tw:flex tw:items-center tw:gap-4 tw:p-5",
-      active && "tw:border-brand tw:ring-2 tw:ring-brand-soft",
+      "flex items-center gap-4 p-5",
+      active && "border-brand ring-2 ring-brand-soft",
     )}
   >
     <span
-      className="tw:flex tw:size-12 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-xl tw:text-brand"
+      className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-xl text-brand"
       aria-hidden="true"
     >
       <span className={`fa ${icon}`} />
     </span>
-    <div className="tw:min-w-0 tw:flex-1">
-      <h3 className="tw:m-0 tw:truncate tw:text-sm tw:font-semibold tw:text-muted">
+    <div className="min-w-0 flex-1">
+      <h3 className="m-0 truncate text-sm font-semibold text-muted">
         {title}
       </h3>
-      <div className="tw:font-heading tw:text-3xl tw:font-bold tw:leading-tight tw:text-fg">
+      <div className="font-heading text-3xl font-bold leading-tight text-fg">
         {loading ? <Spinner size="sm" /> : count}
       </div>
     </div>
@@ -714,7 +714,7 @@ const TaxonomyModal = ({
       <form id={`form-${title}`} onSubmit={(event) => { event.preventDefault(); onSubmit(name); }}>
         <Input
           label="Nama *"
-          wrapperClassName="tw:mb-0"
+          wrapperClassName="mb-0"
           value={name}
           placeholder={title.includes("Tag") ? "Nama Tag" : "Nama Kategori"}
           onChange={(event) => setName(event.target.value)}
@@ -755,7 +755,7 @@ const ConfirmModal = ({
       </>
     }
   >
-    <p className="tw:text-base tw:text-body">{message}</p>
+    <p className="text-base text-body">{message}</p>
   </Modal>
 );
 
@@ -837,7 +837,7 @@ const NewsManager = ({ user }: { user: UserProfile }) => {
                 <th>Dibuat</th>
                 <th>Diperbaharui</th>
                 <th>
-                  <span className="tw:sr-only">Aksi</span>
+                  <span className="sr-only">Aksi</span>
                 </th>
               </tr>
             </thead>
@@ -901,27 +901,27 @@ const NewsDashboardRow = ({
   return (
     <tr>
       <td>{index + 1}</td>
-      <td className="tw:min-w-48 tw:font-semibold tw:text-fg">{news.title}</td>
+      <td className="min-w-48 font-semibold text-fg">{news.title}</td>
       {isDraftTable && (
-        <td className="tw:min-w-48">
+        <td className="min-w-48">
           {news.message || "Silahkan Tunggu Konfirmasi dari Admin"}
         </td>
       )}
       {isDraftTable && (
         <td>
           {news.status === "process" ? (
-            <Badge tone="success" className="tw:whitespace-nowrap">
+            <Badge tone="success" className="whitespace-nowrap">
               Sedang Diproses Admin
             </Badge>
           ) : (
-            <Badge tone="danger" className="tw:whitespace-nowrap">
+            <Badge tone="danger" className="whitespace-nowrap">
               Admin Meminta Revisi
             </Badge>
           )}
         </td>
       )}
-      <td className="tw:whitespace-nowrap">{formatDate(news.created_at)}</td>
-      <td className="tw:whitespace-nowrap">{formatDate(news.updated_at ?? news.created_at)}</td>
+      <td className="whitespace-nowrap">{formatDate(news.created_at)}</td>
+      <td className="whitespace-nowrap">{formatDate(news.updated_at ?? news.created_at)}</td>
       <td>
         <RowActions>
           <Link
@@ -958,7 +958,7 @@ const NewsDashboardRow = ({
 };
 
 const tagChipClass =
-  "tw:mb-0 tw:rounded-full tw:border tw:border-line tw:bg-surface tw:py-1.5 tw:pr-3.5 tw:pl-3 tw:has-checked:border-brand tw:has-checked:bg-brand-soft";
+  "mb-0 rounded-full border border-line bg-surface py-1.5 pr-3.5 pl-3 has-checked:border-brand has-checked:bg-brand-soft";
 
 const DraftFormModal = ({
   mode,
@@ -1071,7 +1071,7 @@ const DraftFormModal = ({
           onChange={(event) => setForm({ ...form, title: event.target.value })}
           required
         />
-        <div className="tw:grid tw:gap-x-4 tw:md:grid-cols-2">
+        <div className="grid gap-x-4 md:grid-cols-2">
           <Select
             label="Kategori *"
             value={form.category}
@@ -1102,7 +1102,7 @@ const DraftFormModal = ({
           <RichTextEditor value={form.content} onChange={(content) => setForm({ ...form, content })} />
         </FieldGroup>
         <FieldGroup label="Pilih tag (harus memilih salah satu atau lebih) *">
-          <div className="tw:flex tw:flex-wrap tw:gap-2">
+          <div className="flex flex-wrap gap-2">
             {tagsQuery.data?.map((tag) => {
               const id = getId(tag);
               return (
@@ -1333,7 +1333,7 @@ export const DashboardPage = () => {
             </Button>
             <Button
               variant="ghost"
-              className="tw:text-danger! tw:hover:bg-danger-soft!"
+              className="text-danger! hover:bg-danger-soft!"
               onClick={() => setDeleteModalOpen(true)}
             >
               <span className="fa fa-trash" aria-hidden="true" />
@@ -1383,7 +1383,7 @@ export const DraftPreviewPage = ({ slug }: { slug?: string }) => {
   if (!hasToken || draft.isLoading) return <LoadingState />;
   if (!draft.data) {
     return (
-      <Container className="tw:py-10">
+      <Container className="py-10">
         <EmptyState>Draft tidak ditemukan</EmptyState>
       </Container>
     );
@@ -1415,19 +1415,19 @@ export const DraftPreviewPage = ({ slug }: { slug?: string }) => {
         footer={
           <Link
             href="/users"
-            className={buttonClass({ variant: "secondary", block: true, className: "tw:mt-10" })}
+            className={buttonClass({ variant: "secondary", block: true, className: "mt-10" })}
           >
             Kembali
           </Link>
         }
         asideTitle="Mungkin Anda Tertarik"
         aside={
-          <p className="tw:rounded-xl tw:border tw:border-dashed tw:border-line-strong tw:p-5 tw:text-sm tw:text-muted">
+          <p className="rounded-xl border border-dashed border-line-strong p-5 text-sm text-muted">
             Halaman Pratinjau Tidak Dapat Menampilkan Berita Terkait
           </p>
         }
       />
-      <div className="display-ad tw:mx-auto tw:my-2 tw:block tw:text-center" />
+      <div className="display-ad mx-auto my-2 block text-center" />
     </>
   );
 };

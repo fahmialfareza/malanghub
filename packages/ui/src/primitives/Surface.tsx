@@ -9,7 +9,7 @@ export const Container = ({
 }: React.HTMLAttributes<HTMLDivElement>) => (
   <div
     className={cx(
-      "tw:mx-auto tw:w-full tw:max-w-6xl tw:px-4 tw:sm:px-6",
+      "mx-auto w-full max-w-6xl px-4 sm:px-6",
       className
     )}
     {...rest}
@@ -19,7 +19,7 @@ export const Container = ({
 );
 
 export const cardClass =
-  "tw:rounded-xl tw:border tw:border-line tw:bg-surface tw:text-body tw:shadow-card";
+  "rounded-xl border border-line bg-surface text-body shadow-card";
 
 export const Card = ({
   className,
@@ -42,30 +42,30 @@ export const CardHeader = ({
 }) => (
   <div
     className={cx(
-      "tw:flex tw:flex-wrap tw:items-center tw:justify-between tw:gap-3 tw:border-b tw:border-line tw:px-5 tw:py-4",
+      "flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4",
       className
     )}
   >
-    <h3 className="tw:m-0 tw:font-heading tw:text-lg tw:font-semibold tw:text-fg">
+    <h3 className="m-0 font-heading text-lg font-semibold text-fg">
       {title}
     </h3>
-    {actions && <div className="tw:flex tw:gap-2">{actions}</div>}
+    {actions && <div className="flex gap-2">{actions}</div>}
   </div>
 );
 
 export type BadgeTone = "brand" | "neutral" | "success" | "warning" | "danger";
 
 const badgeTones: Record<BadgeTone, string> = {
-  brand: "tw:bg-brand-soft tw:text-brand",
-  neutral: "tw:bg-surface-2 tw:text-body",
-  success: "tw:bg-success-soft tw:text-success",
-  warning: "tw:bg-warning-soft tw:text-warning",
-  danger: "tw:bg-danger-soft tw:text-danger",
+  brand: "bg-brand-soft text-brand",
+  neutral: "bg-surface-2 text-body",
+  success: "bg-success-soft text-success",
+  warning: "bg-warning-soft text-warning",
+  danger: "bg-danger-soft text-danger",
 };
 
 export const badgeClass = (tone: BadgeTone = "brand", className?: string) =>
   cx(
-    "tw:inline-flex tw:items-center tw:rounded-full tw:px-2.5 tw:py-0.5 tw:text-xs tw:font-semibold tw:no-underline",
+    "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold no-underline",
     badgeTones[tone],
     className
   );
@@ -86,13 +86,13 @@ export const Table = ({
   children,
   ...rest
 }: React.TableHTMLAttributes<HTMLTableElement>) => (
-  <div className="tw:w-full tw:overflow-x-auto">
+  <div className="w-full overflow-x-auto">
     <table
       className={cx(
-        "tw:w-full tw:border-collapse tw:text-left tw:text-sm tw:text-body",
-        "tw:[&_th]:border-b tw:[&_th]:border-line tw:[&_th]:bg-surface-2 tw:[&_th]:px-4 tw:[&_th]:py-3 tw:[&_th]:font-semibold tw:[&_th]:text-fg",
-        "tw:[&_td]:border-b tw:[&_td]:border-line tw:[&_td]:px-4 tw:[&_td]:py-3 tw:[&_td]:align-middle",
-        "tw:[&_tbody_tr:nth-child(even)]:bg-surface-2/50 tw:[&_tbody_tr:hover]:bg-surface-2",
+        "w-full border-collapse text-left text-sm text-body",
+        "[&_th]:border-b [&_th]:border-line [&_th]:bg-surface-2 [&_th]:px-4 [&_th]:py-3 [&_th]:font-semibold [&_th]:text-fg",
+        "[&_td]:border-b [&_td]:border-line [&_td]:px-4 [&_td]:py-3 [&_td]:align-middle",
+        "[&_tbody_tr:nth-child(even)]:bg-surface-2/50 [&_tbody_tr:hover]:bg-surface-2",
         className
       )}
       {...rest}
@@ -105,16 +105,16 @@ export const Table = ({
 /** Class names for react-paginate so pagination matches the design. */
 export const paginationClasses = {
   containerClassName:
-    "tw:my-8 tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-1.5 tw:p-0 tw:list-none",
+    "my-8 flex flex-wrap items-center justify-center gap-1.5 p-0 list-none",
   pageLinkClassName:
-    "tw:flex tw:h-9 tw:min-w-9 tw:items-center tw:justify-center tw:rounded-lg tw:border tw:border-line tw:bg-surface tw:px-3 tw:text-sm tw:font-semibold tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:text-brand",
+    "flex h-9 min-w-9 items-center justify-center rounded-lg border border-line bg-surface px-3 text-sm font-semibold text-body no-underline transition-colors hover:border-brand hover:text-brand",
   previousLinkClassName:
-    "tw:flex tw:h-9 tw:items-center tw:rounded-lg tw:border tw:border-line tw:bg-surface tw:px-3 tw:text-sm tw:font-semibold tw:text-body tw:no-underline tw:hover:border-brand tw:hover:text-brand",
+    "flex h-9 items-center rounded-lg border border-line bg-surface px-3 text-sm font-semibold text-body no-underline hover:border-brand hover:text-brand",
   nextLinkClassName:
-    "tw:flex tw:h-9 tw:items-center tw:rounded-lg tw:border tw:border-line tw:bg-surface tw:px-3 tw:text-sm tw:font-semibold tw:text-body tw:no-underline tw:hover:border-brand tw:hover:text-brand",
+    "flex h-9 items-center rounded-lg border border-line bg-surface px-3 text-sm font-semibold text-body no-underline hover:border-brand hover:text-brand",
   breakLinkClassName:
-    "tw:flex tw:h-9 tw:items-center tw:px-2 tw:text-muted tw:no-underline",
+    "flex h-9 items-center px-2 text-muted no-underline",
   activeLinkClassName:
-    "tw:border-brand! tw:bg-brand! tw:text-brand-fg! tw:hover:text-brand-fg!",
-  disabledLinkClassName: "tw:pointer-events-none tw:opacity-50",
+    "border-brand! bg-brand! text-brand-fg! hover:text-brand-fg!",
+  disabledLinkClassName: "pointer-events-none opacity-50",
 };

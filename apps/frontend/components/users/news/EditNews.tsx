@@ -107,7 +107,7 @@ const EditNews = ({
           value={title}
           onChange={(event) => setTitle(event.target.value)}
         />
-        <div className="tw:mb-4">
+        <div className="mb-4">
           <div className={labelClass}>Konten *</div>
           <Editor
             key={theme}
@@ -154,14 +154,14 @@ const EditNews = ({
           onChange={(event) => setMessage(event.target.value)}
           required
         />
-        <fieldset className="tw:m-0 tw:min-w-0 tw:border-0 tw:p-0">
+        <fieldset className="m-0 min-w-0 border-0 p-0">
           <legend className={labelClass}>Persetujuan *</legend>
           <Checkbox
             id="approvement"
             label="Setuju"
             checked={approved}
             onChange={handleApproved}
-            wrapperClassName="tw:mb-0"
+            wrapperClassName="mb-0"
           />
         </fieldset>
       </form>

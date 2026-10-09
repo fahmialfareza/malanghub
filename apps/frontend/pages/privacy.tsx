@@ -14,22 +14,22 @@ import { renderNextLink } from "../components/news/NewsListingLayout";
 
 const sectionClass = cx(
   cardClass,
-  "tw:mb-5 tw:p-6 tw:sm:p-7 tw:text-[0.97rem] tw:leading-7",
-  "tw:[&_p]:mb-3 tw:[&_p]:text-body tw:[&_p]:leading-7 tw:[&_p:last-child]:mb-0",
-  "tw:[&_ul]:mb-3 tw:[&_ul]:list-disc tw:[&_ul]:pl-6 tw:[&_ul:last-child]:mb-0 tw:[&_li]:mb-1.5 tw:[&_li]:text-body tw:[&_li::marker]:text-brand",
-  "tw:[&_strong]:text-fg tw:[&_a]:font-semibold tw:[&_a]:text-brand tw:[&_a]:underline-offset-2 tw:[&_a:hover]:underline",
+  "mb-5 p-6 sm:p-7 text-[0.97rem] leading-7",
+  "[&_p]:mb-3 [&_p]:text-body [&_p]:leading-7 [&_p:last-child]:mb-0",
+  "[&_ul]:mb-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ul:last-child]:mb-0 [&_li]:mb-1.5 [&_li]:text-body [&_li::marker]:text-brand",
+  "[&_strong]:text-fg [&_a]:font-semibold [&_a]:text-brand [&_a]:underline-offset-2 [&_a:hover]:underline",
 );
 
 const sectionTitleClass =
-  "tw:m-0 tw:mb-3 tw:font-heading tw:text-lg tw:font-bold tw:text-fg";
+  "m-0 mb-3 font-heading text-lg font-bold text-fg";
 
 const asideCardClass = cx(
   cardClass,
-  "tw:p-5 tw:[&_li_a]:font-semibold tw:[&_li_a]:text-body tw:[&_li_a]:no-underline tw:[&_li_a:hover]:text-brand",
+  "p-5 [&_li_a]:font-semibold [&_li_a]:text-body [&_li_a]:no-underline [&_li_a:hover]:text-brand",
 );
 
 const asideTitleClass =
-  "tw:m-0 tw:mb-4 tw:flex tw:items-center tw:font-heading tw:text-base tw:font-bold tw:text-fg";
+  "m-0 mb-4 flex items-center font-heading text-base font-bold text-fg";
 
 interface PrivacyProps {
   setActiveLink: (link: string) => void;
@@ -103,16 +103,16 @@ function Privacy({ setActiveLink }: PrivacyProps) {
         renderLink={renderNextLink}
       />
 
-      <Container className="tw:py-10 tw:lg:py-14">
-        <div className="tw:grid tw:gap-8 tw:lg:grid-cols-12">
+      <Container className="py-10 lg:py-14">
+        <div className="grid gap-8 lg:grid-cols-12">
           {/* Main Content */}
-          <div className="tw:min-w-0 tw:lg:col-span-8">
-            <h1 className="tw:m-0 tw:mb-2 tw:font-heading tw:text-3xl tw:font-bold tw:leading-tight tw:text-fg tw:sm:text-4xl">
+          <div className="min-w-0 lg:col-span-8">
+            <h1 className="m-0 mb-2 font-heading text-3xl font-bold leading-tight text-fg sm:text-4xl">
               Kebijakan Privasi
             </h1>
-            <p className="tw:m-0 tw:mb-8 tw:text-sm tw:text-muted">
+            <p className="m-0 mb-8 text-sm text-muted">
               <span
-                className="fa fa-calendar tw:mr-2 tw:text-brand"
+                className="fa fa-calendar mr-2 text-brand"
                 aria-hidden="true"
               ></span>
               Terakhir diperbarui: Mei 2026
@@ -269,18 +269,18 @@ function Privacy({ setActiveLink }: PrivacyProps) {
           </div>
 
           {/* Sidebar */}
-          <div className="tw:flex tw:flex-col tw:gap-5 tw:lg:col-span-4 tw:lg:sticky tw:lg:top-24 tw:lg:self-start">
+          <div className="flex flex-col gap-5 lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
             <div className={asideCardClass}>
               <h2 className={asideTitleClass}>
                 <span
-                  className="fa fa-list tw:mr-2 tw:text-brand"
+                  className="fa fa-list mr-2 text-brand"
                   aria-hidden="true"
                 ></span>
                 Daftar Isi
               </h2>
-              <ol className="tw:m-0 tw:list-decimal tw:pl-5 tw:text-sm tw:text-body tw:marker:text-muted">
+              <ol className="m-0 list-decimal pl-5 text-sm text-body marker:text-muted">
                 {sections.map((s, i) => (
-                  <li key={i} className="tw:mb-1.5">
+                  <li key={i} className="mb-1.5">
                     {s}
                   </li>
                 ))}
@@ -290,22 +290,22 @@ function Privacy({ setActiveLink }: PrivacyProps) {
             <div className={asideCardClass}>
               <h2 className={asideTitleClass}>
                 <span
-                  className="fa fa-file-text-o tw:mr-2 tw:text-brand"
+                  className="fa fa-file-text-o mr-2 text-brand"
                   aria-hidden="true"
                 ></span>
                 Dokumen Terkait
               </h2>
-              <ul className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:gap-2 tw:p-0 tw:text-sm">
+              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
                 <li>
                   <span
-                    className="fa fa-angle-right tw:mr-2 tw:text-brand"
+                    className="fa fa-angle-right mr-2 text-brand"
                     aria-hidden="true"
                   ></span>
                   <Link href="/terms">Syarat dan Ketentuan</Link>
                 </li>
                 <li>
                   <span
-                    className="fa fa-angle-right tw:mr-2 tw:text-brand"
+                    className="fa fa-angle-right mr-2 text-brand"
                     aria-hidden="true"
                   ></span>
                   <Link href="/contact">Hubungi Kami</Link>
@@ -316,12 +316,12 @@ function Privacy({ setActiveLink }: PrivacyProps) {
             <div className={asideCardClass}>
               <h2 className={asideTitleClass}>
                 <span
-                  className="fa fa-shield tw:mr-2 tw:text-brand"
+                  className="fa fa-shield mr-2 text-brand"
                   aria-hidden="true"
                 ></span>
                 Komitmen Kami
               </h2>
-              <p className="tw:m-0 tw:text-sm tw:leading-relaxed tw:text-body">
+              <p className="m-0 text-sm leading-relaxed text-body">
                 Malanghub berkomitmen menjaga privasi dan keamanan data pengguna
                 sesuai dengan peraturan yang berlaku di Indonesia.
               </p>

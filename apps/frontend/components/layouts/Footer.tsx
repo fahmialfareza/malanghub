@@ -4,10 +4,10 @@ import { Container } from "@malanghub/ui";
 import { downloadLinks } from "../../utils/downloadLinks";
 
 const headingClass =
-  "tw:m-0 tw:mb-4 tw:text-xs tw:font-semibold tw:uppercase tw:tracking-[0.12em] tw:text-muted";
+  "m-0 mb-4 text-xs font-semibold uppercase tracking-[0.12em] text-muted";
 
 const linkClass =
-  "tw:text-sm tw:font-normal tw:text-body tw:no-underline tw:transition-colors tw:hover:text-brand";
+  "text-sm font-normal text-body no-underline transition-colors hover:text-brand";
 
 const exploreLinks = [
   { href: "/", label: "Beranda" },
@@ -42,24 +42,24 @@ const Footer = () => {
   };
 
   return (
-    <footer className="tw:mt-auto tw:border-t tw:border-line tw:bg-surface tw:text-body">
-      <Container className="tw:py-12 tw:lg:py-16">
-        <div className="tw:grid tw:gap-10 tw:sm:grid-cols-2 tw:lg:grid-cols-12">
-          <div className="tw:sm:col-span-2 tw:lg:col-span-4">
+    <footer className="mt-auto border-t border-line bg-surface text-body">
+      <Container className="py-12 lg:py-16">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-12">
+          <div className="sm:col-span-2 lg:col-span-4">
             <Link
               href="/"
-              className="tw:font-heading tw:text-2xl tw:font-bold tw:text-fg tw:no-underline tw:hover:text-brand"
+              className="font-heading text-2xl font-bold text-fg no-underline hover:text-brand"
             >
               Malanghub
             </Link>
-            <p className="tw:m-0 tw:mt-3 tw:max-w-sm tw:text-sm tw:leading-relaxed tw:text-muted">
+            <p className="m-0 mt-3 max-w-sm text-sm leading-relaxed text-muted">
               Situs berita dan informasi terkini seputar Malang Raya
             </p>
           </div>
 
-          <nav aria-label="Jelajahi" className="tw:lg:col-span-2">
+          <nav aria-label="Jelajahi" className="lg:col-span-2">
             <h2 className={headingClass}>Jelajahi</h2>
-            <ul className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:gap-2.5 tw:p-0">
+            <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
               {exploreLinks.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className={linkClass}>
@@ -70,9 +70,9 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <nav aria-label="Legal" className="tw:lg:col-span-2">
+          <nav aria-label="Legal" className="lg:col-span-2">
             <h2 className={headingClass}>Legal</h2>
-            <ul className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:gap-2.5 tw:p-0">
+            <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
               {legalLinks.map((l) => (
                 <li key={l.href}>
                   <Link href={l.href} className={linkClass}>
@@ -83,9 +83,9 @@ const Footer = () => {
             </ul>
           </nav>
 
-          <div className="tw:sm:col-span-2 tw:lg:col-span-4">
+          <div className="sm:col-span-2 lg:col-span-4">
             <h2 className={headingClass}>Download Sekarang</h2>
-            <div className="tw:flex tw:flex-wrap tw:gap-2">
+            <div className="flex flex-wrap gap-2">
               {downloadLinks
                 .filter((l) => l.href)
                 .map((l) => (
@@ -94,7 +94,7 @@ const Footer = () => {
                     href={l.href}
                     target="_blank"
                     rel="noreferrer"
-                    className="tw:inline-flex tw:items-center tw:gap-2 tw:rounded-lg tw:border tw:border-line tw:bg-surface-2 tw:px-3 tw:py-2 tw:text-sm tw:font-semibold tw:text-fg tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:text-brand tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring"
+                    className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface-2 px-3 py-2 text-sm font-semibold text-fg no-underline transition-colors hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
                   >
                     <span className={`fa ${l.icon}`} aria-hidden="true" />
                     {l.platform}
@@ -104,17 +104,17 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="tw:mt-12 tw:flex tw:flex-col tw:gap-2 tw:border-t tw:border-line tw:pt-6 tw:text-sm tw:text-muted tw:sm:flex-row tw:sm:items-center tw:sm:justify-between">
-          <p className="tw:m-0 tw:text-sm tw:text-muted">
+        <div className="mt-12 flex flex-col gap-2 border-t border-line pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p className="m-0 text-sm text-muted">
             © <span>{new Date().getFullYear()}</span> Malanghub . Made with{" "}
             <span
-              className="fa fa-heart tw:text-danger"
+              className="fa fa-heart text-danger"
               aria-hidden="true"
             ></span>
             , Designed by{" "}
             <a
               href="https://w3layouts.com"
-              className="tw:font-semibold tw:text-body tw:no-underline tw:hover:text-brand"
+              className="font-semibold text-body no-underline hover:text-brand"
             >
               W3layouts
             </a>
@@ -127,11 +127,11 @@ const Footer = () => {
         onClick={topFunction}
         title="Go to top"
         aria-label="Kembali ke atas"
-        className={`tw:fixed tw:right-4 tw:bottom-5 tw:z-50 tw:size-11 tw:cursor-pointer tw:items-center tw:justify-center tw:rounded-full tw:border-0 tw:bg-brand tw:text-brand-fg tw:shadow-pop tw:transition-colors tw:hover:bg-brand-hover tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring ${
-          showTop ? "tw:inline-flex" : "tw:hidden"
+        className={`fixed right-4 bottom-5 z-50 size-11 cursor-pointer items-center justify-center rounded-full border-0 bg-brand text-brand-fg shadow-pop transition-colors hover:bg-brand-hover focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${
+          showTop ? "inline-flex" : "hidden"
         }`}
       >
-        <span className="fa fa-angle-up tw:text-2xl" aria-hidden="true"></span>
+        <span className="fa fa-angle-up text-2xl" aria-hidden="true"></span>
       </button>
     </footer>
   );

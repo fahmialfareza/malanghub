@@ -12,6 +12,7 @@ import {
   buttonClass,
   controlClass,
   cx,
+  useTheme,
 } from "@malanghub/ui";
 import { getNewsCategories } from "../../redux/actions/newsCategoryActions";
 import { loadUser, logout } from "../../redux/actions/userActions";
@@ -47,19 +48,19 @@ Router.onRouteChangeError = () => NProgress.done();
 
 const navLinkClass = (active: boolean) =>
   cx(
-    "tw:inline-flex tw:items-center tw:gap-1.5 tw:rounded-lg tw:px-3 tw:py-2 tw:text-[0.95rem] tw:font-semibold tw:no-underline tw:transition-colors",
+    "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[0.95rem] font-semibold no-underline transition-colors",
     active
-      ? "tw:bg-brand-soft tw:text-brand"
-      : "tw:text-body tw:hover:bg-surface-2 tw:hover:text-fg"
+      ? "bg-brand-soft text-brand"
+      : "text-body hover:bg-surface-2 hover:text-fg"
   );
 
 const iconButtonClass =
-  "tw:flex tw:size-10 tw:items-center tw:justify-center tw:rounded-lg tw:border tw:border-line tw:bg-surface tw:text-body tw:transition-colors tw:hover:bg-surface-2 tw:hover:text-fg tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring";
+  "flex size-10 items-center justify-center rounded-lg border border-line bg-surface text-body transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring";
 
 const Header = ({
   newsCategory: { newsCategories, loading: newsCategoryLoading },
   user: { user, isAuthenticated, loading: userLoading },
-  layout: { activeLink, theme },
+  layout: { activeLink },
   getNewsCategories,
   loadUser,
   logout,
@@ -87,11 +88,6 @@ const Header = ({
     }
   }, [isAuthenticated]);
 
-  useEffect(() => {
-    if (theme) {
-      document.documentElement.setAttribute("data-theme", theme);
-    }
-  }, [theme]);
 
   useEffect(() => {
     const closeMenu = () => setMenuOpen(false);
@@ -116,7 +112,9 @@ const Header = ({
     router.push(`/search/${search}`);
   };
 
-  const isDark = theme === "dark";
+  // Read the applied theme from <html data-theme>, which the pre-paint script
+  // sets; the Redux value is null until the user toggles.
+  const isDark = useTheme().theme === "dark";
 
   const categoryItems = [
     { key: "all", label: "Semua Berita", href: "/news" },
@@ -144,7 +142,7 @@ const Header = ({
   const avatar = (
     <Image
       src={user && user.photo ? user.photo : assetsPath("images/author.jpg")}
-      className="tw:size-9 tw:rounded-full tw:object-cover tw:ring-2 tw:ring-line"
+      className="size-9 rounded-full object-cover ring-2 ring-line"
       alt=""
       width={72}
       height={72}
@@ -154,17 +152,17 @@ const Header = ({
   const accountArea = userLoading && !user ? (
     <Spinner size="sm" />
   ) : user ? (
-    <div className="tw:flex tw:items-center tw:gap-3">
+    <div className="flex items-center gap-3">
       <Link
         href="/users"
-        className="tw:flex tw:items-center tw:gap-2.5 tw:rounded-lg tw:py-1 tw:pr-2 tw:no-underline tw:hover:bg-surface-2"
+        className="flex items-center gap-2.5 rounded-lg py-1 pr-2 no-underline hover:bg-surface-2"
       >
         {avatar}
-        <span className="tw:flex tw:flex-col tw:leading-tight">
-          <span className="tw:max-w-36 tw:truncate tw:text-sm tw:font-semibold tw:text-fg">
+        <span className="flex flex-col leading-tight">
+          <span className="max-w-36 truncate text-sm font-semibold text-fg">
             {user.name}
           </span>
-          <span className="tw:text-xs tw:font-normal tw:text-muted">
+          <span className="text-xs font-normal text-muted">
             {user?.role?.includes("admin") ? "Admin" : "Pengguna"}
           </span>
         </span>
@@ -174,7 +172,7 @@ const Header = ({
       </Button>
     </div>
   ) : (
-    <div className="tw:flex tw:items-center tw:gap-2">
+    <div className="flex items-center gap-2">
       <Link
         href="/signup"
         className={buttonClass({ variant: "ghost", size: "sm" })}
@@ -214,21 +212,21 @@ const Header = ({
   );
 
   return (
-    <header className="tw:sticky tw:top-0 tw:z-[1030] tw:border-b tw:border-line tw:bg-surface/90 tw:backdrop-blur-md">
-      <Container className="tw:flex tw:h-16 tw:items-center tw:gap-4">
-        <Link href="/" className="tw:flex tw:shrink-0 tw:items-center">
+    <header className="sticky top-0 z-[1030] border-b border-line bg-surface/90 backdrop-blur-md">
+      <Container className="flex h-16 items-center gap-4">
+        <Link href="/" className="flex shrink-0 items-center">
           <Image src={logo} height={34} alt="Malanghub" priority />
         </Link>
 
         <nav
           aria-label="Navigasi utama"
-          className="tw:hidden tw:items-center tw:gap-1 tw:lg:flex"
+          className="hidden items-center gap-1 lg:flex"
         >
           <Link href="/" className={navLinkClass(activeLink === "home")}>
             Beranda
           </Link>
           {newsCategoryLoading && !newsCategories ? (
-            <span className="tw:px-3">
+            <span className="px-3">
               <Spinner size="sm" />
             </span>
           ) : (
@@ -242,7 +240,7 @@ const Header = ({
               renderLink={renderLink}
               buttonClassName={cx(
                 navLinkClass(activeLink === "news"),
-                "tw:border-0 tw:bg-transparent"
+                "border-0 bg-transparent"
               )}
             />
           )}
@@ -257,13 +255,13 @@ const Header = ({
           </Link>
         </nav>
 
-        <div className="tw:ml-auto tw:flex tw:items-center tw:gap-2">
+        <div className="ml-auto flex items-center gap-2">
           {searchButton}
           {themeToggle}
-          <div className="tw:ml-2 tw:hidden tw:lg:block">{accountArea}</div>
+          <div className="ml-2 hidden lg:block">{accountArea}</div>
           <button
             type="button"
-            className={cx(iconButtonClass, "tw:lg:hidden")}
+            className={cx(iconButtonClass, "lg:hidden")}
             onClick={() => setMenuOpen((open) => !open)}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
@@ -280,16 +278,16 @@ const Header = ({
       {menuOpen && (
         <div
           id="mobile-menu"
-          className="tw:max-h-[calc(100dvh-4rem)] tw:overflow-y-auto tw:border-t tw:border-line tw:bg-surface tw:lg:hidden"
+          className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-surface lg:hidden"
         >
-          <Container className="tw:flex tw:flex-col tw:gap-1 tw:py-4">
+          <Container className="flex flex-col gap-1 py-4">
             <Link href="/" className={navLinkClass(activeLink === "home")}>
               Beranda
             </Link>
-            <p className="tw:mt-3 tw:mb-1 tw:px-3 tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wider tw:text-muted">
+            <p className="mt-3 mb-1 px-3 text-xs font-semibold uppercase tracking-wider text-muted">
               Berita
             </p>
-            <div className="tw:grid tw:grid-cols-2 tw:gap-1">
+            <div className="grid grid-cols-2 gap-1">
               {categoryItems.map((item) => (
                 <Link
                   key={item.key}
@@ -300,7 +298,7 @@ const Header = ({
                 </Link>
               ))}
             </div>
-            <div className="tw:my-2 tw:border-t tw:border-line" />
+            <div className="my-2 border-t border-line" />
             <Link href="/ask" className={navLinkClass(activeLink === "ask")}>
               Tanya AI
             </Link>
@@ -310,7 +308,7 @@ const Header = ({
             >
               Kontak
             </Link>
-            <div className="tw:mt-3 tw:border-t tw:border-line tw:pt-4">
+            <div className="mt-3 border-t border-line pt-4">
               {accountArea}
             </div>
           </Container>
@@ -322,8 +320,8 @@ const Header = ({
         onClose={() => setSearchOpen(false)}
         title="Cari disini"
       >
-        <form className="tw:flex tw:gap-2" onSubmit={onSearch} role="search">
-          <label htmlFor="header-search" className="tw:sr-only">
+        <form className="flex gap-2" onSubmit={onSearch} role="search">
+          <label htmlFor="header-search" className="sr-only">
             Cari berita
           </label>
           <input

@@ -3,10 +3,10 @@ import { cx } from "./cx";
 
 /** Shared look for text-like controls: soft surface in dark mode, clear focus ring. */
 export const controlClass =
-  "tw:block tw:w-full tw:rounded-lg tw:border tw:border-line tw:bg-input tw:px-3.5 tw:py-2.5 tw:text-[0.95rem] tw:text-fg tw:shadow-none tw:transition-[border-color,box-shadow] tw:placeholder:text-muted tw:hover:border-line-strong tw:focus:border-brand tw:focus:outline-none tw:focus:ring-4 tw:focus:ring-ring tw:disabled:cursor-not-allowed tw:disabled:opacity-60 tw:aria-invalid:border-danger";
+  "block w-full rounded-lg border border-line bg-input px-3.5 py-2.5 text-[0.95rem] text-fg shadow-none transition-[border-color,box-shadow] placeholder:text-muted hover:border-line-strong focus:border-brand focus:outline-none focus:ring-4 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-60 aria-invalid:border-danger";
 
 export const labelClass =
-  "tw:mb-1.5 tw:block tw:text-sm tw:font-semibold tw:text-fg";
+  "mb-1.5 block text-sm font-semibold text-fg";
 
 type FieldShellProps = {
   id: string;
@@ -26,7 +26,7 @@ export const FieldShell = ({
   className,
   children,
 }: FieldShellProps) => (
-  <div className={cx("tw:mb-4", className)}>
+  <div className={cx("mb-4", className)}>
     {label && (
       <label htmlFor={id} className={labelClass}>
         {label}
@@ -34,12 +34,12 @@ export const FieldShell = ({
     )}
     {children}
     {error ? (
-      <p id={`${id}-error`} className="tw:mt-1.5 tw:text-sm tw:text-danger">
+      <p id={`${id}-error`} className="mt-1.5 text-sm text-danger">
         {error}
       </p>
     ) : (
       hint && (
-        <p id={`${id}-hint`} className="tw:mt-1.5 tw:text-sm tw:text-muted">
+        <p id={`${id}-hint`} className="mt-1.5 text-sm text-muted">
           {hint}
         </p>
       )
@@ -107,7 +107,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={inputId}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy(inputId, hint, error)}
-          className={cx(controlClass, "tw:min-h-28 tw:resize-y", className)}
+          className={cx(controlClass, "min-h-28 resize-y", className)}
           {...rest}
         />
       </FieldShell>
@@ -139,7 +139,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={inputId}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy(inputId, hint, error)}
-          className={cx(controlClass, "tw:pr-9", className)}
+          className={cx(controlClass, "pr-9", className)}
           {...rest}
         >
           {children}
@@ -165,7 +165,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
     return (
       <div
         className={cx(
-          "tw:mb-2 tw:flex tw:items-center tw:gap-2.5",
+          "mb-2 flex items-center gap-2.5",
           wrapperClassName
         )}
       >
@@ -174,14 +174,14 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           id={inputId}
           type="checkbox"
           className={cx(
-            "tw:size-4 tw:shrink-0 tw:cursor-pointer tw:rounded tw:accent-brand tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring",
+            "size-4 shrink-0 cursor-pointer rounded accent-brand focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring",
             className
           )}
           {...rest}
         />
         <label
           htmlFor={inputId}
-          className="tw:mb-0 tw:cursor-pointer tw:text-[0.95rem] tw:text-body"
+          className="mb-0 cursor-pointer text-[0.95rem] text-body"
         >
           {label}
         </label>
@@ -217,7 +217,7 @@ export const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
           aria-describedby={describedBy(inputId, hint, error)}
           className={cx(
             controlClass,
-            "tw:cursor-pointer tw:p-1.5 tw:file:mr-3 tw:file:cursor-pointer tw:file:rounded-md tw:file:border-0 tw:file:bg-brand-soft tw:file:px-3 tw:file:py-1.5 tw:file:text-sm tw:file:font-semibold tw:file:text-brand",
+            "cursor-pointer p-1.5 file:mr-3 file:cursor-pointer file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:text-sm file:font-semibold file:text-brand",
             className
           )}
           {...rest}

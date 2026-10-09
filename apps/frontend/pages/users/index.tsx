@@ -149,16 +149,16 @@ const UserProfile = ({
           </Link>
         )}
       />
-      <section className="tw:bg-bg tw:py-8 tw:sm:py-12">
+      <section className="bg-bg py-8 sm:py-12">
         <Container>
-          <Card className="tw:p-6 tw:sm:p-8">
+          <Card className="p-6 sm:p-8">
             {userLoading ? (
-              <div className="tw:flex tw:justify-center tw:py-10">
+              <div className="flex justify-center py-10">
                 <Spinner size="lg" />
               </div>
             ) : (
-              <div className="tw:flex tw:flex-col tw:items-center tw:gap-6 tw:text-center tw:md:flex-row tw:md:items-center tw:md:text-left">
-                <div className="tw:relative tw:size-32 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:border-4 tw:border-surface tw:bg-surface-2 tw:shadow-card tw:ring-1 tw:ring-line tw:sm:size-40">
+              <div className="flex flex-col items-center gap-6 text-center md:flex-row md:items-center md:text-left">
+                <div className="relative size-32 shrink-0 overflow-hidden rounded-full border-4 border-surface bg-surface-2 shadow-card ring-1 ring-line sm:size-40">
                   <Image
                     src={
                       user && user.photo
@@ -166,27 +166,27 @@ const UserProfile = ({
                         : assetsPath("images/author.jpg")
                     }
                     alt={user?.name ? `Foto profil ${user.name}` : ""}
-                    className="tw:object-cover"
+                    className="object-cover"
                     sizes="160px"
                     fill
                   />
                 </div>
-                <div className="tw:min-w-0 tw:flex-1">
+                <div className="min-w-0 flex-1">
                   {user && user.motto && (
-                    <Badge className="tw:mb-3">{user.motto}</Badge>
+                    <Badge className="mb-3">{user.motto}</Badge>
                   )}
-                  <h1 className="tw:m-0 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg tw:sm:text-3xl">
+                  <h1 className="m-0 font-heading text-2xl font-bold text-fg sm:text-3xl">
                     Halo,{" "}
-                    <span className="tw:text-brand">{user && user.name}</span>
+                    <span className="text-brand">{user && user.name}</span>
                   </h1>
                   {user && user.bio && (
-                    <div className="tw:mt-3 tw:max-w-2xl tw:text-[0.95rem] tw:leading-relaxed tw:text-body tw:[&_p]:mb-2 tw:[&_p]:text-body">
+                    <div className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-body [&_p]:mb-2 [&_p]:text-body">
                       {parse(user.bio)}
                     </div>
                   )}
-                  <div className="tw:mt-5 tw:flex tw:flex-col tw:items-center tw:gap-4 tw:sm:flex-row tw:md:justify-between">
+                  <div className="mt-5 flex flex-col items-center gap-4 sm:flex-row md:justify-between">
                     {socialLinks.length > 0 ? (
-                      <ul className="tw:m-0 tw:flex tw:list-none tw:flex-wrap tw:justify-center tw:gap-2 tw:p-0">
+                      <ul className="m-0 flex list-none flex-wrap justify-center gap-2 p-0">
                         {socialLinks.map((link) => (
                           <li key={link.key}>
                             <a
@@ -194,7 +194,7 @@ const UserProfile = ({
                               rel="noreferrer"
                               href={link.href}
                               aria-label={link.label}
-                              className="tw:flex tw:size-10 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface-2 tw:font-normal tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:bg-brand-soft tw:hover:text-brand"
+                              className="flex size-10 items-center justify-center rounded-full border border-line bg-surface-2 font-normal text-body no-underline transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand"
                             >
                               <span
                                 className={link.icon}

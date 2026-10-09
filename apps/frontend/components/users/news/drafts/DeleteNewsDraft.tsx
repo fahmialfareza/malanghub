@@ -43,7 +43,7 @@ const DeleteNewsDraft = ({
         </>
       }
     >
-      <p className="tw:m-0 tw:text-body">
+      <p className="m-0 text-body">
         Apakah anda yakin ingin menghapus berita?
       </p>
     </Modal>

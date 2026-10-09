@@ -31,16 +31,16 @@ const CategoryTableItem = ({
 
   return (
     <tr>
-      <td className="tw:text-muted">{index + 1}</td>
-      <td className="tw:font-semibold tw:text-fg">{category.name}</td>
-      <td className="tw:whitespace-nowrap">
+      <td className="text-muted">{index + 1}</td>
+      <td className="font-semibold text-fg">{category.name}</td>
+      <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{category.created_at}</Moment>
       </td>
-      <td className="tw:whitespace-nowrap">
+      <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{category.created_at}</Moment>
       </td>
       <td>
-        <div className="tw:flex tw:justify-end tw:gap-2">
+        <div className="flex justify-end gap-2">
           <Button size="sm" variant="secondary" onClick={onClickEdit}>
             <i className="fa fa-edit" aria-hidden="true"></i> Edit
           </Button>

@@ -42,32 +42,32 @@ const NewsDraftTableItem = ({
 
   return (
     <tr>
-      <td className="tw:text-muted">{index + 1}</td>
-      <td className="tw:min-w-48 tw:font-semibold tw:text-fg">{draft.title}</td>
-      <td className="tw:min-w-48">
+      <td className="text-muted">{index + 1}</td>
+      <td className="min-w-48 font-semibold text-fg">{draft.title}</td>
+      <td className="min-w-48">
         {draft.message
           ? draft.message
           : "Silahkan Tunggu Konfirmasi dari Admin"}
       </td>
       <td>
         {draft.status === "process" ? (
-          <Badge tone="warning" className="tw:whitespace-nowrap">
+          <Badge tone="warning" className="whitespace-nowrap">
             Sedang Diproses Admin
           </Badge>
         ) : (
-          <Badge tone="danger" className="tw:whitespace-nowrap">
+          <Badge tone="danger" className="whitespace-nowrap">
             Admin Meminta Revisi
           </Badge>
         )}
       </td>
-      <td className="tw:whitespace-nowrap">
+      <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{draft.created_at}</Moment>
       </td>
-      <td className="tw:whitespace-nowrap">
+      <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{draft.created_at}</Moment>
       </td>
       <td>
-        <div className="tw:flex tw:justify-end tw:gap-2">
+        <div className="flex justify-end gap-2">
           <Link
             href={`/users/newsDrafts/${draft.slug}`}
             className={buttonClass({ variant: "ghost", size: "sm" })}

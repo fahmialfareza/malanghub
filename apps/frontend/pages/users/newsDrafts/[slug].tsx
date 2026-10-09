@@ -26,7 +26,7 @@ import { NewsDraftReducerState, UserReducerState } from "../../../redux/types";
 import { News } from "../../../models/news";
 
 const socialClass =
-  "tw:flex tw:size-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:text-brand";
+  "flex size-9 items-center justify-center rounded-full border border-line bg-surface text-body no-underline transition-colors hover:border-brand hover:text-brand";
 
 interface NewsDraftProps {
   user: UserReducerState;
@@ -153,33 +153,33 @@ const NewsDraft = ({
           </Link>
         )}
       />
-      <div className="tw:bg-bg tw:py-10 tw:lg:py-14">
+      <div className="bg-bg py-10 lg:py-14">
         <Container>
-          <div className="tw:grid tw:gap-10 tw:lg:grid-cols-3">
-            <article className="tw:min-w-0 tw:lg:col-span-2">
+          <div className="grid gap-10 lg:grid-cols-3">
+            <article className="min-w-0 lg:col-span-2">
               {newsDraftLoading ? (
                 <LoadingBlock />
               ) : (
                 <>
-                  <header className="tw:mb-8 tw:text-center">
-                    <Badge tone="warning" className="tw:mb-4">
+                  <header className="mb-8 text-center">
+                    <Badge tone="warning" className="mb-4">
                       Pratinjau Antrian Berita
                     </Badge>
-                    <h1 className="tw:mt-0 tw:mb-5 tw:font-heading tw:text-3xl tw:leading-tight tw:font-bold tw:text-fg tw:md:text-4xl">
+                    <h1 className="mt-0 mb-5 font-heading text-3xl leading-tight font-bold text-fg md:text-4xl">
                       {currentNewsDraft && currentNewsDraft.title}
                     </h1>
-                    <div className="tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-3 tw:text-sm tw:text-muted">
+                    <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-muted">
                       {currentNewsDraft && currentNewsDraft.user && (
                         <Link
                           href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
-                          className="tw:relative tw:block tw:size-10 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2"
+                          className="relative block size-10 shrink-0 overflow-hidden rounded-full bg-surface-2"
                           aria-label={currentNewsDraft.user.name}
                         >
                           {currentNewsDraft.user.photo && (
                             <Image
                               src={currentNewsDraft.user.photo}
                               alt=""
-                              className="tw:object-cover"
+                              className="object-cover"
                               sizes="40px"
                               fill
                             />
@@ -190,7 +190,7 @@ const NewsDraft = ({
                         {currentNewsDraft && currentNewsDraft.user && (
                           <Link
                             href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
-                            className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                            className="font-semibold text-fg no-underline hover:text-brand"
                           >
                             {currentNewsDraft.user.name}
                           </Link>
@@ -202,25 +202,25 @@ const NewsDraft = ({
                             currentNewsDraft.category._id) && (
                             <Link
                               href={`/newsCategories/${currentNewsDraft.category.id || currentNewsDraft.category._id}`}
-                              className="tw:font-semibold tw:text-brand tw:no-underline tw:hover:underline"
+                              className="font-semibold text-brand no-underline hover:underline"
                             >
                               {currentNewsDraft.category.name}
                             </Link>
                           )}
                       </span>
-                      <span aria-hidden className="tw:text-line-strong">
+                      <span aria-hidden className="text-line-strong">
                         &bull;
                       </span>
-                      <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+                      <span className="inline-flex items-center gap-1.5">
                         <i className="fa fa-calendar" aria-hidden="true"></i>
                         <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
                           {currentNewsDraft && currentNewsDraft.created_at}
                         </Moment>
                       </span>
-                      <span aria-hidden className="tw:text-line-strong">
+                      <span aria-hidden className="text-line-strong">
                         &bull;
                       </span>
-                      <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+                      <span className="inline-flex items-center gap-1.5">
                         <i className="fa fa-clock-o" aria-hidden="true"></i>
                         {currentNewsDraft &&
                           currentNewsDraft.time_read &&
@@ -231,10 +231,10 @@ const NewsDraft = ({
                   </header>
 
                   {currentNewsDraft && currentNewsDraft.mainImage && (
-                    <div className="tw:relative tw:mb-8 tw:aspect-[4/3] tw:overflow-hidden tw:rounded-2xl tw:bg-surface-2 tw:shadow-card">
+                    <div className="relative mb-8 aspect-[4/3] overflow-hidden rounded-2xl bg-surface-2 shadow-card">
                       <Image
                         src={currentNewsDraft.mainImage}
-                        className="tw:object-cover"
+                        className="object-cover"
                         sizes="(min-width: 1024px) 66vw, 100vw"
                         alt=""
                         fill
@@ -245,18 +245,18 @@ const NewsDraft = ({
                   {currentNewsDraft && currentNewsDraft.content && (
                     <div
                       ref={contentRef}
-                      className="tw:text-justify tw:text-body tw:[&_p]:mb-4 tw:[&_p]:leading-relaxed tw:[&_img]:mx-auto tw:[&_img]:my-4 tw:[&_img]:h-auto tw:[&_img]:max-w-full tw:[&_img]:rounded-xl tw:[&_a]:text-brand tw:[&_h2]:mt-8 tw:[&_h2]:mb-3 tw:[&_h2]:font-heading tw:[&_h2]:text-fg tw:[&_h3]:mt-6 tw:[&_h3]:mb-3 tw:[&_h3]:font-heading tw:[&_h3]:text-fg tw:[&_ul]:mb-4 tw:[&_ul]:pl-6 tw:[&_ol]:mb-4 tw:[&_ol]:pl-6 tw:[&_blockquote]:my-6 tw:[&_blockquote]:border-l-4 tw:[&_blockquote]:border-brand tw:[&_blockquote]:pl-4 tw:[&_blockquote]:italic"
+                      className="text-justify text-body [&_p]:mb-4 [&_p]:leading-relaxed [&_img]:mx-auto [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-xl [&_a]:text-brand [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:font-heading [&_h2]:text-fg [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:font-heading [&_h3]:text-fg [&_ul]:mb-4 [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:pl-6 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-brand [&_blockquote]:pl-4 [&_blockquote]:italic"
                     >
                       {parse(currentNewsDraft.content)}
                     </div>
                   )}
 
-                  <div className="tw:mt-10 tw:flex tw:flex-col tw:gap-6 tw:border-t tw:border-line tw:pt-6 tw:sm:flex-row tw:sm:items-start tw:sm:justify-between">
+                  <div className="mt-10 flex flex-col gap-6 border-t border-line pt-6 sm:flex-row sm:items-start sm:justify-between">
                     <div>
-                      <h2 className="tw:mt-0 tw:mb-3 tw:text-sm tw:font-semibold tw:tracking-wide tw:text-muted tw:uppercase">
+                      <h2 className="mt-0 mb-3 text-sm font-semibold tracking-wide text-muted uppercase">
                         Tags :
                       </h2>
-                      <div className="tw:flex tw:flex-wrap tw:gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {currentNewsDraft &&
                           currentNewsDraft.tags &&
                           currentNewsDraft.tags.length > 0 &&
@@ -266,7 +266,7 @@ const NewsDraft = ({
                               href={`/newsTags/${tag.slug}`}
                               className={badgeClass(
                                 "brand",
-                                "tw:px-3 tw:py-1 tw:text-sm tw:hover:bg-brand tw:hover:text-brand-fg"
+                                "px-3 py-1 text-sm hover:bg-brand hover:text-brand-fg"
                               )}
                             >
                               {tag.name}
@@ -275,10 +275,10 @@ const NewsDraft = ({
                       </div>
                     </div>
                     <div>
-                      <h2 className="tw:mt-0 tw:mb-3 tw:text-sm tw:font-semibold tw:tracking-wide tw:text-muted tw:uppercase">
+                      <h2 className="mt-0 mb-3 text-sm font-semibold tracking-wide text-muted uppercase">
                         Share :
                       </h2>
-                      <div className="tw:flex tw:gap-2">
+                      <div className="flex gap-2">
                         <a
                           href="#blog-share"
                           aria-label="Facebook"
@@ -304,28 +304,28 @@ const NewsDraft = ({
                   </div>
 
                   {currentNewsDraft && currentNewsDraft.user && (
-                    <Card className="tw:mt-10 tw:flex tw:flex-col tw:gap-5 tw:p-6 tw:sm:flex-row tw:sm:items-center">
-                      <div className="tw:relative tw:size-24 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2">
+                    <Card className="mt-10 flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
+                      <div className="relative size-24 shrink-0 overflow-hidden rounded-full bg-surface-2">
                         {currentNewsDraft.user.photo && (
                           <Image
                             src={currentNewsDraft.user.photo}
                             alt=""
-                            className="tw:object-cover"
+                            className="object-cover"
                             sizes="96px"
                             fill
                           />
                         )}
                       </div>
-                      <div className="tw:min-w-0">
-                        <h3 className="tw:mt-0 tw:mb-2 tw:font-heading tw:text-xl tw:font-semibold tw:text-fg">
+                      <div className="min-w-0">
+                        <h3 className="mt-0 mb-2 font-heading text-xl font-semibold text-fg">
                           {currentNewsDraft.user.name}
                         </h3>
                         {currentNewsDraft.user.bio && (
-                          <p className="tw:mb-4 tw:text-body">
+                          <p className="mb-4 text-body">
                             {currentNewsDraft.user.bio}
                           </p>
                         )}
-                        <ul className="tw:m-0 tw:flex tw:list-none tw:gap-2 tw:p-0">
+                        <ul className="m-0 flex list-none gap-2 p-0">
                           {currentNewsDraft.user.facebook && (
                             <li>
                               <a
@@ -418,20 +418,20 @@ const NewsDraft = ({
                 className={buttonClass({
                   variant: "secondary",
                   block: true,
-                  className: "tw:mt-10",
+                  className: "mt-10",
                 })}
               >
                 Kembali
               </Link>
             </article>
 
-            <aside className="tw:lg:col-span-1">
-              <div className="tw:lg:sticky tw:lg:top-24">
-                <Card className="tw:p-6">
-                  <h2 className="tw:mt-0 tw:mb-3 tw:font-heading tw:text-lg tw:font-semibold tw:text-fg">
+            <aside className="lg:col-span-1">
+              <div className="lg:sticky lg:top-24">
+                <Card className="p-6">
+                  <h2 className="mt-0 mb-3 font-heading text-lg font-semibold text-fg">
                     Mungkin Anda Tertarik
                   </h2>
-                  <p className="tw:m-0 tw:text-muted">
+                  <p className="m-0 text-muted">
                     Halaman Pratinjau Tidak Dapat Menampilkan Berita Terkait
                   </p>
                 </Card>

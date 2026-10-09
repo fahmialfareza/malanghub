@@ -17,22 +17,22 @@ import { Avatar } from "./content";
 const BRAND_LOGO_SRC = "/logo.png";
 
 const focusRing =
-  "tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring";
+  "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring";
 
 const navLinkClass = (active: boolean) =>
   cx(
-    "tw:inline-flex tw:h-10 tw:items-center tw:gap-1.5 tw:rounded-lg tw:border-0 tw:bg-transparent tw:px-3 tw:text-[0.95rem] tw:font-semibold tw:no-underline tw:transition-colors tw:cursor-pointer",
+    "inline-flex h-10 items-center gap-1.5 rounded-lg border-0 bg-transparent px-3 text-[0.95rem] font-semibold no-underline transition-colors cursor-pointer",
     focusRing,
     active
-      ? "tw:bg-brand-soft tw:text-brand tw:hover:text-brand"
-      : "tw:text-body tw:hover:bg-surface-2 tw:hover:text-fg",
+      ? "bg-brand-soft text-brand hover:text-brand"
+      : "text-body hover:bg-surface-2 hover:text-fg",
   );
 
 const mobileLinkClass = (active: boolean) =>
-  cx(navLinkClass(active), "tw:flex tw:w-full tw:justify-between");
+  cx(navLinkClass(active), "flex w-full justify-between");
 
 const iconButtonClass = cx(
-  "tw:inline-flex tw:size-10 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-lg tw:text-body tw:transition-colors tw:cursor-pointer tw:hover:bg-surface-2 tw:hover:text-fg",
+  "inline-flex size-10 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent text-lg text-body transition-colors cursor-pointer hover:bg-surface-2 hover:text-fg",
   focusRing,
 );
 
@@ -50,7 +50,7 @@ const ThemeToggle = () => {
       title={label}
     >
       <span
-        className={cx("fa", dark ? "fa-sun-o tw:text-warning" : "fa-moon-o")}
+        className={cx("fa", dark ? "fa-sun-o text-warning" : "fa-moon-o")}
         aria-hidden="true"
       />
     </button>
@@ -144,16 +144,16 @@ const Header = () => {
       href="/users"
       onClick={closeMenus}
       className={cx(
-        "tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:rounded-lg tw:p-1 tw:no-underline tw:transition-colors tw:hover:bg-surface-2",
+        "flex min-w-0 items-center gap-3 rounded-lg p-1 no-underline transition-colors hover:bg-surface-2",
         focusRing,
       )}
     >
-      <Avatar src={user.photo} alt={user.name} className="tw:size-9" />
-      <span className="tw:flex tw:min-w-0 tw:flex-col tw:leading-tight">
-        <span className="tw:truncate tw:text-sm tw:font-bold tw:text-fg">
+      <Avatar src={user.photo} alt={user.name} className="size-9" />
+      <span className="flex min-w-0 flex-col leading-tight">
+        <span className="truncate text-sm font-bold text-fg">
           {user.name}
         </span>
-        <span className="tw:text-xs tw:font-normal tw:text-muted">
+        <span className="text-xs font-normal text-muted">
           {user.role?.includes("admin") ? "Admin" : "Pengguna"}
         </span>
       </span>
@@ -161,12 +161,12 @@ const Header = () => {
   ) : null;
 
   return (
-    <header className="malanghub-header tw:sticky tw:top-0 tw:z-[1030] tw:border-b tw:border-line tw:bg-surface/90 tw:shadow-card tw:backdrop-blur-lg">
-      <Container className="tw:flex tw:h-16 tw:items-center tw:gap-2">
+    <header className="malanghub-header sticky top-0 z-[1030] border-b border-line bg-surface/90 shadow-card backdrop-blur-lg">
+      <Container className="flex h-16 items-center gap-2">
         <Link
           href="/"
           className={cx(
-            "tw:mr-auto tw:flex tw:shrink-0 tw:items-center tw:rounded-lg",
+            "mr-auto flex shrink-0 items-center rounded-lg",
             focusRing,
           )}
           onClick={closeMenus}
@@ -175,14 +175,14 @@ const Header = () => {
             src={BRAND_LOGO_SRC}
             height={35}
             alt=""
-            className="tw:h-9 tw:w-auto tw:max-w-[52vw] tw:object-contain"
+            className="h-9 w-auto max-w-[52vw] object-contain"
           />
-          <span className="tw:sr-only">Malanghub</span>
+          <span className="sr-only">Malanghub</span>
         </Link>
 
         <nav
           aria-label="Navigasi utama"
-          className="malanghub-header-nav tw:hidden tw:items-center tw:gap-1 tw:lg:flex"
+          className="malanghub-header-nav hidden items-center gap-1 lg:flex"
         >
           <Link href="/" className={navLinkClass(isActive("/"))}>
             Beranda
@@ -207,7 +207,7 @@ const Header = () => {
           {authLinks(false)}
         </nav>
 
-        <div className="tw:flex tw:items-center tw:gap-1">
+        <div className="flex items-center gap-1">
           <button
             type="button"
             className={cx(iconButtonClass, "malanghub-header-nav")}
@@ -219,13 +219,13 @@ const Header = () => {
           </button>
           <ThemeToggle />
           {userBadge && (
-            <div className="malanghub-header-nav tw:ml-2 tw:hidden tw:max-w-52 tw:lg:block">
+            <div className="malanghub-header-nav ml-2 hidden max-w-52 lg:block">
               {userBadge}
             </div>
           )}
           <button
             type="button"
-            className={cx(iconButtonClass, "malanghub-header-nav tw:lg:hidden")}
+            className={cx(iconButtonClass, "malanghub-header-nav lg:hidden")}
             aria-controls="malanghub-mobile-menu"
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Tutup menu" : "Buka menu"}
@@ -242,11 +242,11 @@ const Header = () => {
       {menuOpen && (
         <div
           id="malanghub-mobile-menu"
-          className="malanghub-header-nav tw:max-h-[calc(100dvh-4rem)] tw:overflow-y-auto tw:border-t tw:border-line tw:bg-surface tw:lg:hidden"
+          className="malanghub-header-nav max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-line bg-surface lg:hidden"
         >
-          <Container className="tw:flex tw:flex-col tw:gap-1 tw:py-3">
+          <Container className="flex flex-col gap-1 py-3">
             {userBadge && (
-              <div className="tw:mb-2 tw:border-b tw:border-line tw:pb-3">
+              <div className="mb-2 border-b border-line pb-3">
                 {userBadge}
               </div>
             )}
@@ -261,7 +261,7 @@ const Header = () => {
               title="Berita"
               defaultOpen={newsActive}
               buttonClassName={mobileLinkClass(newsActive)}
-              panelClassName="tw:ml-3 tw:flex tw:flex-col tw:gap-0.5 tw:border-l tw:border-line tw:py-1 tw:pl-2"
+              panelClassName="ml-3 flex flex-col gap-0.5 border-l border-line py-1 pl-2"
             >
               {categoryLinks.map((item) => (
                 <Link
@@ -293,7 +293,7 @@ const Header = () => {
       >
         <form
           role="search"
-          className="tw:flex tw:items-start tw:gap-2"
+          className="flex items-start gap-2"
           onSubmit={onSearch}
         >
           <Input
@@ -301,14 +301,14 @@ const Header = () => {
             name="search"
             aria-label="Cari Berita"
             placeholder="Cari Berita...."
-            wrapperClassName="tw:mb-0 tw:flex-1"
+            wrapperClassName="mb-0 flex-1"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             autoFocus
             data-autofocus
             required
           />
-          <Button type="submit" className="tw:h-11">
+          <Button type="submit" className="h-11">
             <span className="fa fa-search" aria-hidden="true" />
             Cari
           </Button>
@@ -319,25 +319,25 @@ const Header = () => {
 };
 
 const footerLinkClass =
-  "tw:font-semibold tw:text-muted tw:no-underline tw:transition-colors tw:hover:text-brand";
+  "font-semibold text-muted no-underline transition-colors hover:text-brand";
 
 const Footer = () => {
   const { Link } = useAdapters();
 
   return (
-    <footer className="tw:mt-12 tw:border-t tw:border-line tw:bg-surface">
-      <Container className="tw:flex tw:flex-col tw:items-center tw:gap-4 tw:py-8 tw:text-center tw:text-sm tw:md:flex-row tw:md:justify-between tw:md:text-left">
-        <p className="tw:m-0 tw:text-sm tw:leading-6 tw:text-muted">
+    <footer className="mt-12 border-t border-line bg-surface">
+      <Container className="flex flex-col items-center gap-4 py-8 text-center text-sm md:flex-row md:justify-between md:text-left">
+        <p className="m-0 text-sm leading-6 text-muted">
           © <span>{new Date().getFullYear()}</span> Malanghub. Made with{" "}
-          <span className="fa fa-heart tw:text-danger" aria-hidden="true" />
-          <span className="tw:sr-only">love</span>, Designed by{" "}
+          <span className="fa fa-heart text-danger" aria-hidden="true" />
+          <span className="sr-only">love</span>, Designed by{" "}
           <a href="https://w3layouts.com" className={footerLinkClass}>
             W3layouts
           </a>
         </p>
         <nav
           aria-label="Tautan footer"
-          className="tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-x-5 tw:gap-y-2"
+          className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2"
         >
           <Link href="/terms" className={footerLinkClass}>
             Syarat dan Ketentuan
@@ -349,7 +349,7 @@ const Footer = () => {
             type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className={cx(
-              "tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface tw:text-base tw:text-body tw:transition-colors tw:cursor-pointer tw:hover:border-brand tw:hover:text-brand",
+              "inline-flex size-9 items-center justify-center rounded-full border border-line bg-surface text-base text-body transition-colors cursor-pointer hover:border-brand hover:text-brand",
               focusRing,
             )}
             title="Kembali ke atas"

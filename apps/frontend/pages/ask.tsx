@@ -193,14 +193,14 @@ function Ask({
         renderLink={renderNextLink}
       />
 
-      <section className="tw:py-10 tw:lg:py-14">
+      <section className="py-10 lg:py-14">
         <Container>
           <div className={styles.page}>
             <header className={styles.hero}>
               <div className={styles.heroIcon} aria-hidden="true">
                 <span className="fa fa-comments"></span>
               </div>
-              <h1 className={cx(styles.title, "tw:font-heading")}>
+              <h1 className={cx(styles.title, "font-heading")}>
                 Tanya Malanghub AI
               </h1>
               <p className={styles.subtitle}>
@@ -212,7 +212,7 @@ function Ask({
             </header>
 
             <form onSubmit={onSubmit} className={styles.composer}>
-              <label htmlFor="ask-question" className="tw:sr-only">
+              <label htmlFor="ask-question" className="sr-only">
                 Pertanyaan
               </label>
               <textarea

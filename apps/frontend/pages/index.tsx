@@ -117,9 +117,9 @@ const Home = ({
         />
       </Head>
 
-      <Container className="tw:py-10 tw:lg:py-14">
-        <div className="tw:grid tw:gap-10 tw:lg:grid-cols-12">
-          <main className="tw:min-w-0 tw:lg:col-span-8 tw:xl:col-span-9">
+      <Container className="py-10 lg:py-14">
+        <div className="grid gap-10 lg:grid-cols-12">
+          <main className="min-w-0 lg:col-span-8 xl:col-span-9">
             <SectionTitle as="h1">Berita Terbaru</SectionTitle>
             {newsLoading || recentNews === null ? (
               <LoadingBlock />
@@ -130,8 +130,8 @@ const Home = ({
             )}
           </main>
 
-          <aside className="tw:lg:col-span-4 tw:xl:col-span-3">
-            <div className="tw:lg:sticky tw:lg:top-24">
+          <aside className="lg:col-span-4 xl:col-span-3">
+            <div className="lg:sticky lg:top-24">
               <TrendingPanel news={trendingNews} loading={newsLoading} />
             </div>
           </aside>

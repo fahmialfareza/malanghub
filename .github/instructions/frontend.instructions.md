@@ -47,6 +47,13 @@ Guidance for working in the Next.js frontend app.
 - Add comments where necessary to explain complex logic or decisions.
 - Ensure new components are reusable and follow the design system (if applicable).
 
+## Styling (Tailwind design system)
+
+- Styling is Tailwind CSS v4 (entry: `styles/app.css`). Bootstrap and jQuery are no longer loaded; don't reintroduce them.
+- Use the semantic color tokens from `packages/ui/src/tailwind.css` (`bg-bg`, `bg-surface`, `bg-surface-2`, `bg-input`, `border-line`, `text-fg`, `text-body`, `text-muted`, `bg-brand`/`text-brand`, `danger`/`success`/`warning`) instead of hex colors. They switch automatically for dark mode (`data-theme="dark"` on `<html>`), so avoid `theme === "dark" ? ...` class ternaries; use `dark:` only when a token isn't enough. Plain CSS (CSS modules) should use the `--mh-*` variables.
+- Prefer the shared primitives from `@malanghub/ui` (`Button`, `Input`, `Textarea`, `Select`, `Card`, `Table`, `Modal`, `Dropdown`, `Breadcrumbs`, `Container`, `paginationClasses`, `useTheme`). Modals are React state driven; pass `allowExternalPopups` when a modal hosts TinyMCE.
+- Put layout utilities on a wrapper, not on Font Awesome `fa` elements: the Font Awesome kit injects unlayered CSS that overrides `display`/`line-height` utilities on those elements.
+
 ## Examples of good prompts
 
 - "Add a new screen and navigation entry; wire state using existing `redux` store."

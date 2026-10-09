@@ -130,12 +130,12 @@ const News = ({
           ));
 
   return (
-    <section id="news" className="tw:mb-12">
+    <section id="news" className="mb-12">
       <Container>
         <div
           role="group"
           aria-label="Pilih tabel berita"
-          className="tw:mb-6 tw:flex tw:flex-wrap tw:gap-2"
+          className="mb-6 flex flex-wrap gap-2"
         >
           {tabs.map((tab) => {
             const active = tableName === tab.name;
@@ -146,10 +146,10 @@ const News = ({
                 aria-pressed={active}
                 onClick={() => setTableName(tab.name)}
                 className={cx(
-                  "tw:inline-flex tw:h-10 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-lg tw:border tw:px-4 tw:text-sm tw:font-semibold tw:transition-colors tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring",
+                  "inline-flex h-10 cursor-pointer items-center gap-2 rounded-lg border px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring",
                   active
-                    ? "tw:border-brand tw:bg-brand-soft tw:text-brand"
-                    : "tw:border-line tw:bg-surface tw:text-body tw:hover:bg-surface-2 tw:hover:text-fg"
+                    ? "border-brand bg-brand-soft text-brand"
+                    : "border-line bg-surface text-body hover:bg-surface-2 hover:text-fg"
                 )}
               >
                 <i className={tab.icon} aria-hidden="true"></i> {tab.name}
@@ -158,8 +158,8 @@ const News = ({
           })}
         </div>
 
-        <div className="tw:grid tw:gap-6 tw:lg:grid-cols-4">
-          <Card className="tw:overflow-hidden tw:lg:col-span-3">
+        <div className="grid gap-6 lg:grid-cols-4">
+          <Card className="overflow-hidden lg:col-span-3">
             <CardHeader
               title={tableName}
               actions={
@@ -179,7 +179,7 @@ const News = ({
                   <th>Dibuat</th>
                   <th>Diperbaharui</th>
                   <th>
-                    <span className="tw:sr-only">Aksi</span>
+                    <span className="sr-only">Aksi</span>
                   </th>
                 </tr>
               </thead>
@@ -196,7 +196,7 @@ const News = ({
                   <tr>
                     <td
                       colSpan={columnCount}
-                      className="tw:py-10! tw:text-center tw:text-muted"
+                      className="py-10! text-center text-muted"
                     >
                       Belum ada data.
                     </td>
@@ -206,7 +206,7 @@ const News = ({
             </Table>
           </Card>
 
-          <div className="tw:order-first tw:grid tw:grid-cols-2 tw:content-start tw:gap-4 tw:sm:grid-cols-3 tw:lg:order-none tw:lg:grid-cols-1">
+          <div className="order-first grid grid-cols-2 content-start gap-4 sm:grid-cols-3 lg:order-none lg:grid-cols-1">
             {tabs.map((tab) => (
               <StatTile
                 key={tab.name}
@@ -218,7 +218,7 @@ const News = ({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="tw:-ml-3 tw:self-start tw:text-brand"
+                    className="-ml-3 self-start text-brand"
                     onClick={() => setTableName(tab.name)}
                   >
                     Lihat <i className="fa fa-angle-right" aria-hidden="true"></i>

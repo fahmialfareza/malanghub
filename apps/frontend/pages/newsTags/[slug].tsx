@@ -136,7 +136,7 @@ const NewsTag = ({
         ]}
         title={
           <>
-            <span className="tw:text-muted">#</span>
+            <span className="text-muted">#</span>
             {oneNewsTag?.tag?.name}
           </>
         }

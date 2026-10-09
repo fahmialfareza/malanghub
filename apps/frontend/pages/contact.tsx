@@ -83,81 +83,87 @@ function Contact({ setActiveLink }: ContactProps) {
           </Link>
         )}
       />
-      <section className="tw:bg-bg tw:py-12 tw:sm:py-16">
+      <section className="bg-bg py-12 sm:py-16">
         <Container>
-          <div className="tw:mb-8 tw:max-w-2xl">
-            <h1 className="tw:m-0 tw:font-heading tw:text-3xl tw:font-bold tw:text-fg tw:sm:text-4xl">
+          <div className="mb-8 max-w-2xl">
+            <h1 className="m-0 font-heading text-3xl font-bold text-fg sm:text-4xl">
               Tinggalkan pesan untuk kami
             </h1>
           </div>
-          <div className="tw:grid tw:gap-6 tw:lg:grid-cols-2">
-            <Card className="tw:p-6 tw:sm:p-8">
-              <h2 className="tw:mt-0 tw:mb-3 tw:font-heading tw:text-xl tw:font-semibold tw:text-fg">
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card className="p-6 sm:p-8">
+              <h2 className="mt-0 mb-3 font-heading text-xl font-semibold text-fg">
                 Kontak Kami
               </h2>
-              <p className="tw:mb-3 tw:text-body">
+              <p className="mb-3 text-body">
                 Semuanya dimulai dengan Halo! Kami di sini menjawab apa pun
                 pertanyaan yang mungkin Anda miliki dan memberikan solusi
                 efektif untuk Anda tentang layanan Malanghub.
               </p>
-              <p className="tw:mb-6 tw:text-body">
+              <p className="mb-6 text-body">
                 Kami memiliki pusat dukungan khusus untuk semua dukungan Anda.
                 Kami biasanya akan menghubungi Anda dalam waktu 12-24 jam.
               </p>
 
-              <ul className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:gap-5 tw:p-0">
-                <li className="tw:flex tw:gap-4">
+              <ul className="m-0 flex list-none flex-col gap-5 p-0">
+                <li className="flex gap-4">
                   <span
                     aria-hidden="true"
-                    className="fa fa-map-marker tw:flex tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-lg tw:text-brand"
-                  ></span>
+                    className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-lg text-brand"
+                  >
+                    <span className="fa fa-map-marker" />
+                  </span>
                   <div>
-                    <h3 className="tw:m-0 tw:mb-1 tw:text-sm tw:font-semibold tw:text-fg">
+                    <h3 className="m-0 mb-1 text-sm font-semibold text-fg">
                       Alamat
                     </h3>
-                    <p className="tw:text-[0.95rem] tw:text-body">
+                    <p className="text-[0.95rem] text-body">
                       Perum. Bumi Madinah Blok C3
                     </p>
-                    <p className="tw:text-[0.95rem] tw:text-body">
+                    <p className="text-[0.95rem] text-body">
                       Jalan Ngasri, Mulyoagung, Dau, Malang, Jawa Timur 65151
                     </p>
                   </div>
                 </li>
-                <li className="tw:flex tw:gap-4">
+                <li className="flex gap-4">
                   <span
                     aria-hidden="true"
-                    className="fa fa-phone tw:flex tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-lg tw:text-brand"
-                  ></span>
+                    className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-lg text-brand"
+                  >
+                    <span className="fa fa-phone" />
+                  </span>
                   <div>
-                    <h3 className="tw:m-0 tw:mb-1 tw:text-sm tw:font-semibold tw:text-fg">
+                    <h3 className="m-0 mb-1 text-sm font-semibold text-fg">
                       Whatsapp Kami
                     </h3>
-                    <p className="tw:text-[0.95rem] tw:text-body">
+                    <p className="text-[0.95rem] text-body">
                       <i className="fa fa-whatsapp" aria-hidden="true"></i>{" "}
                       <a
                         target="_blank"
                         rel="noreferrer"
                         href="https://wa.me/62895424785888"
-                        className="tw:font-semibold tw:text-brand tw:hover:text-brand-hover"
+                        className="font-semibold text-brand hover:text-brand-hover"
                       >
                         0895424785888
                       </a>
                     </p>
                   </div>
                 </li>
-                <li className="tw:flex tw:gap-4">
+                <li className="flex gap-4">
                   <span
                     aria-hidden="true"
-                    className="fa fa-envelope-o tw:flex tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-lg tw:text-brand"
-                  ></span>
+                    className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-lg text-brand"
+                  >
+                    <span className="fa fa-envelope-o" />
+                  </span>
                   <div>
-                    <h3 className="tw:m-0 tw:mb-1 tw:text-sm tw:font-semibold tw:text-fg">
+                    <h3 className="m-0 mb-1 text-sm font-semibold text-fg">
                       Email Kami
                     </h3>
-                    <p className="tw:text-[0.95rem] tw:text-body">
+                    <p className="text-[0.95rem] text-body">
                       <a
                         href="mailto:admin@malanghub.com"
-                        className="tw:font-semibold tw:text-brand tw:hover:text-brand-hover"
+                        className="font-semibold text-brand hover:text-brand-hover"
                       >
                         admin@malanghub.com
                       </a>
@@ -166,10 +172,10 @@ function Contact({ setActiveLink }: ContactProps) {
                 </li>
               </ul>
             </Card>
-            <Card className="tw:overflow-hidden tw:p-0">
+            <Card className="overflow-hidden p-0">
               <iframe
                 title="Lokasi Malanghub di Google Maps"
-                className="tw:block tw:aspect-square tw:size-full tw:min-h-80 tw:border-0 tw:lg:aspect-auto"
+                className="block aspect-square size-full min-h-80 border-0 lg:aspect-auto"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.6257545166436!2d112.56973751477908!3d-7.934097594284932!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7883c600d082fd%3A0x3f1caf9c821540c1!2sPerum.%20Bumi%20Madinah%20Blok%20C%202!5e0!3m2!1sen!2sid!4v1614682193710!5m2!1sen!2sid"
                 allowFullScreen
                 loading="lazy"

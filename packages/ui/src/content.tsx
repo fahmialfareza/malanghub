@@ -45,22 +45,22 @@ export const getNewsTags = (news: News) =>
 
 /** Text link look; set explicitly because legacy CSS styles bare `a`. */
 export const linkClass =
-  "tw:font-semibold tw:text-brand tw:no-underline tw:hover:text-brand-hover tw:hover:underline";
+  "font-semibold text-brand no-underline hover:text-brand-hover hover:underline";
 
 /** Typography for rich HTML (articles, drafts) coming from TinyMCE. */
 export const richContentClass = cx(
-  "tw:break-words tw:font-sans tw:text-body",
-  "tw:[&_p]:mb-4 tw:[&_p]:text-[1.0625rem] tw:[&_p]:leading-8 tw:[&_p]:text-body",
-  "tw:[&_h1]:mt-8 tw:[&_h1]:mb-3 tw:[&_h1]:text-3xl tw:[&_h1]:font-bold",
-  "tw:[&_h2]:mt-8 tw:[&_h2]:mb-3 tw:[&_h2]:text-2xl tw:[&_h2]:font-bold",
-  "tw:[&_h3]:mt-6 tw:[&_h3]:mb-3 tw:[&_h3]:text-xl tw:[&_h3]:font-bold",
-  "tw:[&_h4]:mt-5 tw:[&_h4]:mb-2 tw:[&_h4]:text-lg tw:[&_h4]:font-semibold",
-  "tw:[&_a]:font-semibold tw:[&_a]:text-brand tw:[&_a]:underline",
-  "tw:[&_ul]:mb-4 tw:[&_ul]:pl-6 tw:[&_ol]:mb-4 tw:[&_ol]:pl-6 tw:[&_ul>li]:list-disc tw:[&_ol>li]:list-decimal tw:[&_li]:mb-1 tw:[&_li]:leading-7",
-  "tw:[&_img]:my-4 tw:[&_img]:h-auto tw:[&_img]:max-w-full tw:[&_img]:rounded-xl",
-  "tw:[&_blockquote]:my-6 tw:[&_blockquote]:border-l-4 tw:[&_blockquote]:border-brand tw:[&_blockquote]:pl-4 tw:[&_blockquote]:italic",
-  "tw:[&_figcaption]:mt-2 tw:[&_figcaption]:text-center tw:[&_figcaption]:text-sm tw:[&_figcaption]:text-muted",
-  "tw:[&_iframe]:max-w-full tw:[&_table]:w-full tw:[&_td]:border tw:[&_td]:border-line tw:[&_td]:p-2",
+  "break-words font-sans text-body",
+  "[&_p]:mb-4 [&_p]:text-[1.0625rem] [&_p]:leading-8 [&_p]:text-body",
+  "[&_h1]:mt-8 [&_h1]:mb-3 [&_h1]:text-3xl [&_h1]:font-bold",
+  "[&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:text-2xl [&_h2]:font-bold",
+  "[&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-xl [&_h3]:font-bold",
+  "[&_h4]:mt-5 [&_h4]:mb-2 [&_h4]:text-lg [&_h4]:font-semibold",
+  "[&_a]:font-semibold [&_a]:text-brand [&_a]:underline",
+  "[&_ul]:mb-4 [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:pl-6 [&_ul>li]:list-disc [&_ol>li]:list-decimal [&_li]:mb-1 [&_li]:leading-7",
+  "[&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-xl",
+  "[&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-brand [&_blockquote]:pl-4 [&_blockquote]:italic",
+  "[&_figcaption]:mt-2 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-muted",
+  "[&_iframe]:max-w-full [&_table]:w-full [&_td]:border [&_td]:border-line [&_td]:p-2",
 );
 
 export const PageBreadcrumbs = ({ items }: { items: BreadcrumbItem[] }) => {
@@ -85,7 +85,7 @@ export const PageSection = ({
   className?: string;
   children: React.ReactNode;
 }) => (
-  <section className={cx("tw:py-8 tw:sm:py-12", className)}>
+  <section className={cx("py-8 sm:py-12", className)}>
     <Container>{children}</Container>
   </section>
 );
@@ -101,8 +101,8 @@ export const SectionTitle = ({
 }) => (
   <Tag
     className={cx(
-      "tw:mb-6 tw:flex tw:items-center tw:gap-3 tw:font-heading tw:text-2xl tw:font-bold tw:leading-tight tw:text-fg",
-      "tw:before:block tw:before:h-6 tw:before:w-1.5 tw:before:shrink-0 tw:before:rounded-full tw:before:bg-brand tw:before:content-['']",
+      "mb-6 flex items-center gap-3 font-heading text-2xl font-bold leading-tight text-fg",
+      "before:block before:h-6 before:w-1.5 before:shrink-0 before:rounded-full before:bg-brand before:content-['']",
       className,
     )}
   >
@@ -122,20 +122,20 @@ export const TwoColumnLayout = ({
 }) => (
   <div
     className={cx(
-      "tw:grid tw:gap-10 tw:lg:gap-12",
-      wideMain ? "tw:lg:grid-cols-4" : "tw:lg:grid-cols-3",
+      "grid gap-10 lg:gap-12",
+      wideMain ? "lg:grid-cols-4" : "lg:grid-cols-3",
     )}
   >
     <div
       className={cx(
-        "tw:min-w-0",
-        wideMain ? "tw:lg:col-span-3" : "tw:lg:col-span-2",
+        "min-w-0",
+        wideMain ? "lg:col-span-3" : "lg:col-span-2",
       )}
     >
       {main}
     </div>
-    <aside className="tw:min-w-0">
-      <div className="tw:lg:sticky tw:lg:top-24">{aside}</div>
+    <aside className="min-w-0">
+      <div className="lg:sticky lg:top-24">{aside}</div>
     </aside>
   </div>
 );
@@ -147,7 +147,7 @@ export const EmptyState = ({ children }: { children: React.ReactNode }) => (
     role="status"
     className={cx(
       cardClass,
-      "tw:flex tw:min-h-40 tw:flex-col tw:items-center tw:justify-center tw:gap-3 tw:px-6 tw:py-10 tw:text-center tw:font-heading tw:text-xl tw:font-semibold tw:text-fg",
+      "flex min-h-40 flex-col items-center justify-center gap-3 px-6 py-10 text-center font-heading text-xl font-semibold text-fg",
     )}
   >
     {children}
@@ -168,14 +168,14 @@ export const Avatar = ({
   return (
     <span
       className={cx(
-        "tw:relative tw:block tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2 tw:ring-1 tw:ring-line",
+        "relative block shrink-0 overflow-hidden rounded-full bg-surface-2 ring-1 ring-line",
         className,
       )}
     >
       <Image
         src={src || DEFAULT_AVATAR_SRC}
         alt={alt}
-        className="tw:absolute tw:inset-0 tw:size-full tw:object-cover"
+        className="absolute inset-0 size-full object-cover"
         objectFit="cover"
         fill
       />
@@ -196,7 +196,7 @@ const SOCIALS: Array<{ platform: SocialPlatform; icon: string; label: string }> 
   ];
 
 export const iconButtonClass =
-  "tw:inline-flex tw:size-10 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:bg-brand-soft tw:hover:text-brand tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring";
+  "inline-flex size-10 items-center justify-center rounded-full border border-line bg-surface text-body no-underline transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring";
 
 export const SocialLinks = ({
   user,
@@ -211,7 +211,7 @@ export const SocialLinks = ({
   return (
     <ul
       className={cx(
-        "tw:m-0 tw:flex tw:flex-wrap tw:gap-2 tw:p-0 tw:list-none",
+        "m-0 flex flex-wrap gap-2 p-0 list-none",
         className,
       )}
     >
@@ -243,25 +243,25 @@ export const ProfileHeader = ({
   greeting?: boolean;
   actions?: React.ReactNode;
 }) => (
-  <section className="tw:border-b tw:border-line tw:bg-surface">
-    <Container className="tw:flex tw:flex-col-reverse tw:gap-8 tw:py-10 tw:sm:py-14 tw:md:flex-row tw:md:items-center tw:md:justify-between">
-      <div className="tw:min-w-0 tw:flex-1">
+  <section className="border-b border-line bg-surface">
+    <Container className="flex flex-col-reverse gap-8 py-10 sm:py-14 md:flex-row md:items-center md:justify-between">
+      <div className="min-w-0 flex-1">
         {user?.motto && (
-          <span className={badgeClass("brand", "tw:mb-3")}>{user.motto}</span>
+          <span className={badgeClass("brand", "mb-3")}>{user.motto}</span>
         )}
-        <h1 className="tw:m-0 tw:font-heading tw:text-3xl tw:font-bold tw:leading-tight tw:text-fg tw:sm:text-4xl">
+        <h1 className="m-0 font-heading text-3xl font-bold leading-tight text-fg sm:text-4xl">
           {greeting && "Halo, "}
-          <span className="tw:text-brand">{user?.name}</span>
+          <span className="text-brand">{user?.name}</span>
         </h1>
         {user?.bio && (
           <div
-            className="tw:mt-4 tw:max-w-2xl tw:text-body tw:[&_p]:text-body"
+            className="mt-4 max-w-2xl text-body [&_p]:text-body"
             dangerouslySetInnerHTML={{ __html: user.bio }}
           />
         )}
-        <SocialLinks user={user} className="tw:mt-5" />
+        <SocialLinks user={user} className="mt-5" />
         {actions && (
-          <div className="tw:mt-6 tw:flex tw:flex-wrap tw:items-center tw:gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             {actions}
           </div>
         )}
@@ -269,7 +269,7 @@ export const ProfileHeader = ({
       <Avatar
         src={user?.photo}
         alt={user?.name ?? "Profil"}
-        className="tw:size-28 tw:ring-4 tw:ring-brand-soft tw:sm:size-36 tw:md:size-44"
+        className="size-28 ring-4 ring-brand-soft sm:size-36 md:size-44"
       />
     </Container>
   </section>
@@ -311,26 +311,26 @@ export const ArticleView = ({
       <TwoColumnLayout
         main={
           <article>
-            <header className="tw:mb-8">
+            <header className="mb-8">
               <Link
                 href={getCategoryHref(news)}
-                className={badgeClass("brand", "tw:mb-4 tw:hover:opacity-80")}
+                className={badgeClass("brand", "mb-4 hover:opacity-80")}
               >
                 {getCategoryName(news)}
               </Link>
-              <h1 className="tw:m-0 tw:font-heading tw:text-3xl tw:font-bold tw:leading-tight tw:text-fg tw:sm:text-4xl">
+              <h1 className="m-0 font-heading text-3xl font-bold leading-tight text-fg sm:text-4xl">
                 {news.title}
               </h1>
-              <div className="tw:mt-5 tw:flex tw:items-center tw:gap-3">
-                <Link href={getAuthorHref(news)} className="tw:shrink-0">
+              <div className="mt-5 flex items-center gap-3">
+                <Link href={getAuthorHref(news)} className="shrink-0">
                   <Avatar
                     src={news.user?.photo}
                     alt={authorName}
-                    className="tw:size-11"
+                    className="size-11"
                   />
                 </Link>
-                <div className="tw:min-w-0 tw:text-sm">
-                  <div className="tw:text-body">
+                <div className="min-w-0 text-sm">
+                  <div className="text-body">
                     <Link href={getAuthorHref(news)} className={linkClass}>
                       {authorName}
                     </Link>{" "}
@@ -339,7 +339,7 @@ export const ArticleView = ({
                       {getCategoryName(news)}
                     </Link>
                   </div>
-                  <div className="tw:mt-0.5 tw:flex tw:flex-wrap tw:gap-x-3 tw:text-muted">
+                  <div className="mt-0.5 flex flex-wrap gap-x-3 text-muted">
                     <span>{formatDateTime(news.created_at)}</span>
                     <span aria-hidden>•</span>
                     <span>{readingTime(news)}</span>
@@ -348,11 +348,11 @@ export const ArticleView = ({
               </div>
             </header>
 
-            <div className="tw:relative tw:mb-8 tw:aspect-[4/3] tw:overflow-hidden tw:rounded-xl tw:bg-surface-2 tw:shadow-card">
+            <div className="relative mb-8 aspect-[4/3] overflow-hidden rounded-xl bg-surface-2 shadow-card">
               <Image
                 src={news.mainImage || "/malanghub-meta.png"}
                 alt={news.title}
-                className="tw:absolute tw:inset-0 tw:size-full tw:object-cover"
+                className="absolute inset-0 size-full object-cover"
                 objectFit="cover"
                 fill
               />
@@ -360,9 +360,9 @@ export const ArticleView = ({
 
             <div className={richContentClass}>{content}</div>
 
-            <div className="tw:mt-10 tw:flex tw:flex-col tw:gap-6 tw:border-t tw:border-line tw:pt-6 tw:sm:flex-row tw:sm:items-start tw:sm:justify-between">
-              <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
-                <h2 className="tw:m-0 tw:mr-1 tw:text-sm tw:font-bold tw:text-fg">
+            <div className="mt-10 flex flex-col gap-6 border-t border-line pt-6 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="m-0 mr-1 text-sm font-bold text-fg">
                   {tagsLabel}
                 </h2>
                 {tags.map((tag) => (
@@ -371,15 +371,15 @@ export const ArticleView = ({
                     href={`/newsTags/${tag.slug}`}
                     className={badgeClass(
                       "neutral",
-                      "tw:px-3 tw:py-1 tw:text-sm tw:hover:bg-brand-soft tw:hover:text-brand",
+                      "px-3 py-1 text-sm hover:bg-brand-soft hover:text-brand",
                     )}
                   >
                     {tag.name}
                   </Link>
                 ))}
               </div>
-              <div className="tw:flex tw:items-center tw:gap-2">
-                <h2 className="tw:m-0 tw:mr-1 tw:text-sm tw:font-bold tw:text-fg">
+              <div className="flex items-center gap-2">
+                <h2 className="m-0 mr-1 text-sm font-bold text-fg">
                   {shareLabel}
                 </h2>
                 {shareLinks.map((link) => (
@@ -401,22 +401,22 @@ export const ArticleView = ({
             <div
               className={cx(
                 cardClass,
-                "tw:mt-10 tw:flex tw:flex-col tw:gap-5 tw:p-6 tw:sm:flex-row tw:sm:items-center",
+                "mt-10 flex flex-col gap-5 p-6 sm:flex-row sm:items-center",
               )}
             >
               <Avatar
                 src={news.user?.photo}
                 alt={authorName}
-                className="tw:size-20 tw:sm:size-24"
+                className="size-20 sm:size-24"
               />
-              <div className="tw:min-w-0">
-                <h2 className="tw:m-0 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+              <div className="min-w-0">
+                <h2 className="m-0 font-heading text-xl font-bold text-fg">
                   {authorName}
                 </h2>
                 {news.user?.bio && (
-                  <p className="tw:mt-2 tw:text-body">{news.user.bio}</p>
+                  <p className="mt-2 text-body">{news.user.bio}</p>
                 )}
-                <SocialLinks user={news.user} className="tw:mt-4" />
+                <SocialLinks user={news.user} className="mt-4" />
               </div>
             </div>
 
@@ -425,7 +425,7 @@ export const ArticleView = ({
         }
         aside={
           <>
-            <SectionTitle as="h2" className="tw:text-xl">
+            <SectionTitle as="h2" className="text-xl">
               {asideTitle}
             </SectionTitle>
             {aside}

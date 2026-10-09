@@ -19,16 +19,16 @@ const NewsTableItem = ({ news, index, getMyNews }: NewsTableItemProps) => {
 
   return (
     <tr>
-      <td className="tw:text-muted">{index + 1}</td>
-      <td className="tw:min-w-48 tw:font-semibold tw:text-fg">{news.title}</td>
-      <td className="tw:whitespace-nowrap">
+      <td className="text-muted">{index + 1}</td>
+      <td className="min-w-48 font-semibold text-fg">{news.title}</td>
+      <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{news.created_at}</Moment>
       </td>
-      <td className="tw:whitespace-nowrap">
+      <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{news.created_at}</Moment>
       </td>
       <td>
-        <div className="tw:flex tw:justify-end">
+        <div className="flex justify-end">
           <Link
             href={`/news/${news.slug}`}
             className={buttonClass({ variant: "secondary", size: "sm" })}

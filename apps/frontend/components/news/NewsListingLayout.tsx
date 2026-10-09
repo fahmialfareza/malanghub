@@ -25,12 +25,11 @@ export const renderNextLink = ({
 );
 
 export const EmptyNews = ({ children }: { children: React.ReactNode }) => (
-  <div className="tw:rounded-xl tw:border tw:border-dashed tw:border-line-strong tw:bg-surface tw:px-6 tw:py-14 tw:text-center">
-    <span
-      className="fa fa-newspaper-o tw:mb-3 tw:block tw:text-3xl tw:text-muted"
-      aria-hidden="true"
-    ></span>
-    <p className="tw:m-0 tw:font-heading tw:text-lg tw:font-semibold tw:text-fg">
+  <div className="rounded-xl border border-dashed border-line-strong bg-surface px-6 py-14 text-center">
+    <span className="mb-3 block text-3xl text-muted" aria-hidden="true">
+      <span className="fa fa-newspaper-o" />
+    </span>
+    <p className="m-0 font-heading text-lg font-semibold text-fg">
       {children}
     </p>
   </div>
@@ -47,8 +46,8 @@ export const SectionTitle = ({
 }) => (
   <Tag
     className={cx(
-      "tw:m-0 tw:mb-6 tw:flex tw:items-center tw:gap-3 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg",
-      "tw:before:block tw:before:h-6 tw:before:w-1.5 tw:before:rounded-full tw:before:bg-brand tw:before:content-['']",
+      "m-0 mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-fg",
+      "before:block before:h-6 before:w-1.5 before:rounded-full before:bg-brand before:content-['']",
       className,
     )}
   >
@@ -65,10 +64,10 @@ export const TrendingPanel = ({
   loading?: boolean;
   title?: string;
 }) => (
-  <section className="tw:rounded-xl tw:border tw:border-line tw:bg-surface tw:p-5 tw:shadow-card">
-    <h2 className="tw:m-0 tw:mb-5 tw:flex tw:items-center tw:gap-2 tw:font-heading tw:text-lg tw:font-bold tw:text-fg">
+  <section className="rounded-xl border border-line bg-surface p-5 shadow-card">
+    <h2 className="m-0 mb-5 flex items-center gap-2 font-heading text-lg font-bold text-fg">
       <span
-        className="fa fa-line-chart tw:text-brand"
+        className="fa fa-line-chart text-brand"
         aria-hidden="true"
       ></span>
       {title}
@@ -76,12 +75,12 @@ export const TrendingPanel = ({
     {loading || news === null ? (
       <LoadingBlock />
     ) : news?.length > 0 ? (
-      <ol className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:gap-5 tw:p-0">
+      <ol className="m-0 flex list-none flex-col gap-5 p-0">
         {news.map((item, index) => (
           <li
             key={item._id}
             className={
-              index > 0 ? "tw:border-t tw:border-line tw:pt-5" : undefined
+              index > 0 ? "border-t border-line pt-5" : undefined
             }
           >
             <TrendingNews news={item} index={index} />
@@ -89,7 +88,7 @@ export const TrendingPanel = ({
         ))}
       </ol>
     ) : (
-      <p className="tw:m-0 tw:text-sm tw:text-muted">Belum Ada Berita</p>
+      <p className="m-0 text-sm text-muted">Belum Ada Berita</p>
     )}
   </section>
 );
@@ -110,14 +109,14 @@ const NewsListingLayout = ({
 }) => (
   <>
     <Breadcrumbs items={breadcrumbs} renderLink={renderNextLink} />
-    <Container className="tw:py-10 tw:lg:py-14">
-      <div className="tw:grid tw:gap-10 tw:lg:grid-cols-12">
-        <main className="tw:min-w-0 tw:lg:col-span-8">
+    <Container className="py-10 lg:py-14">
+      <div className="grid gap-10 lg:grid-cols-12">
+        <main className="min-w-0 lg:col-span-8">
           <SectionTitle as="h1">{title}</SectionTitle>
           {children}
         </main>
-        <aside className="tw:lg:col-span-4">
-          <div className="tw:lg:sticky tw:lg:top-24">
+        <aside className="lg:col-span-4">
+          <div className="lg:sticky lg:top-24">
             <TrendingPanel news={trendingNews} loading={trendingLoading} />
           </div>
         </aside>

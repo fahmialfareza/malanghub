@@ -208,16 +208,16 @@ const GetUserProfile = ({
           </Link>
         )}
       />
-      <section className="tw:bg-bg tw:py-8 tw:sm:py-12">
+      <section className="bg-bg py-8 sm:py-12">
         <Container>
-          <Card className="tw:p-6 tw:sm:p-8">
+          <Card className="p-6 sm:p-8">
             {userLoading ? (
-              <div className="tw:flex tw:justify-center tw:py-10">
+              <div className="flex justify-center py-10">
                 <Spinner size="lg" />
               </div>
             ) : (
-              <div className="tw:flex tw:flex-col tw:items-center tw:gap-6 tw:text-center tw:md:flex-row tw:md:text-left">
-                <div className="tw:relative tw:size-32 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:border-4 tw:border-surface tw:bg-surface-2 tw:shadow-card tw:ring-1 tw:ring-line tw:sm:size-40">
+              <div className="flex flex-col items-center gap-6 text-center md:flex-row md:text-left">
+                <div className="relative size-32 shrink-0 overflow-hidden rounded-full border-4 border-surface bg-surface-2 shadow-card ring-1 ring-line sm:size-40">
                   <Image
                     src={
                       userProfile && userProfile.photo
@@ -227,25 +227,25 @@ const GetUserProfile = ({
                     alt={
                       userProfile?.name ? `Foto profil ${userProfile.name}` : ""
                     }
-                    className="tw:object-cover"
+                    className="object-cover"
                     sizes="160px"
                     fill
                   />
                 </div>
-                <div className="tw:min-w-0 tw:flex-1">
+                <div className="min-w-0 flex-1">
                   {userProfile && userProfile.motto && (
-                    <Badge className="tw:mb-3">{userProfile.motto}</Badge>
+                    <Badge className="mb-3">{userProfile.motto}</Badge>
                   )}
-                  <h1 className="tw:m-0 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg tw:sm:text-3xl">
+                  <h1 className="m-0 font-heading text-2xl font-bold text-fg sm:text-3xl">
                     {userProfile && userProfile.name}
                   </h1>
                   {userProfile && userProfile.bio && (
-                    <div className="tw:mt-3 tw:max-w-2xl tw:text-[0.95rem] tw:leading-relaxed tw:text-body tw:[&_p]:mb-2 tw:[&_p]:text-body">
+                    <div className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-body [&_p]:mb-2 [&_p]:text-body">
                       {parse(userProfile.bio)}
                     </div>
                   )}
                   {socialLinks.length > 0 && (
-                    <ul className="tw:m-0 tw:mt-5 tw:flex tw:list-none tw:flex-wrap tw:justify-center tw:gap-2 tw:p-0 tw:md:justify-start">
+                    <ul className="m-0 mt-5 flex list-none flex-wrap justify-center gap-2 p-0 md:justify-start">
                       {socialLinks.map((link) => (
                         <li key={link.key}>
                           <a
@@ -253,7 +253,7 @@ const GetUserProfile = ({
                             rel="noreferrer"
                             href={link.href}
                             aria-label={link.label}
-                            className="tw:flex tw:size-10 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface-2 tw:font-normal tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:bg-brand-soft tw:hover:text-brand"
+                            className="flex size-10 items-center justify-center rounded-full border border-line bg-surface-2 font-normal text-body no-underline transition-colors hover:border-brand hover:bg-brand-soft hover:text-brand"
                           >
                             <span
                               className={link.icon}
@@ -274,11 +274,11 @@ const GetUserProfile = ({
         className="display-ad"
         style={{ margin: "8px auto", display: "block", textAlign: "center" }}
       ></div>
-      <section className="tw:bg-bg tw:pb-16">
+      <section className="bg-bg pb-16">
         <Container>
-          <div className="tw:grid tw:gap-8 tw:lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="tw:min-w-0">
-              <h2 className="tw:mt-0 tw:mb-5 tw:font-heading tw:text-xl tw:font-semibold tw:text-fg tw:sm:text-2xl">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="min-w-0">
+              <h2 className="mt-0 mb-5 font-heading text-xl font-semibold text-fg sm:text-2xl">
                 Pengguna Terbaru dari{" "}
                 {userLoading ? (
                   <Spinner size="sm" />
@@ -289,38 +289,38 @@ const GetUserProfile = ({
               {newsLoading ? (
                 <LoadingBlock />
               ) : (
-                <div className="tw:flex tw:flex-col tw:gap-4">
+                <div className="flex flex-col gap-4">
                   {newsByUser &&
                     newsByUser.data &&
                     newsByUser.data.length > 0 &&
                     newsByUser.data.map((news) => (
                       <Card
                         key={news._id}
-                        className="tw:group tw:flex tw:flex-col-reverse tw:gap-4 tw:p-4 tw:sm:flex-row tw:sm:items-start tw:sm:p-5"
+                        className="group flex flex-col-reverse gap-4 p-4 sm:flex-row sm:items-start sm:p-5"
                       >
-                        <div className="tw:min-w-0 tw:flex-1">
-                          <span className={badgeClass("brand", "tw:mb-2")}>
+                        <div className="min-w-0 flex-1">
+                          <span className={badgeClass("brand", "mb-2")}>
                             {news && news.category.name}
                           </span>
                           <Link
                             href={`/news/${news.slug}`}
-                            className="tw:block tw:font-heading tw:text-lg tw:leading-snug tw:font-bold tw:text-fg tw:no-underline tw:hover:text-brand"
+                            className="block font-heading text-lg leading-snug font-bold text-fg no-underline hover:text-brand"
                           >
                             {news && news.title}
                           </Link>
-                          <div className="tw:mt-2 tw:line-clamp-2 tw:text-sm tw:text-body">
+                          <div className="mt-2 line-clamp-2 text-sm text-body">
                             {parse(news.content.replace(/<(.|\n)*?>/g, ""))}
                           </div>
-                          <div className="tw:mt-3 tw:text-sm tw:text-muted">
+                          <div className="mt-3 text-sm text-muted">
                             {news.user && news.user._id ? (
                               <Link
                                 href={`/users/${news.user._id}`}
-                                className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                                className="font-semibold text-fg no-underline hover:text-brand"
                               >
                                 {news.user.name ?? "Penulis"}
                               </Link>
                             ) : (
-                              <span className="tw:font-semibold tw:text-fg">
+                              <span className="font-semibold text-fg">
                                 {news.user?.name ?? "Penulis"}
                               </span>
                             )}{" "}
@@ -328,20 +328,20 @@ const GetUserProfile = ({
                             {news.category && news.category.slug ? (
                               <Link
                                 href={`/newsCategories/${news.category.slug}`}
-                                className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                                className="font-semibold text-fg no-underline hover:text-brand"
                               >
                                 {news.category.name ?? "Kategori"}
                               </Link>
                             ) : (
-                              <span className="tw:font-semibold tw:text-fg">
+                              <span className="font-semibold text-fg">
                                 {news.category?.name ?? "Kategori"}
                               </span>
                             )}
                           </div>
-                          <div className="tw:mt-1.5 tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:gap-y-1 tw:text-xs tw:text-muted">
+                          <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
                             <span>
                               <i
-                                className="fa fa-calendar tw:mr-1"
+                                className="fa fa-calendar mr-1"
                                 aria-hidden="true"
                               ></i>
                               <Moment format="dddd, Do MMMM YYYY">
@@ -350,7 +350,7 @@ const GetUserProfile = ({
                             </span>
                             <span>
                               <i
-                                className="fa fa-clock-o tw:mr-1"
+                                className="fa fa-clock-o mr-1"
                                 aria-hidden="true"
                               ></i>
                               {Math.ceil(news.time_read / 10)} menit
@@ -359,12 +359,12 @@ const GetUserProfile = ({
                         </div>
                         <Link
                           href={`/news/${news.slug}`}
-                          className="tw:relative tw:block tw:aspect-video tw:w-full tw:shrink-0 tw:overflow-hidden tw:rounded-lg tw:bg-surface-2 tw:sm:aspect-square tw:sm:w-36"
+                          className="relative block aspect-video w-full shrink-0 overflow-hidden rounded-lg bg-surface-2 sm:aspect-square sm:w-36"
                         >
                           <Image
                             src={news.mainImage}
                             alt=""
-                            className="tw:object-cover tw:transition-transform tw:duration-300 tw:group-hover:scale-105"
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
                             sizes="(min-width: 640px) 144px, 100vw"
                             fill
                           />
@@ -392,56 +392,56 @@ const GetUserProfile = ({
               ) : null}
             </div>
 
-            <aside className="tw:min-w-0">
-              <div className="tw:lg:sticky tw:lg:top-24">
-                <Card className="tw:p-5">
-                  <h2 className="tw:mt-0 tw:mb-4 tw:font-heading tw:text-lg tw:font-semibold tw:text-fg">
+            <aside className="min-w-0">
+              <div className="lg:sticky lg:top-24">
+                <Card className="p-5">
+                  <h2 className="mt-0 mb-4 font-heading text-lg font-semibold text-fg">
                     Trending oleh {userProfile && userProfile.name}
                   </h2>
 
                   {newsLoading ? (
                     <LoadingBlock />
                   ) : (
-                    <ol className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:divide-y tw:divide-line tw:p-0">
+                    <ol className="m-0 flex list-none flex-col divide-y divide-line p-0">
                       {trendingNewsByUser &&
                         trendingNewsByUser.length > 0 &&
                         trendingNewsByUser?.map((news, index) => (
                           <li
                             key={news._id}
-                            className="tw:flex tw:gap-3 tw:py-3 tw:first:pt-0 tw:last:pb-0"
+                            className="flex gap-3 py-3 first:pt-0 last:pb-0"
                           >
-                            <span className="tw:font-heading tw:text-2xl tw:leading-none tw:font-bold tw:text-brand/60">
+                            <span className="font-heading text-2xl leading-none font-bold text-brand/60">
                               {index + 1}.
                             </span>
-                            <div className="tw:min-w-0">
+                            <div className="min-w-0">
                               <Link
                                 href={`/news/${news.slug}`}
-                                className="tw:block tw:text-[0.95rem] tw:leading-snug tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                                className="block text-[0.95rem] leading-snug font-semibold text-fg no-underline hover:text-brand"
                               >
                                 {news.title}
                               </Link>
-                              <div className="tw:mt-1.5 tw:text-xs tw:text-muted">
+                              <div className="mt-1.5 text-xs text-muted">
                                 {news.user && news.user._id ? (
                                   <Link
                                     href={`/users/${news.user._id}`}
-                                    className="tw:font-semibold tw:text-body tw:no-underline tw:hover:text-brand"
+                                    className="font-semibold text-body no-underline hover:text-brand"
                                   >
                                     {news.user.name ?? "Penulis"}
                                   </Link>
                                 ) : (
-                                  <span className="tw:font-semibold tw:text-body">
+                                  <span className="font-semibold text-body">
                                     {news.user?.name ?? "Penulis"}
                                   </span>
                                 )}{" "}
                                 di{" "}
                                 <Link
                                   href={`/newsCategories/${news.category.slug}`}
-                                  className="tw:font-semibold tw:text-body tw:no-underline tw:hover:text-brand"
+                                  className="font-semibold text-body no-underline hover:text-brand"
                                 >
                                   {news.category.name}
                                 </Link>
                               </div>
-                              <div className="tw:mt-1 tw:flex tw:flex-wrap tw:gap-x-3 tw:text-xs tw:text-muted">
+                              <div className="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
                                 <Moment format="dddd, Do MMMM YYYY">
                                   {news.created_at}
                                 </Moment>

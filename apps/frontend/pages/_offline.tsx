@@ -4,12 +4,14 @@ import { Container, buttonClass } from "@malanghub/ui";
 
 function Offline() {
   return (
-    <Container className="tw:flex tw:min-h-[50vh] tw:flex-col tw:items-center tw:justify-center tw:gap-6 tw:py-16 tw:text-center">
+    <Container className="flex min-h-[50vh] flex-col items-center justify-center gap-6 py-16 text-center">
       <span
-        className="fa fa-wifi tw:flex tw:size-16 tw:items-center tw:justify-center tw:rounded-full tw:bg-surface-2 tw:text-3xl tw:text-muted"
+        className="flex size-16 items-center justify-center rounded-full bg-surface-2 text-3xl text-muted"
         aria-hidden="true"
-      ></span>
-      <h1 className="tw:m-0 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg tw:sm:text-3xl">
+      >
+        <span className="fa fa-wifi" />
+      </span>
+      <h1 className="m-0 font-heading text-2xl font-bold text-fg sm:text-3xl">
         Kamu sedang offline!
       </h1>
       <Link href="/" className={buttonClass({ variant: "secondary" })}>

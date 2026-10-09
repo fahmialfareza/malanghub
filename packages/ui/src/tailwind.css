@@ -97,3 +97,60 @@
   --shadow-card: 0 1px 2px var(--mh-shadow-color), 0 4px 16px var(--mh-shadow-color);
   --shadow-pop: 0 12px 40px var(--mh-shadow-color);
 }
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--mh-bg);
+    color: var(--mh-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--mh-fg);
+  }
+
+  /* Default heading scale; utilities on the element still take precedence. */
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+  }
+
+  h4 {
+    font-size: 1.125rem;
+  }
+
+  a {
+    color: var(--mh-primary);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
+  ::selection {
+    background-color: var(--mh-primary-soft);
+    color: var(--mh-fg);
+  }
+}

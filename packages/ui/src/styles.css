@@ -1,6 +1,6 @@
 /*
  * Shared non-utility styles for apps/frontend and apps/native.
- * Component markup uses `tw:` utilities; this file only keeps hooks that
+ * Component markup uses Tailwind utilities; this file only keeps hooks that
  * markup outside packages/ui depends on (alerts, native tab bar/sheets,
  * article images) plus native-mobile platform tweaks (safe areas).
  * Colors come from the --mh-* tokens in tailwind.css.

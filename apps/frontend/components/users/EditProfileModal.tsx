@@ -192,7 +192,7 @@ const EditProfileModal = ({
           value={bio}
           onChange={(event) => setBio(event.target.value)}
         />
-        <div className="tw:grid tw:gap-x-4 tw:sm:grid-cols-2">
+        <div className="grid gap-x-4 sm:grid-cols-2">
           <Input
             type="text"
             id="edit-profile-instagram"
@@ -237,7 +237,7 @@ const EditProfileModal = ({
             placeholder="https://www.linkedin.com/in/malanghub"
             value={linkedin}
             onChange={(event) => setLinkedin(event.target.value)}
-            wrapperClassName="tw:sm:col-span-2"
+            wrapperClassName="sm:col-span-2"
           />
         </div>
       </form>

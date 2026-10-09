@@ -64,13 +64,13 @@ const MALANGHUB_MAPS_NAVIGATION_URL =
   )}`;
 
 const titleLinkClass =
-  "tw:font-heading tw:font-bold tw:leading-snug tw:text-fg tw:no-underline tw:transition-colors tw:hover:text-brand";
+  "font-heading font-bold leading-snug text-fg no-underline transition-colors hover:text-brand";
 
 const NewsImage = ({ news }: { news: News }) => {
   const { Image } = useAdapters();
   return (
     <Image
-      className="tw:absolute tw:inset-0 tw:size-full tw:object-cover tw:transition-transform tw:duration-300 tw:group-hover:scale-105"
+      className="absolute inset-0 size-full object-cover transition-transform duration-300 group-hover:scale-105"
       objectFit="cover"
       src={news.mainImage || "/malanghub-meta.png"}
       alt={news.title}
@@ -83,8 +83,8 @@ const NewsMeta = ({ news }: { news: News }) => {
   const { Link } = useAdapters();
 
   return (
-    <div className="tw:mt-3 tw:text-sm">
-      <div className="tw:text-body">
+    <div className="mt-3 text-sm">
+      <div className="text-body">
         <Link href={getAuthorHref(news)} className={linkClass}>
           {news.user?.name ?? "Penulis"}
         </Link>{" "}
@@ -93,12 +93,12 @@ const NewsMeta = ({ news }: { news: News }) => {
           {getCategoryName(news)}
         </Link>
       </div>
-      <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:gap-y-1 tw:text-muted">
-        <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+      <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-muted">
+        <span className="inline-flex items-center gap-1.5">
           <span className="fa fa-calendar-o" aria-hidden="true" />
           {formatDate(news.created_at)}
         </span>
-        <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+        <span className="inline-flex items-center gap-1.5">
           <span className="fa fa-clock-o" aria-hidden="true" />
           {readingTime(news)}
         </span>
@@ -114,32 +114,32 @@ const NewsCard = ({ news, featured }: { news: News; featured?: boolean }) => {
     <article
       className={cx(
         cardClass,
-        "tw:group tw:flex tw:h-full tw:flex-col tw:overflow-hidden tw:transition-shadow tw:hover:shadow-pop",
+        "group flex h-full flex-col overflow-hidden transition-shadow hover:shadow-pop",
       )}
     >
       <Link
         href={`/news/${news.slug}`}
         className={cx(
-          "tw:relative tw:block tw:overflow-hidden tw:bg-surface-2",
-          featured ? "tw:aspect-video" : "tw:aspect-[4/3]",
+          "relative block overflow-hidden bg-surface-2",
+          featured ? "aspect-video" : "aspect-[4/3]",
         )}
       >
         <NewsImage news={news} />
       </Link>
-      <div className="tw:flex tw:flex-1 tw:flex-col tw:p-5">
+      <div className="flex flex-1 flex-col p-5">
         <Link
           href={`/news/${news.slug}`}
           className={cx(
             titleLinkClass,
-            featured ? "tw:text-2xl" : "tw:text-lg",
+            featured ? "text-2xl" : "text-lg",
           )}
         >
           {news.title}
         </Link>
-        <p className="tw:mt-2 tw:line-clamp-2 tw:text-[0.95rem] tw:leading-6 tw:text-muted">
+        <p className="mt-2 line-clamp-2 text-[0.95rem] leading-6 text-muted">
           {excerpt(news.content, 120)}
         </p>
-        <div className="tw:mt-auto">
+        <div className="mt-auto">
           <NewsMeta news={news} />
         </div>
       </div>
@@ -152,17 +152,17 @@ const NewsListItem = ({ news }: { news: News }) => {
   const { Link } = useAdapters();
 
   return (
-    <article className="tw:group tw:flex tw:gap-4">
+    <article className="group flex gap-4">
       <Link
         href={`/news/${news.slug}`}
-        className="tw:relative tw:block tw:aspect-square tw:w-24 tw:shrink-0 tw:overflow-hidden tw:rounded-xl tw:bg-surface-2 tw:sm:w-32"
+        className="relative block aspect-square w-24 shrink-0 overflow-hidden rounded-xl bg-surface-2 sm:w-32"
       >
         <NewsImage news={news} />
       </Link>
-      <div className="tw:min-w-0 tw:self-center">
+      <div className="min-w-0 self-center">
         <Link
           href={`/news/${news.slug}`}
-          className={cx(titleLinkClass, "tw:line-clamp-3 tw:text-base tw:sm:text-lg")}
+          className={cx(titleLinkClass, "line-clamp-3 text-base sm:text-lg")}
         >
           {news.title}
         </Link>
@@ -199,10 +199,10 @@ function buildPageList(
 
 const pageButtonClass = (active?: boolean) =>
   cx(
-    "tw:flex tw:h-10 tw:min-w-10 tw:items-center tw:justify-center tw:rounded-lg tw:border tw:px-3 tw:text-sm tw:font-semibold tw:transition-colors tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring tw:disabled:pointer-events-none tw:disabled:opacity-45",
+    "flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-45",
     active
-      ? "tw:border-brand tw:bg-brand tw:text-brand-fg"
-      : "tw:border-line tw:bg-surface tw:text-body tw:hover:border-brand tw:hover:text-brand",
+      ? "border-brand bg-brand text-brand-fg"
+      : "border-line bg-surface text-body hover:border-brand hover:text-brand",
   );
 
 const Pagination = ({
@@ -214,8 +214,8 @@ const Pagination = ({
   pageCount: number;
   onPageChange(page: number): void;
 }) => (
-  <nav aria-label="Navigasi halaman" className="tw:mt-10">
-    <ul className="tw:m-0 tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-1.5 tw:p-0 tw:list-none">
+  <nav aria-label="Navigasi halaman" className="mt-10">
+    <ul className="m-0 flex flex-wrap items-center justify-center gap-1.5 p-0 list-none">
       <li>
         <button
           type="button"
@@ -231,7 +231,7 @@ const Pagination = ({
         item === "..." ? (
           <li
             key={`ellipsis-${index}`}
-            className="tw:px-1.5 tw:text-muted"
+            className="px-1.5 text-muted"
             aria-hidden="true"
           >
             ...
@@ -282,9 +282,9 @@ const NewsGrid = ({
 
   return (
     <>
-      <div className="tw:grid tw:gap-6 tw:sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2">
         {news.map((item, index) => (
-          <div key={item._id} className={index === 0 ? "tw:sm:col-span-2" : ""}>
+          <div key={item._id} className={index === 0 ? "sm:col-span-2" : ""}>
             <NewsCard news={item} featured={index === 0} />
           </div>
         ))}
@@ -308,22 +308,22 @@ const HomeNews = ({ news }: { news: News[] }) => {
   const [featured, ...rest] = news;
 
   return (
-    <div className="tw:grid tw:gap-8 tw:md:grid-cols-12">
-      <div className="tw:md:col-span-6 tw:lg:col-span-5">
+    <div className="grid gap-8 md:grid-cols-12">
+      <div className="md:col-span-6 lg:col-span-5">
         <NewsCard news={featured} />
         <Link
           href="/news"
           className={buttonClass({
             variant: "secondary",
             block: true,
-            className: "tw:mt-4",
+            className: "mt-4",
           })}
         >
           Semua Berita
           <span className="fa fa-arrow-right" aria-hidden="true" />
         </Link>
       </div>
-      <div className="tw:flex tw:flex-col tw:gap-6 tw:md:col-span-6 tw:lg:col-span-7">
+      <div className="flex flex-col gap-6 md:col-span-6 lg:col-span-7">
         {rest.map((item) => (
           <NewsListItem key={item._id} news={item} />
         ))}
@@ -338,19 +338,19 @@ const TrendingList = ({ news }: { news: News[] }) => {
   if (!news.length) return <EmptyState>Belum Ada Berita</EmptyState>;
 
   return (
-    <ol className={cx(cardClass, "tw:m-0 tw:divide-y tw:divide-line tw:p-0 tw:list-none")}>
+    <ol className={cx(cardClass, "m-0 divide-y divide-line p-0 list-none")}>
       {news.map((item, index) => (
-        <li key={item._id} className="tw:flex tw:gap-4 tw:p-5">
+        <li key={item._id} className="flex gap-4 p-5">
           <span
             aria-hidden="true"
-            className="tw:flex tw:size-9 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:bg-brand-soft tw:font-heading tw:text-base tw:font-bold tw:text-brand"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-soft font-heading text-base font-bold text-brand"
           >
             {index + 1}
           </span>
-          <div className="tw:min-w-0">
+          <div className="min-w-0">
             <Link
               href={`/news/${item.slug}`}
-              className={cx(titleLinkClass, "tw:text-base")}
+              className={cx(titleLinkClass, "text-base")}
             >
               {item.title}
             </Link>
@@ -381,7 +381,7 @@ const TwoColumnNewsLayout = ({
       }
       aside={
         <>
-          <SectionTitle className="tw:text-xl">Trending</SectionTitle>
+          <SectionTitle className="text-xl">Trending</SectionTitle>
           <TrendingList news={trending ?? []} />
         </>
       }
@@ -403,7 +403,7 @@ export const HomePage = () => {
         canonical={`${siteUrl}/`}
         image={`${siteUrl}/malanghub-meta.png`}
       />
-      <PageSection className="tw:sm:pt-14">
+      <PageSection className="sm:pt-14">
         <TwoColumnLayout
           wideMain
           main={
@@ -418,7 +418,7 @@ export const HomePage = () => {
           }
           aside={
             <>
-              <SectionTitle className="tw:text-xl">Trending</SectionTitle>
+              <SectionTitle className="text-xl">Trending</SectionTitle>
               {trending.isLoading ? (
                 <LoadingState />
               ) : (
@@ -631,18 +631,18 @@ const AuthCard = ({
   children: React.ReactNode;
 }) => (
   <PageSection>
-    <Card className="tw:mx-auto tw:max-w-md tw:p-6 tw:sm:p-8">
-      <h1 className="tw:m-0 tw:mb-6 tw:text-center tw:font-heading tw:text-2xl tw:font-bold tw:text-fg">
+    <Card className="mx-auto max-w-md p-6 sm:p-8">
+      <h1 className="m-0 mb-6 text-center font-heading text-2xl font-bold text-fg">
         {title}
       </h1>
-      <div className="tw:flex tw:w-full tw:flex-col tw:gap-3">{providers}</div>
+      <div className="flex w-full flex-col gap-3">{providers}</div>
       <div
-        className="tw:my-6 tw:flex tw:items-center tw:gap-3 tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-muted"
+        className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted"
         aria-hidden="true"
       >
-        <span className="tw:h-px tw:flex-1 tw:bg-line" />
+        <span className="h-px flex-1 bg-line" />
         atau
-        <span className="tw:h-px tw:flex-1 tw:bg-line" />
+        <span className="h-px flex-1 bg-line" />
       </div>
       {children}
     </Card>
@@ -650,7 +650,7 @@ const AuthCard = ({
 );
 
 const providerButtonClass =
-  "tw:inline-flex tw:h-11 tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:rounded-lg tw:border tw:px-4 tw:text-[0.95rem] tw:font-semibold tw:transition-colors tw:cursor-pointer tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring tw:disabled:cursor-not-allowed tw:disabled:opacity-60 tw:aria-disabled:pointer-events-none tw:aria-disabled:opacity-60";
+  "inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border px-4 text-[0.95rem] font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 aria-disabled:pointer-events-none aria-disabled:opacity-60";
 
 const AppleAuthButton = ({
   label,
@@ -690,11 +690,11 @@ const AppleAuthButton = ({
       onClick={() => void onAppleAuth()}
       className={cx(
         providerButtonClass,
-        "tw:border-transparent tw:bg-fg tw:text-bg tw:hover:opacity-90",
+        "border-transparent bg-fg text-bg hover:opacity-90",
       )}
       disabled={loading}
     >
-      <span className="fa fa-apple tw:text-lg" aria-hidden="true" />
+      <span className="fa fa-apple text-lg" aria-hidden="true" />
       <span>
         {loading ? "Memproses..." : `${label} dengan`} <b>Apple</b>
       </span>
@@ -764,18 +764,18 @@ const GoogleAuthButton = ({
         onClick={() => void onGoogleAuth()}
         className={cx(
           providerButtonClass,
-          "tw:border-line-strong tw:bg-surface tw:text-fg tw:hover:bg-surface-2",
+          "border-line-strong bg-surface text-fg hover:bg-surface-2",
         )}
         aria-disabled={!available || undefined}
         disabled={loading}
       >
-        <span className="fa fa-google tw:text-lg tw:text-danger" aria-hidden="true" />
+        <span className="fa fa-google text-lg text-danger" aria-hidden="true" />
         <span>
           {loading ? "Memproses..." : `${label} dengan`} <b>Google</b>
         </span>
       </button>
       {!available && (
-        <div className="tw:rounded-lg tw:border-l-4 tw:border-brand tw:bg-brand-soft tw:px-3 tw:py-2.5 tw:text-sm tw:text-body">
+        <div className="rounded-lg border-l-4 border-brand bg-brand-soft px-3 py-2.5 text-sm text-body">
           {adapters.googleAuthUnavailableMessage ??
             "Isi Google client ID untuk mengaktifkan Google login."}
         </div>
@@ -785,7 +785,7 @@ const GoogleAuthButton = ({
 };
 
 const AuthSwitch = ({ children }: { children: React.ReactNode }) => (
-  <p className="tw:mt-6 tw:text-center tw:text-sm tw:font-semibold tw:text-body">
+  <p className="mt-6 text-center text-sm font-semibold text-body">
     {children}
   </p>
 );
@@ -862,7 +862,7 @@ export const SignInPage = () => {
           <Button
             type="submit"
             block
-            className="tw:mt-2"
+            className="mt-2"
             loading={signIn.isPending}
           >
             Masuk
@@ -985,7 +985,7 @@ export const SignUpPage = () => {
           <Button
             type="submit"
             block
-            className="tw:mt-2"
+            className="mt-2"
             loading={signUp.isPending}
           >
             Daftar
@@ -1064,7 +1064,7 @@ export const UserProfilePage = ({ id }: { id?: string }) => {
           }
           aside={
             <>
-              <SectionTitle className="tw:text-xl">
+              <SectionTitle className="text-xl">
                 Trending oleh {user?.name ?? "Pengguna"}
               </SectionTitle>
               {trendingByUser.isLoading ? (
@@ -1091,7 +1091,7 @@ export const StaticPage = ({
     <PageBreadcrumbs items={[{ label: "Beranda", href: "/" }, { label: title }]} />
     <PageSection>
       <SectionTitle as="h1">{title}</SectionTitle>
-      <div className="tw:max-w-3xl tw:leading-relaxed tw:text-body">
+      <div className="max-w-3xl leading-relaxed text-body">
         {children}
       </div>
     </PageSection>
@@ -1133,7 +1133,7 @@ const StoreBadge = ({
   return (
     <a
       className={cx(
-        "tw:inline-flex tw:min-w-36 tw:items-center tw:gap-2.5 tw:rounded-lg tw:bg-fg tw:px-4 tw:py-2 tw:text-bg tw:no-underline tw:transition-opacity tw:hover:text-bg tw:hover:opacity-90 tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring",
+        "inline-flex min-w-36 items-center gap-2.5 rounded-lg bg-fg px-4 py-2 text-bg no-underline transition-opacity hover:text-bg hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring",
         className,
       )}
       href={item.href}
@@ -1142,14 +1142,14 @@ const StoreBadge = ({
       onClick={onClick}
     >
       <span
-        className={`fa ${item.icon} tw:shrink-0 tw:text-2xl tw:leading-none`}
+        className={`fa ${item.icon} shrink-0 text-2xl leading-none`}
         aria-hidden="true"
       />
-      <span className="tw:flex tw:flex-col tw:text-left">
-        <span className="tw:text-[0.65rem] tw:font-normal tw:leading-tight tw:opacity-85">
+      <span className="flex flex-col text-left">
+        <span className="text-[0.65rem] font-normal leading-tight opacity-85">
           {badgeTop}
         </span>
-        <span className="tw:whitespace-nowrap tw:text-base tw:font-bold tw:leading-tight">
+        <span className="whitespace-nowrap text-base font-bold leading-tight">
           {badgeBottom}
         </span>
       </span>
@@ -1161,29 +1161,29 @@ const DownloadCard = ({ item }: { item: DownloadLink }) => (
   <article
     className={cx(
       cardClass,
-      "tw:flex tw:items-start tw:gap-4 tw:p-5 tw:sm:p-6",
-      !item.href && "tw:opacity-75 tw:shadow-none",
+      "flex items-start gap-4 p-5 sm:p-6",
+      !item.href && "opacity-75 shadow-none",
     )}
   >
     <div
       className={cx(
-        "tw:flex tw:size-14 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl",
-        item.href ? "tw:bg-brand-soft tw:text-brand" : "tw:bg-surface-2 tw:text-muted",
+        "flex size-14 shrink-0 items-center justify-center rounded-xl",
+        item.href ? "bg-brand-soft text-brand" : "bg-surface-2 text-muted",
       )}
     >
-      <span className={`fa ${item.icon} tw:text-3xl tw:leading-none`} aria-hidden="true" />
+      <span className={`fa ${item.icon} text-3xl leading-none`} aria-hidden="true" />
     </div>
-    <div className="tw:min-w-0">
-      <h3 className="tw:m-0 tw:mb-2 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+    <div className="min-w-0">
+      <h3 className="m-0 mb-2 font-heading text-xl font-bold text-fg">
         {item.platform}
       </h3>
-      <p className="tw:mb-4 tw:text-[0.95rem] tw:leading-6 tw:text-body">
+      <p className="mb-4 text-[0.95rem] leading-6 text-body">
         {item.description}
       </p>
       {item.href ? (
         <StoreBadge item={item} />
       ) : (
-        <span className="tw:inline-flex tw:min-h-10 tw:items-center tw:rounded-lg tw:border tw:border-line-strong tw:px-3.5 tw:text-sm tw:font-bold tw:text-muted">
+        <span className="inline-flex min-h-10 items-center rounded-lg border border-line-strong px-3.5 text-sm font-bold text-muted">
           {item.status ?? "Segera hadir"}
         </span>
       )}
@@ -1208,13 +1208,13 @@ export const DownloadPage = ({ links }: { links: DownloadLink[] }) => {
         items={[{ label: "Beranda", href: "/" }, { label: "Download" }]}
       />
       <PageSection>
-        <div className="tw:grid tw:items-start tw:gap-10 tw:lg:grid-cols-3">
-          <div className="tw:lg:sticky tw:lg:top-24">
-            <span className="tw:mb-3 tw:inline-flex tw:text-xs tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-brand">
+        <div className="grid items-start gap-10 lg:grid-cols-3">
+          <div className="lg:sticky lg:top-24">
+            <span className="mb-3 inline-flex text-xs font-extrabold uppercase tracking-wider text-brand">
               Aplikasi Native
             </span>
             <SectionTitle as="h1">Download Malanghub</SectionTitle>
-            <p className="tw:mb-5 tw:text-base tw:leading-7 tw:text-body">
+            <p className="mb-5 text-base leading-7 text-body">
               Baca berita, kelola draft, dan masuk ke akun Malanghub dari
               aplikasi desktop maupun mobile.
             </p>
@@ -1223,16 +1223,16 @@ export const DownloadPage = ({ links }: { links: DownloadLink[] }) => {
             </Link>
           </div>
 
-          <div className="tw:flex tw:flex-col tw:gap-10 tw:lg:col-span-2">
+          <div className="flex flex-col gap-10 lg:col-span-2">
             {[
               { title: "Mobile", items: mobileLinks },
               { title: "Desktop", items: desktopLinks },
             ].map((section) => (
               <section key={section.title}>
-                <h2 className="tw:m-0 tw:mb-4 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+                <h2 className="m-0 mb-4 font-heading text-xl font-bold text-fg">
                   {section.title}
                 </h2>
-                <div className="tw:grid tw:gap-4 tw:md:grid-cols-2">
+                <div className="grid gap-4 md:grid-cols-2">
                   {section.items.map((item) => (
                     <DownloadCard key={item.platform} item={item} />
                   ))}
@@ -1287,26 +1287,26 @@ export const AppDownloadBanner = ({
     <div
       role="region"
       aria-label="Download aplikasi Malanghub"
-      className="tw:sticky tw:inset-x-0 tw:top-0 tw:z-[10020] tw:flex tw:items-center tw:gap-3 tw:border-b tw:border-line tw:bg-surface tw:px-4 tw:py-3 tw:shadow-card tw:sm:px-5"
+      className="sticky inset-x-0 top-0 z-[10020] flex items-center gap-3 border-b border-line bg-surface px-4 py-3 shadow-card sm:px-5"
     >
       <div
-        className="tw:hidden tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-brand tw:sm:flex"
+        className="hidden size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand sm:flex"
         aria-hidden="true"
       >
-        <span className={`fa ${match.icon} tw:text-2xl`} />
+        <span className={`fa ${match.icon} text-2xl`} />
       </div>
-      <div className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
-        <strong className="tw:text-[0.95rem] tw:font-bold tw:leading-snug tw:text-fg">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <strong className="text-[0.95rem] font-bold leading-snug text-fg">
           Download Malanghub
         </strong>
-        <span className="tw:hidden tw:truncate tw:text-sm tw:text-muted tw:sm:block">
+        <span className="hidden truncate text-sm text-muted sm:block">
           {match.description}
         </span>
       </div>
-      <StoreBadge item={match} onClick={dismiss} className="tw:shrink-0" />
+      <StoreBadge item={match} onClick={dismiss} className="shrink-0" />
       <button
         type="button"
-        className="tw:flex tw:size-9 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-2xl tw:leading-none tw:text-muted tw:transition-colors tw:hover:bg-surface-2 tw:hover:text-fg tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring"
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg border-0 bg-transparent text-2xl leading-none text-muted transition-colors hover:bg-surface-2 hover:text-fg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"
         onClick={dismiss}
         aria-label="Tutup"
       >
@@ -1325,15 +1325,15 @@ const ContactItem = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <div className="tw:flex tw:gap-4">
+  <div className="flex gap-4">
     <span
-      className="tw:flex tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-lg tw:text-brand"
+      className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-lg text-brand"
       aria-hidden="true"
     >
       <span className={`fa ${icon}`} />
     </span>
-    <div className="tw:min-w-0 tw:[&_p]:text-body">
-      <h3 className="tw:m-0 tw:mb-1 tw:font-heading tw:text-base tw:font-bold tw:text-fg">
+    <div className="min-w-0 [&_p]:text-body">
+      <h3 className="m-0 mb-1 font-heading text-base font-bold text-fg">
         {title}
       </h3>
       {children}
@@ -1357,12 +1357,12 @@ export const ContactPage = () => {
       />
       <PageSection>
         <SectionTitle as="h1">Tinggalkan pesan untuk kami</SectionTitle>
-        <div className="tw:grid tw:gap-8 tw:lg:grid-cols-2">
-          <Card className="tw:p-6 tw:sm:p-8">
-            <h2 className="tw:m-0 tw:mb-3 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+        <div className="grid gap-8 lg:grid-cols-2">
+          <Card className="p-6 sm:p-8">
+            <h2 className="m-0 mb-3 font-heading text-xl font-bold text-fg">
               Kontak Kami
             </h2>
-            <div className="tw:space-y-3">
+            <div className="space-y-3">
               <p>
                 Semuanya dimulai dengan Halo! Kami di sini menjawab apa pun
                 pertanyaan yang mungkin Anda miliki dan memberikan solusi
@@ -1373,11 +1373,11 @@ export const ContactPage = () => {
                 Kami biasanya akan menghubungi Anda dalam waktu 12-24 jam.
               </p>
             </div>
-            <div className="tw:mt-8 tw:flex tw:flex-col tw:gap-6">
+            <div className="mt-8 flex flex-col gap-6">
               <ContactItem icon="fa-map-marker" title="Alamat">
                 <p>Perum. Bumi Madinah Blok C3</p>
                 <p>Jalan Ngasri, Mulyoagung, Dau, Malang, Jawa Timur 65151</p>
-                <p className="tw:mt-1">
+                <p className="mt-1">
                   <a
                     target="_blank"
                     rel="noreferrer"
@@ -1389,8 +1389,8 @@ export const ContactPage = () => {
                 </p>
               </ContactItem>
               <ContactItem icon="fa-phone" title="Whatsapp Kami">
-                <p className="tw:flex tw:items-center tw:gap-2">
-                  <span className="fa fa-whatsapp tw:text-success" aria-hidden="true" />
+                <p className="flex items-center gap-2">
+                  <span className="fa fa-whatsapp text-success" aria-hidden="true" />
                   <a
                     target="_blank"
                     rel="noreferrer"
@@ -1410,11 +1410,11 @@ export const ContactPage = () => {
               </ContactItem>
             </div>
           </Card>
-          <div className="malanghub-map-embed tw:overflow-hidden tw:rounded-xl tw:border tw:border-line tw:shadow-card">
-            <div className="tw:relative tw:aspect-square tw:bg-surface-2">
+          <div className="malanghub-map-embed overflow-hidden rounded-xl border border-line shadow-card">
+            <div className="relative aspect-square bg-surface-2">
               <iframe
                 title="Lokasi Malanghub"
-                className="tw:absolute tw:inset-0 tw:size-full tw:border-0"
+                className="absolute inset-0 size-full border-0"
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.6257545166436!2d112.56973751477908!3d-7.934097594284932!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7883c600d082fd%3A0x3f1caf9c821540c1!2sPerum.%20Bumi%20Madinah%20Blok%20C%202!5e0!3m2!1sen!2sid!4v1614682193710!5m2!1sen!2sid"
                 allowFullScreen
                 loading="lazy"
@@ -1473,7 +1473,7 @@ const privacySections = [
 ];
 
 const bulletListClass =
-  "tw:m-0 tw:space-y-1.5 tw:pl-5 tw:text-base tw:leading-7 tw:text-body tw:[&>li]:list-disc";
+  "m-0 space-y-1.5 pl-5 text-base leading-7 text-body [&>li]:list-disc";
 
 const LegalSection = ({
   title,
@@ -1482,11 +1482,11 @@ const LegalSection = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <Card className="tw:p-6">
-    <h2 className="tw:m-0 tw:mb-3 tw:font-heading tw:text-lg tw:font-bold tw:text-fg">
+  <Card className="p-6">
+    <h2 className="m-0 mb-3 font-heading text-lg font-bold text-fg">
       {title}
     </h2>
-    <div className="tw:space-y-3">{children}</div>
+    <div className="space-y-3">{children}</div>
   </Card>
 );
 
@@ -1499,9 +1499,9 @@ const SidebarCard = ({
   title: string;
   children: React.ReactNode;
 }) => (
-  <Card className="tw:p-6">
-    <h2 className="tw:m-0 tw:mb-3 tw:flex tw:items-center tw:gap-2 tw:text-base tw:font-bold tw:text-fg">
-      <span className={`fa ${icon} tw:text-brand`} aria-hidden="true" />
+  <Card className="p-6">
+    <h2 className="m-0 mb-3 flex items-center gap-2 text-base font-bold text-fg">
+      <span className={`fa ${icon} text-brand`} aria-hidden="true" />
       {title}
     </h2>
     {children}
@@ -1516,10 +1516,10 @@ const RelatedLinks = ({
   const { Link } = useAdapters();
 
   return (
-    <ul className="tw:m-0 tw:space-y-1.5 tw:p-0 tw:text-sm tw:list-none">
+    <ul className="m-0 space-y-1.5 p-0 text-sm list-none">
       {links.map((link) => (
-        <li key={link.href} className="tw:flex tw:items-center tw:gap-2">
-          <span className="fa fa-angle-right tw:text-muted" aria-hidden="true" />
+        <li key={link.href} className="flex items-center gap-2">
+          <span className="fa fa-angle-right text-muted" aria-hidden="true" />
           <Link href={link.href} className={linkClass}>
             {link.label}
           </Link>
@@ -1560,20 +1560,20 @@ const LegalPageShell = ({
         <TwoColumnLayout
           main={
             <>
-              <SectionTitle as="h1" className="tw:mb-2">
+              <SectionTitle as="h1" className="mb-2">
                 {title}
               </SectionTitle>
-              <p className="tw:mb-6 tw:flex tw:items-center tw:gap-2 tw:text-sm tw:text-muted">
+              <p className="mb-6 flex items-center gap-2 text-sm text-muted">
                 <span className="fa fa-calendar" aria-hidden="true" />
                 Terakhir diperbarui: Mei 2026
               </p>
-              <div className="tw:flex tw:flex-col tw:gap-4">{children}</div>
+              <div className="flex flex-col gap-4">{children}</div>
             </>
           }
           aside={
-            <div className="tw:flex tw:flex-col tw:gap-4">
+            <div className="flex flex-col gap-4">
               <SidebarCard icon="fa-list" title="Daftar Isi">
-                <ol className="tw:m-0 tw:space-y-1 tw:pl-5 tw:text-sm tw:text-body tw:[&>li]:list-decimal">
+                <ol className="m-0 space-y-1 pl-5 text-sm text-body [&>li]:list-decimal">
                   {sections.map((section) => (
                     <li key={section}>{section}</li>
                   ))}
@@ -1607,7 +1607,7 @@ export const TermsPage = () => {
             />
           </SidebarCard>
           <SidebarCard icon="fa-envelope-o" title="Ada Pertanyaan?">
-            <p className="tw:mb-4 tw:text-sm tw:leading-6">
+            <p className="mb-4 text-sm leading-6">
               Hubungi tim Malanghub jika Anda memiliki pertanyaan seputar syarat
               penggunaan layanan kami.
             </p>
@@ -1641,7 +1641,7 @@ export const TermsPage = () => {
           cipta.
         </p>
         <p>
-          <strong className="tw:text-fg">Anda diperbolehkan untuk:</strong>
+          <strong className="text-fg">Anda diperbolehkan untuk:</strong>
         </p>
         <ul className={bulletListClass}>
           <li>
@@ -1654,7 +1654,7 @@ export const TermsPage = () => {
           </li>
         </ul>
         <p>
-          <strong className="tw:text-fg">Anda tidak diperbolehkan untuk:</strong>
+          <strong className="text-fg">Anda tidak diperbolehkan untuk:</strong>
         </p>
         <ul className={bulletListClass}>
           <li>
@@ -1761,7 +1761,7 @@ export const PrivacyPage = () => {
             />
           </SidebarCard>
           <SidebarCard icon="fa-shield" title="Komitmen Kami">
-            <p className="tw:text-sm tw:leading-6">
+            <p className="text-sm leading-6">
               Malanghub berkomitmen menjaga privasi dan keamanan data pengguna
               sesuai dengan peraturan yang berlaku di Indonesia.
             </p>
@@ -1781,19 +1781,19 @@ export const PrivacyPage = () => {
         <p>Kami dapat mengumpulkan data berikut:</p>
         <ul className={bulletListClass}>
           <li>
-            <strong className="tw:text-fg">Data akun:</strong> Nama, alamat
+            <strong className="text-fg">Data akun:</strong> Nama, alamat
             email, dan kata sandi terenkripsi saat Anda mendaftar.
           </li>
           <li>
-            <strong className="tw:text-fg">Data profil:</strong> Foto profil,
+            <strong className="text-fg">Data profil:</strong> Foto profil,
             bio, motto, dan tautan media sosial yang Anda isi secara sukarela.
           </li>
           <li>
-            <strong className="tw:text-fg">Data penggunaan:</strong> Halaman
+            <strong className="text-fg">Data penggunaan:</strong> Halaman
             yang dikunjungi, artikel yang dibaca, dan interaksi di situs.
           </li>
           <li>
-            <strong className="tw:text-fg">Data teknis:</strong> Alamat IP,
+            <strong className="text-fg">Data teknis:</strong> Alamat IP,
             jenis browser, dan perangkat yang digunakan, dikumpulkan secara
             otomatis.
           </li>
@@ -1816,25 +1816,25 @@ export const PrivacyPage = () => {
         </p>
         <ul className={bulletListClass}>
           <li>
-            <strong className="tw:text-fg">
+            <strong className="text-fg">
               Google Analytics & Google OAuth:
             </strong>{" "}
             Untuk analitik dan masuk dengan akun Google.
           </li>
           <li>
-            <strong className="tw:text-fg">Cloudflare:</strong> Untuk keamanan,
+            <strong className="text-fg">Cloudflare:</strong> Untuk keamanan,
             CDN, dan analitik web.
           </li>
           <li>
-            <strong className="tw:text-fg">Cloudinary:</strong> Untuk
+            <strong className="text-fg">Cloudinary:</strong> Untuk
             penyimpanan dan pengelolaan gambar.
           </li>
           <li>
-            <strong className="tw:text-fg">Sentry:</strong> Untuk pemantauan
+            <strong className="text-fg">Sentry:</strong> Untuk pemantauan
             dan pelaporan error teknis.
           </li>
           <li>
-            <strong className="tw:text-fg">
+            <strong className="text-fg">
               Google Reader Revenue Manager:
             </strong>{" "}
             Untuk fitur publikasi berita.
@@ -1949,7 +1949,7 @@ export const NativeDraftEditorPage = () => {
       />
       <PageSection>
         <SectionTitle as="h1">Tulis Draft</SectionTitle>
-        <Card className="tw:max-w-3xl tw:p-6">
+        <Card className="max-w-3xl p-6">
           <form onSubmit={submit}>
             <Input
               label="Judul"
@@ -1982,7 +1982,7 @@ export const NativeDraftEditorPage = () => {
             <Select
               label="Tag"
               multiple
-              className="tw:min-h-32"
+              className="min-h-32"
               value={form.tags}
               onChange={(event) =>
                 setForm({

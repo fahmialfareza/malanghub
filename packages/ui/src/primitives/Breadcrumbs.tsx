@@ -20,34 +20,34 @@ export const Breadcrumbs = ({
 }) => (
   <nav
     aria-label="Breadcrumb"
-    className="tw:border-b tw:border-line tw:bg-surface-2/60"
+    className="border-b border-line bg-surface-2/60"
   >
     <Container>
-      <ol className="tw:m-0 tw:flex tw:flex-wrap tw:items-center tw:gap-1.5 tw:p-0 tw:py-3 tw:text-sm tw:list-none">
+      <ol className="m-0 flex flex-wrap items-center gap-1.5 p-0 py-3 text-sm list-none">
         {items.map((item, index) => {
           const last = index === items.length - 1;
           return (
             <li
               key={index}
-              className="tw:flex tw:min-w-0 tw:items-center tw:gap-1.5"
+              className="flex min-w-0 items-center gap-1.5"
             >
               {item.href && !last ? (
                 renderLink({
                   href: item.href,
                   className:
-                    "tw:font-medium tw:text-muted tw:no-underline tw:hover:text-brand",
+                    "font-medium text-muted no-underline hover:text-brand",
                   children: item.label,
                 })
               ) : (
                 <span
                   aria-current={last ? "page" : undefined}
-                  className="tw:truncate tw:font-semibold tw:text-fg"
+                  className="truncate font-semibold text-fg"
                 >
                   {item.label}
                 </span>
               )}
               {!last && (
-                <span aria-hidden className="tw:text-line-strong">
+                <span aria-hidden className="text-line-strong">
                   /
                 </span>
               )}

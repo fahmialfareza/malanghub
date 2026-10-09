@@ -40,7 +40,7 @@ export const CategoryBadge = ({
       className={badgeClass(
         "brand",
         cx(
-          "tw:transition-colors tw:hover:bg-brand tw:hover:text-brand-fg",
+          "transition-colors hover:bg-brand hover:text-brand-fg",
           className,
         ),
       )}
@@ -64,30 +64,30 @@ export const NewsMeta = ({
 }) => (
   <div
     className={cx(
-      "tw:flex tw:flex-wrap tw:items-center tw:gap-x-2 tw:gap-y-1 tw:text-[0.8rem] tw:text-muted",
+      "flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.8rem] text-muted",
       className,
     )}
   >
     {news.user && news.user._id ? (
       <Link
         href={`/users/${news.user._id}`}
-        className="tw:font-semibold tw:text-body tw:no-underline tw:hover:text-brand"
+        className="font-semibold text-body no-underline hover:text-brand"
       >
         {news.user.name ?? "Penulis"}
       </Link>
     ) : (
-      <span className="tw:font-semibold tw:text-body">
+      <span className="font-semibold text-body">
         {news.user?.name ?? "Penulis"}
       </span>
     )}
-    <span aria-hidden className="tw:text-line-strong">
+    <span aria-hidden className="text-line-strong">
       &middot;
     </span>
     <Moment format={dateFormat}>{news.created_at}</Moment>
-    <span aria-hidden className="tw:text-line-strong">
+    <span aria-hidden className="text-line-strong">
       &middot;
     </span>
-    <span className="tw:inline-flex tw:items-center tw:gap-1">
+    <span className="inline-flex items-center gap-1">
       <span className="fa fa-clock-o" aria-hidden="true"></span>
       {readMinutes(news)} menit
     </span>
@@ -95,11 +95,11 @@ export const NewsMeta = ({
 );
 
 const imageLinkClass =
-  "tw:group/img tw:relative tw:block tw:overflow-hidden tw:rounded-xl tw:bg-surface-2";
+  "group/img relative block overflow-hidden rounded-xl bg-surface-2";
 const imageClass =
-  "tw:object-cover tw:transition-transform tw:duration-500 tw:group-hover/img:scale-105";
+  "object-cover transition-transform duration-500 group-hover/img:scale-105";
 const titleLinkClass =
-  "tw:font-heading tw:font-bold tw:text-fg tw:no-underline tw:transition-colors tw:hover:text-brand";
+  "font-heading font-bold text-fg no-underline transition-colors hover:text-brand";
 
 export type NewsCardVariant = "featured" | "default" | "compact";
 
@@ -123,12 +123,12 @@ export const NewsCard = ({
 
   if (variant === "compact") {
     return (
-      <article className={cx("tw:flex tw:gap-4", className)}>
+      <article className={cx("flex gap-4", className)}>
         <Link
           href={href}
           className={cx(
             imageLinkClass,
-            "tw:aspect-square tw:w-24 tw:shrink-0 tw:sm:w-28",
+            "aspect-square w-24 shrink-0 sm:w-28",
           )}
           aria-hidden
           tabIndex={-1}
@@ -141,14 +141,14 @@ export const NewsCard = ({
             className={imageClass}
           />
         </Link>
-        <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-1.5">
-          <CategoryBadge news={news} className="tw:self-start" />
-          <Heading className="tw:m-0 tw:text-base tw:leading-snug tw:line-clamp-2">
+        <div className="flex min-w-0 flex-col gap-1.5">
+          <CategoryBadge news={news} className="self-start" />
+          <Heading className="m-0 text-base leading-snug line-clamp-2">
             <Link href={href} className={titleLinkClass}>
               {news.title}
             </Link>
           </Heading>
-          <NewsMeta news={news} className="tw:text-xs" />
+          <NewsMeta news={news} className="text-xs" />
         </div>
       </article>
     );
@@ -157,12 +157,12 @@ export const NewsCard = ({
   const featured = variant === "featured";
 
   return (
-    <article className={cx("tw:group tw:flex tw:flex-col tw:gap-4", className)}>
+    <article className={cx("group flex flex-col gap-4", className)}>
       <Link
         href={href}
         className={cx(
           imageLinkClass,
-          featured ? "tw:aspect-video tw:shadow-card" : "tw:aspect-[16/10]",
+          featured ? "aspect-video shadow-card" : "aspect-[16/10]",
         )}
         aria-hidden
         tabIndex={-1}
@@ -180,14 +180,14 @@ export const NewsCard = ({
           className={imageClass}
         />
       </Link>
-      <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-2.5">
-        <CategoryBadge news={news} className="tw:self-start" />
+      <div className="flex min-w-0 flex-col gap-2.5">
+        <CategoryBadge news={news} className="self-start" />
         <Heading
           className={cx(
-            "tw:m-0 tw:leading-tight",
+            "m-0 leading-tight",
             featured
-              ? "tw:text-2xl tw:md:text-[1.75rem] tw:lg:text-3xl"
-              : "tw:text-lg tw:line-clamp-3",
+              ? "text-2xl md:text-[1.75rem] lg:text-3xl"
+              : "text-lg line-clamp-3",
           )}
         >
           <Link href={href} className={titleLinkClass}>
@@ -197,8 +197,8 @@ export const NewsCard = ({
         {(showExcerpt ?? featured) && (
           <p
             className={cx(
-              "tw:m-0 tw:text-[0.95rem] tw:leading-relaxed tw:text-body",
-              featured ? "tw:line-clamp-3" : "tw:line-clamp-2",
+              "m-0 text-[0.95rem] leading-relaxed text-body",
+              featured ? "line-clamp-3" : "line-clamp-2",
             )}
           >
             {parse(stripHtml(news.content))}
@@ -218,20 +218,20 @@ export const NumberedNewsItem = ({
   news: News;
   index: number;
 }) => (
-  <article className="tw:flex tw:gap-4">
+  <article className="flex gap-4">
     <span
       aria-hidden
-      className="tw:w-8 tw:shrink-0 tw:font-heading tw:text-3xl tw:font-bold tw:leading-none tw:text-brand/40"
+      className="w-8 shrink-0 font-heading text-3xl font-bold leading-none text-brand/40"
     >
       {index + 1}
     </span>
-    <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-1.5">
-      <h3 className="tw:m-0 tw:text-[0.95rem] tw:leading-snug">
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <h3 className="m-0 text-[0.95rem] leading-snug">
         <Link href={`/news/${news.slug}`} className={titleLinkClass}>
           {news.title}
         </Link>
       </h3>
-      <NewsMeta news={news} className="tw:text-xs" dateFormat="Do MMMM YYYY" />
+      <NewsMeta news={news} className="text-xs" dateFormat="Do MMMM YYYY" />
     </div>
   </article>
 );
@@ -279,7 +279,7 @@ export const NewsGrid = ({
         <NewsCard news={first} variant="featured" headingLevel="h2" priority />
       )}
       {rest.length > 0 && (
-        <div className="tw:mt-10 tw:grid tw:gap-x-6 tw:gap-y-10 tw:border-t tw:border-line tw:pt-10 tw:sm:grid-cols-2">
+        <div className="mt-10 grid gap-x-6 gap-y-10 border-t border-line pt-10 sm:grid-cols-2">
           {rest.map((item) => (
             <NewsCard key={item._id} news={item} showExcerpt />
           ))}

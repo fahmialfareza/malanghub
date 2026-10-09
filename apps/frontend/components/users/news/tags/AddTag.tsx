@@ -66,7 +66,7 @@ const AddTag = ({
           placeholder="Nama Tag"
           value={name}
           onChange={(event) => setName(event.target.value)}
-          wrapperClassName="tw:mb-0"
+          wrapperClassName="mb-0"
         />
       </form>
     </Modal>

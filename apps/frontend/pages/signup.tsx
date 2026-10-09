@@ -140,13 +140,13 @@ const SignUp = ({
           </Link>
         )}
       />
-      <section className="tw:bg-bg tw:px-4 tw:py-12 tw:sm:py-16">
-        <Card className="tw:mx-auto tw:w-full tw:max-w-md tw:p-6 tw:sm:p-8">
-          <div className="tw:mb-6 tw:text-center">
-            <h1 className="tw:m-0 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg tw:sm:text-3xl">
+      <section className="bg-bg px-4 py-12 sm:py-16">
+        <Card className="mx-auto w-full max-w-md p-6 sm:p-8">
+          <div className="mb-6 text-center">
+            <h1 className="m-0 font-heading text-2xl font-bold text-fg sm:text-3xl">
               Daftar
             </h1>
-            <p className="tw:mt-2 tw:text-sm tw:leading-relaxed tw:text-muted">
+            <p className="mt-2 text-sm leading-relaxed text-muted">
               Buat akun Malanghub untuk mulai menulis dan berbagi informasi
               sekitar Malang Raya.
             </p>
@@ -197,27 +197,27 @@ const SignUp = ({
               onChange={onChange}
               required
             />
-            <Button type="submit" block className="tw:mt-2">
+            <Button type="submit" block className="mt-2">
               Daftar
             </Button>
           </form>
 
-          <div className="tw:my-6 tw:flex tw:items-center tw:gap-3 tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wider tw:text-muted">
-            <span aria-hidden className="tw:h-px tw:flex-1 tw:bg-line" />
+          <div className="my-6 flex items-center gap-3 text-xs font-semibold uppercase tracking-wider text-muted">
+            <span aria-hidden className="h-px flex-1 bg-line" />
             atau
-            <span aria-hidden className="tw:h-px tw:flex-1 tw:bg-line" />
+            <span aria-hidden className="h-px flex-1 bg-line" />
           </div>
 
           <Button variant="secondary" block onClick={() => loginWithGoogle()}>
-            <i className="fa fa-google tw:text-danger" aria-hidden="true"></i>
+            <i className="fa fa-google text-danger" aria-hidden="true"></i>
             Daftar dengan Google
           </Button>
 
-          <p className="tw:mt-6 tw:text-center tw:text-sm tw:text-muted">
+          <p className="mt-6 text-center text-sm text-muted">
             Sudah punya akun?{" "}
             <Link
               href="/signin"
-              className="tw:font-semibold tw:text-brand tw:hover:text-brand-hover"
+              className="font-semibold text-brand hover:text-brand-hover"
             >
               Masuk
             </Link>

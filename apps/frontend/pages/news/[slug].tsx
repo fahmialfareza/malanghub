@@ -24,25 +24,25 @@ import { News, NewsCategory, NewsTag } from "../../models/news";
 import { User } from "../../models/user";
 
 const shareButtonClass =
-  "tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:bg-brand tw:hover:text-brand-fg tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring";
+  "inline-flex size-9 items-center justify-center rounded-full border border-line bg-surface text-body no-underline transition-colors hover:border-brand hover:bg-brand hover:text-brand-fg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring";
 
 // Readable typography for the article HTML coming from the editor.
 const articleBodyClass = cx(
-  "tw:break-words tw:font-sans tw:text-[1.06rem] tw:leading-8 tw:text-body",
-  "tw:[&_p]:mb-5 tw:[&_p]:text-[1.06rem] tw:[&_p]:leading-8 tw:[&_p]:text-body",
-  "tw:[&_h2]:mt-10 tw:[&_h2]:mb-4 tw:[&_h2]:font-heading tw:[&_h2]:text-2xl tw:[&_h2]:font-bold tw:[&_h2]:leading-snug tw:[&_h2]:text-fg",
-  "tw:[&_h3]:mt-8 tw:[&_h3]:mb-3 tw:[&_h3]:font-heading tw:[&_h3]:text-xl tw:[&_h3]:font-bold tw:[&_h3]:leading-snug tw:[&_h3]:text-fg",
-  "tw:[&_h4]:mt-6 tw:[&_h4]:mb-2 tw:[&_h4]:font-heading tw:[&_h4]:text-lg tw:[&_h4]:font-semibold tw:[&_h4]:text-fg",
-  "tw:[&_a]:font-semibold tw:[&_a]:text-brand tw:[&_a]:underline tw:[&_a]:decoration-brand/40 tw:[&_a]:underline-offset-2 tw:[&_a:hover]:decoration-brand",
-  "tw:[&_strong]:text-fg tw:[&_b]:text-fg",
-  "tw:[&_ul]:mb-5 tw:[&_ul]:list-disc tw:[&_ul]:pl-6 tw:[&_ol]:mb-5 tw:[&_ol]:list-decimal tw:[&_ol]:pl-6 tw:[&_li]:mb-2 tw:[&_li]:leading-7 tw:[&_li::marker]:text-brand",
-  "tw:[&_blockquote]:my-8 tw:[&_blockquote]:rounded-r-xl tw:[&_blockquote]:border-l-4 tw:[&_blockquote]:border-brand tw:[&_blockquote]:bg-brand-soft tw:[&_blockquote]:px-6 tw:[&_blockquote]:py-4 tw:[&_blockquote]:text-lg tw:[&_blockquote]:italic tw:[&_blockquote]:text-fg tw:[&_blockquote_p]:mb-0",
-  "tw:[&_img]:my-6 tw:[&_img]:h-auto tw:[&_img]:max-w-full tw:[&_img]:rounded-xl",
-  "tw:[&_figure]:my-8 tw:[&_figure]:mx-0 tw:[&_figure_img]:my-0 tw:[&_figcaption]:mt-2 tw:[&_figcaption]:text-center tw:[&_figcaption]:text-sm tw:[&_figcaption]:text-muted",
-  "tw:[&_iframe]:my-6 tw:[&_iframe]:max-w-full tw:[&_iframe]:rounded-xl",
-  "tw:[&_table]:my-6 tw:[&_table]:w-full tw:[&_table]:border-collapse tw:[&_td]:border tw:[&_td]:border-line tw:[&_td]:p-2 tw:[&_th]:border tw:[&_th]:border-line tw:[&_th]:bg-surface-2 tw:[&_th]:p-2",
-  "tw:[&_hr]:my-10 tw:[&_hr]:border-line",
-  "tw:[&>*:first-child]:mt-0 tw:[&>*:last-child]:mb-0",
+  "break-words font-sans text-[1.06rem] leading-8 text-body",
+  "[&_p]:mb-5 [&_p]:text-[1.06rem] [&_p]:leading-8 [&_p]:text-body",
+  "[&_h2]:mt-10 [&_h2]:mb-4 [&_h2]:font-heading [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:leading-snug [&_h2]:text-fg",
+  "[&_h3]:mt-8 [&_h3]:mb-3 [&_h3]:font-heading [&_h3]:text-xl [&_h3]:font-bold [&_h3]:leading-snug [&_h3]:text-fg",
+  "[&_h4]:mt-6 [&_h4]:mb-2 [&_h4]:font-heading [&_h4]:text-lg [&_h4]:font-semibold [&_h4]:text-fg",
+  "[&_a]:font-semibold [&_a]:text-brand [&_a]:underline [&_a]:decoration-brand/40 [&_a]:underline-offset-2 [&_a:hover]:decoration-brand",
+  "[&_strong]:text-fg [&_b]:text-fg",
+  "[&_ul]:mb-5 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-2 [&_li]:leading-7 [&_li::marker]:text-brand",
+  "[&_blockquote]:my-8 [&_blockquote]:rounded-r-xl [&_blockquote]:border-l-4 [&_blockquote]:border-brand [&_blockquote]:bg-brand-soft [&_blockquote]:px-6 [&_blockquote]:py-4 [&_blockquote]:text-lg [&_blockquote]:italic [&_blockquote]:text-fg [&_blockquote_p]:mb-0",
+  "[&_img]:my-6 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-xl",
+  "[&_figure]:my-8 [&_figure]:mx-0 [&_figure_img]:my-0 [&_figcaption]:mt-2 [&_figcaption]:text-center [&_figcaption]:text-sm [&_figcaption]:text-muted",
+  "[&_iframe]:my-6 [&_iframe]:max-w-full [&_iframe]:rounded-xl",
+  "[&_table]:my-6 [&_table]:w-full [&_table]:border-collapse [&_td]:border [&_td]:border-line [&_td]:p-2 [&_th]:border [&_th]:border-line [&_th]:bg-surface-2 [&_th]:p-2",
+  "[&_hr]:my-10 [&_hr]:border-line",
+  "[&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
 );
 
 interface SingleNewsProps {
@@ -273,20 +273,20 @@ const SingleNews = ({
       />
 
       <main>
-        <article className="tw:mx-auto tw:w-full tw:max-w-3xl tw:px-4 tw:pt-10 tw:pb-12 tw:sm:px-6 tw:lg:pt-14">
-          <header className="tw:mb-8">
+        <article className="mx-auto w-full max-w-3xl px-4 pt-10 pb-12 sm:px-6 lg:pt-14">
+          <header className="mb-8">
             {currentNews?.category && (
-              <CategoryBadge news={currentNews} className="tw:mb-4" />
+              <CategoryBadge news={currentNews} className="mb-4" />
             )}
-            <h1 className="blog-desc-big tw:m-0 tw:mb-6 tw:font-heading tw:text-3xl tw:font-bold tw:leading-tight tw:tracking-tight tw:text-fg tw:sm:text-4xl tw:lg:text-[2.75rem]">
+            <h1 className="blog-desc-big m-0 mb-6 font-heading text-3xl font-bold leading-tight tracking-tight text-fg sm:text-4xl lg:text-[2.75rem]">
               {currentNews?.title}
             </h1>
 
-            <div className="tw:flex tw:items-center tw:gap-3">
+            <div className="flex items-center gap-3">
               {currentNews?.user && (
                 <Link
                   href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
-                  className="tw:relative tw:block tw:size-11 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2 tw:ring-2 tw:ring-line"
+                  className="relative block size-11 shrink-0 overflow-hidden rounded-full bg-surface-2 ring-2 ring-line"
                   aria-hidden
                   tabIndex={-1}
                 >
@@ -294,30 +294,30 @@ const SingleNews = ({
                     <Image
                       src={currentNews.user.photo}
                       alt=""
-                      className="tw:object-cover"
+                      className="object-cover"
                       sizes="44px"
                       fill
                     />
                   )}
                 </Link>
               )}
-              <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-0.5 tw:text-sm">
+              <div className="flex min-w-0 flex-col gap-0.5 text-sm">
                 {currentNews?.user && (
                   <Link
                     href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
-                    className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                    className="font-semibold text-fg no-underline hover:text-brand"
                   >
                     {currentNews?.user?.name}
                   </Link>
                 )}
-                <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-2 tw:text-muted">
+                <div className="flex flex-wrap items-center gap-x-2 text-muted">
                   <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
                     {currentNews?.created_at}
                   </Moment>
-                  <span aria-hidden className="tw:text-line-strong">
+                  <span aria-hidden className="text-line-strong">
                     &middot;
                   </span>
-                  <span className="tw:inline-flex tw:items-center tw:gap-1">
+                  <span className="inline-flex items-center gap-1">
                     <span className="fa fa-clock-o" aria-hidden="true"></span>
                     {currentNews && Math.ceil(currentNews.time_read / 10)} menit
                   </span>
@@ -327,10 +327,10 @@ const SingleNews = ({
           </header>
 
           {currentNews?.mainImage && (
-            <figure className="tw:relative tw:m-0 tw:mb-10 tw:aspect-video tw:overflow-hidden tw:rounded-2xl tw:bg-surface-2 tw:shadow-card tw:sm:-mx-6 tw:lg:-mx-16">
+            <figure className="relative m-0 mb-10 aspect-video overflow-hidden rounded-2xl bg-surface-2 shadow-card sm:-mx-6 lg:-mx-16">
               <Image
                 src={currentNews.mainImage}
-                className="tw:object-cover"
+                className="object-cover"
                 alt={currentNews.title}
                 sizes="(min-width: 1024px) 896px, 100vw"
                 priority
@@ -347,9 +347,9 @@ const SingleNews = ({
             )}
           </div>
 
-          <footer className="tw:mt-12 tw:flex tw:flex-col tw:gap-6 tw:border-t tw:border-line tw:pt-8 tw:sm:flex-row tw:sm:items-start tw:sm:justify-between">
-            <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
-              <span className="tw:mr-1 tw:text-sm tw:font-semibold tw:text-fg">
+          <footer className="mt-12 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="mr-1 text-sm font-semibold text-fg">
                 Tag :
               </span>
               {currentNews?.tags &&
@@ -359,15 +359,15 @@ const SingleNews = ({
                     href={`/newsTags/${tag.slug}`}
                     className={badgeClass(
                       "neutral",
-                      "tw:px-3 tw:py-1 tw:transition-colors tw:hover:bg-brand-soft tw:hover:text-brand",
+                      "px-3 py-1 transition-colors hover:bg-brand-soft hover:text-brand",
                     )}
                   >
                     #{tag.name}
                   </Link>
                 ))}
             </div>
-            <div className="tw:flex tw:shrink-0 tw:items-center tw:gap-2">
-              <span className="tw:mr-1 tw:text-sm tw:font-semibold tw:text-fg">
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="mr-1 text-sm font-semibold text-fg">
                 Bagikan :
               </span>
               <a
@@ -392,28 +392,28 @@ const SingleNews = ({
           </footer>
 
           {currentNews?.user && (
-            <section className="tw:mt-10 tw:flex tw:flex-col tw:gap-5 tw:rounded-2xl tw:border tw:border-line tw:bg-surface tw:p-6 tw:shadow-card tw:sm:flex-row tw:sm:items-start">
-              <div className="tw:relative tw:size-20 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2">
+            <section className="mt-10 flex flex-col gap-5 rounded-2xl border border-line bg-surface p-6 shadow-card sm:flex-row sm:items-start">
+              <div className="relative size-20 shrink-0 overflow-hidden rounded-full bg-surface-2">
                 {currentNews?.user?.photo && (
                   <Image
                     src={currentNews.user.photo}
                     alt=""
-                    className="tw:object-cover"
+                    className="object-cover"
                     sizes="80px"
                     fill
                   />
                 )}
               </div>
-              <div className="tw:min-w-0">
-                <h2 className="tw:m-0 tw:mb-2 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+              <div className="min-w-0">
+                <h2 className="m-0 mb-2 font-heading text-xl font-bold text-fg">
                   {currentNews?.user?.name}
                 </h2>
                 {currentNews?.user?.bio && (
-                  <p className="tw:m-0 tw:text-[0.95rem] tw:leading-relaxed tw:text-body">
+                  <p className="m-0 text-[0.95rem] leading-relaxed text-body">
                     {currentNews?.user?.bio}
                   </p>
                 )}
-                <ul className="tw:m-0 tw:mt-4 tw:flex tw:list-none tw:flex-wrap tw:gap-2 tw:p-0">
+                <ul className="m-0 mt-4 flex list-none flex-wrap gap-2 p-0">
                   {currentNews?.user?.facebook && (
                     <li>
                       <a
@@ -500,11 +500,11 @@ const SingleNews = ({
           )}
         </article>
 
-        <section className="tw:border-t tw:border-line tw:bg-surface-2/50">
-          <Container className="tw:py-12 tw:lg:py-16">
+        <section className="border-t border-line bg-surface-2/50">
+          <Container className="py-12 lg:py-16">
             <SectionTitle>Mungkin Anda Tertarik</SectionTitle>
             {relatedNews?.length > 0 ? (
-              <div className="tw:grid tw:gap-x-6 tw:gap-y-10 tw:sm:grid-cols-2 tw:lg:grid-cols-4">
+              <div className="grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
                 {relatedNews.map((news, index) => {
                   return (
                     <RelatedNews key={news._id} index={index} news={news} />
@@ -518,7 +518,7 @@ const SingleNews = ({
         </section>
       </main>
 
-      <div className="display-ad tw:mx-auto tw:my-2 tw:block tw:text-center"></div>
+      <div className="display-ad mx-auto my-2 block text-center"></div>
     </>
   );
 };
