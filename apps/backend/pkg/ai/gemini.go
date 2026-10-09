@@ -29,7 +29,7 @@ func NewGemini() *Gemini {
 	}
 	return &Gemini{
 		apiKey:     key,
-		model:      getEnv("GEMINI_MODEL", "gemini-2.5-flash-lite"),
+		model:      getEnv("GEMINI_MODEL", "gemini-3.5-flash-lite"),
 		embedModel: getEnv("GEMINI_EMBED_MODEL", "gemini-embedding-001"),
 		embedDim:   EmbedDim(),
 		client:     newHTTPClient(),
@@ -51,9 +51,11 @@ func (g *Gemini) Generate(ctx context.Context, system, prompt string) (string, e
 	body := map[string]interface{}{
 		"systemInstruction": geminiContent{Parts: []geminiPart{{Text: system}}},
 		"contents":          []geminiContent{{Role: "user", Parts: []geminiPart{{Text: prompt}}}},
+		// newer Gemini models think before answering and thinking tokens
+		// count toward maxOutputTokens, so leave room beyond the answer itself
 		"generationConfig": map[string]interface{}{
 			"temperature":     0.2,
-			"maxOutputTokens": 1024,
+			"maxOutputTokens": 4096,
 		},
 	}
 

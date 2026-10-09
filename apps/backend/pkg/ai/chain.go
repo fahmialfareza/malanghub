@@ -3,6 +3,7 @@ package ai
 import (
 	"context"
 	"errors"
+	"net/http"
 	"strings"
 	"sync"
 	"time"
@@ -84,8 +85,11 @@ func (c *Chain) Generate(ctx context.Context, system, prompt string) (string, st
 		if ctx.Err() != nil {
 			return "", "", ctx.Err()
 		}
-		if errors.Is(err, ErrQuotaExceeded) {
+		if errors.Is(err, ErrQuotaExceeded) || isModelNotFound(err) {
 			startCooldown(ctx, p.Name())
+		}
+		if isModelNotFound(err) {
+			logger.Error("ai:", p.Name(), "model not found; it may be retired — update the *_MODEL env var")
 		}
 		logger.Error("ai: generate failed, trying next provider:", err)
 		lastErr = err
@@ -113,6 +117,14 @@ func (c *Chain) Embed(ctx context.Context, texts []string, task TaskType) ([][]f
 		return vectors, err
 	}
 	return nil, ErrNotSupported
+}
+
+// isModelNotFound reports a 404 from a provider, which usually means the
+// configured model was retired. Skipping it for a while avoids a wasted call
+// on every question.
+func isModelNotFound(err error) bool {
+	var he *httpError
+	return errors.As(err, &he) && he.Status == http.StatusNotFound
 }
 
 func coolingDown(ctx context.Context, name string) bool {

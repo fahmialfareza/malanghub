@@ -27,7 +27,7 @@ func NewGroq() *Groq {
 	}
 	return &Groq{
 		apiKey: key,
-		model:  getEnv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+		model:  getEnv("GROQ_MODEL", "openai/gpt-oss-120b"),
 		client: newHTTPClient(),
 	}
 }
@@ -35,15 +35,21 @@ func NewGroq() *Groq {
 func (g *Groq) Name() string { return "groq" }
 
 func (g *Groq) Generate(ctx context.Context, system, prompt string) (string, error) {
-	payload, err := json.Marshal(map[string]interface{}{
+	body := map[string]interface{}{
 		"model": g.model,
 		"messages": []map[string]string{
 			{"role": "system", "content": system},
 			{"role": "user", "content": prompt},
 		},
 		"temperature": 0.2,
-		"max_tokens":  1024,
-	})
+		// reasoning tokens count toward max_tokens on reasoning models
+		"max_tokens": 4096,
+	}
+	// gpt-oss models reason before answering; keep it short to save free quota
+	if strings.HasPrefix(g.model, "openai/gpt-oss") {
+		body["reasoning_effort"] = "low"
+	}
+	payload, err := json.Marshal(body)
 	if err != nil {
 		return "", err
 	}
