@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import {
+  Badge,
   Button,
   Card,
   CardHeader,
-  Container,
   LoadingBlock,
-  Spinner,
   Table,
 } from "@malanghub/ui";
 import { getNewsCategories } from "../../../../redux/actions/newsCategoryActions";
@@ -14,7 +13,6 @@ import CategoryTableItem from "./CategoryTableItem";
 import AddCategory from "./AddCategory";
 import EditCategory from "./EditCategory";
 import DeleteCategory from "./DeleteCategory";
-import StatTile from "../StatTile";
 import { RootState } from "../../../../redux/store";
 import { NewsCategoryReducerState } from "../../../../redux/types";
 
@@ -40,79 +38,61 @@ const Categories = ({
 
   return (
     <>
-      <section id="category" className="mb-12">
-        <Container>
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-            <Card className="min-w-0 overflow-hidden lg:col-span-3">
-              <CardHeader
-                title="Kategori (Berita)"
-                actions={
-                  <Button size="sm" onClick={() => setModal("add")}>
-                    <i className="fa fa-plus" aria-hidden="true"></i> Tambah
-                    Kategori
-                  </Button>
-                }
-              />
-              <Table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nama Kategori</th>
-                    <th>Dibuat</th>
-                    <th>Diperbaharui</th>
-                    <th>
-                      <span className="sr-only">Aksi</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {newsCategoryLoading ? (
-                    <tr>
-                      <td colSpan={COLUMNS}>
-                        <LoadingBlock />
-                      </td>
-                    </tr>
-                  ) : newsCategories && newsCategories.length > 0 ? (
-                    newsCategories.map((category, index) => (
-                      <CategoryTableItem
-                        key={category.id ?? category._id}
-                        category={category}
-                        index={index}
-                        onEdit={() => setModal("edit")}
-                        onDelete={() => setModal("delete")}
-                      />
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={COLUMNS}
-                        className="py-10! text-center text-muted"
-                      >
-                        Belum ada kategori.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </Table>
-            </Card>
-            <div className="order-first lg:order-none">
-              <StatTile
-                label="Kategori"
-                icon="fa fa-list-alt"
-                value={
-                  newsCategoryLoading ? (
-                    <Spinner />
-                  ) : newsCategories ? (
-                    newsCategories.length
-                  ) : (
-                    0
-                  )
-                }
-              />
-            </div>
-          </div>
-        </Container>
-      </section>
+      <Card className="overflow-hidden">
+        <CardHeader
+          title={
+            <span className="flex items-center gap-2">
+              Kategori (Berita)
+              {!newsCategoryLoading && (
+                <Badge tone="neutral">{newsCategories?.length ?? 0}</Badge>
+              )}
+            </span>
+          }
+          actions={
+            <Button size="sm" onClick={() => setModal("add")}>
+              <i className="fa fa-plus" aria-hidden="true"></i> Tambah Kategori
+            </Button>
+          }
+        />
+        <Table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nama Kategori</th>
+              <th>Dibuat</th>
+              <th>Diperbaharui</th>
+              <th>
+                <span className="sr-only">Aksi</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {newsCategoryLoading ? (
+              <tr>
+                <td colSpan={COLUMNS}>
+                  <LoadingBlock />
+                </td>
+              </tr>
+            ) : newsCategories && newsCategories.length > 0 ? (
+              newsCategories.map((category, index) => (
+                <CategoryTableItem
+                  key={category.id ?? category._id}
+                  category={category}
+                  index={index}
+                  onEdit={() => setModal("edit")}
+                  onDelete={() => setModal("delete")}
+                />
+              ))
+            ) : (
+              <tr>
+                <td colSpan={COLUMNS} className="py-10! text-center text-muted">
+                  Belum ada kategori.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      </Card>
 
       <AddCategory open={modal === "add"} onClose={closeModal} />
 

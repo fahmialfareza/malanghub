@@ -3,7 +3,6 @@ import {
   NewsCategory,
   NewsCategoryFull,
   NewsTag,
-  NewsWithPagination,
 } from "../models/news";
 import { UserProfile } from "../models/user";
 import { AiAnswer } from "../models/ai";
@@ -53,12 +52,7 @@ export interface NewsDraftReducerState {
 }
 
 export interface NewsReducerState {
-  allNews: NewsWithPagination | null;
   relatedNews: News[];
-  newsByCategory: NewsWithPagination | null;
-  newsByTag: NewsWithPagination | null;
-  newsByUser: NewsWithPagination | null;
-  newsBySearch: NewsWithPagination | null;
   myNews: News[];
   currentNews: News | null;
   loading: boolean;

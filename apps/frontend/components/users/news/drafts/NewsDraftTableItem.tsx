@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import Link from "next/link";
 import { connect } from "react-redux";
 import Moment from "react-moment";
@@ -26,10 +25,6 @@ const NewsDraftTableItem = ({
   selectNewsDraft,
   getMyNewsDrafts,
 }: NewsDraftTableItemProps) => {
-  useEffect(() => {
-    getMyNewsDrafts();
-  }, []);
-
   const onClickEdit = () => {
     selectNewsDraft(draft);
     onEdit();
@@ -42,9 +37,9 @@ const NewsDraftTableItem = ({
 
   return (
     <tr>
-      <td className="text-muted">{index + 1}</td>
+      <td className="text-muted hidden 2xl:table-cell">{index + 1}</td>
       <td className="min-w-48 font-semibold text-fg">{draft.title}</td>
-      <td className="min-w-48">
+      <td className="min-w-40">
         {draft.message
           ? draft.message
           : "Silahkan Tunggu Konfirmasi dari Admin"}
@@ -63,7 +58,7 @@ const NewsDraftTableItem = ({
       <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{draft.created_at}</Moment>
       </td>
-      <td className="whitespace-nowrap">
+      <td className="whitespace-nowrap hidden 2xl:table-cell">
         <Moment format="MMMM Do, YYYY">{draft.created_at}</Moment>
       </td>
       <td>

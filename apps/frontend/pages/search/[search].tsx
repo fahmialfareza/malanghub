@@ -1,120 +1,83 @@
-import { useEffect, useState } from "react";
-import Head from "next/head";
-import { useRouter } from "next/router";
+import { useEffect } from "react";
 import { connect } from "react-redux";
 import moment from "moment";
-import { getNewsBySearch } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
-import SearchNewsItem from "../../components/news/SearchNewsItem";
 import NewsListingLayout, {
   EmptyNews,
 } from "../../components/news/NewsListingLayout";
-import { LoadingBlock } from "@malanghub/ui";
+import { NewsGrid } from "../../components/news/NewsCard";
+import ListingSeo from "../../components/seo/ListingSeo";
 import * as Sentry from "@sentry/nextjs";
-import { GetStaticPropsContext } from "next";
-import { RootState } from "../../redux/store";
+import { GetServerSidePropsContext } from "next";
 import { News } from "../../models/news";
-import { NewsReducerState } from "../../redux/types";
+import {
+  fetchJson,
+  fetchNewsPage,
+  firstPageRedirect,
+  isPageOutOfRange,
+  pageCountOf,
+  parsePage,
+} from "../../utils/pagination";
+
+const LIMIT = 5;
+
+const searchBasePath = (search: string) =>
+  `/search/${encodeURIComponent(search)}`;
 
 interface SearchNewsProps {
   trendingNews: News[];
-  news: NewsReducerState;
-  getNewsBySearch: (search: string, page: number) => void;
+  search: string;
+  news: News[];
+  page: number;
+  pageCount: number;
   setActiveLink: (link: string) => void;
 }
 
 const SearchNews = ({
   trendingNews,
-  news: { newsBySearch, loading: newsLoading },
-  getNewsBySearch,
+  search,
+  news,
+  page,
+  pageCount,
   setActiveLink,
 }: SearchNewsProps) => {
-  const router = useRouter();
-
-  const [searchQuery, setSearchQuery] = useState("");
-
   useEffect(() => {
     setActiveLink("news");
   }, []);
 
-  useEffect(() => {
-    if (router.query) {
-      const searchQuery = Array.isArray(router.query.search)
-        ? router.query.search[0] // If it's an array, use the first element
-        : router.query.search || "";
-
-      if (searchQuery) {
-        setSearchQuery(searchQuery);
-        getNewsBySearch(searchQuery, 1); // Now searchQuery is guaranteed to be a string
-      }
-    }
-  }, [router.query.search]);
+  const basePath = searchBasePath(search);
+  const title = `Malanghub - Cari Berita - ${search}`;
 
   return (
     <>
-      <Head>
-        <meta name="robots" content="noindex,follow" />
-        <title>Malanghub - Cari Berita - {router?.query?.search}</title>
-        <meta
-          name="title"
-          content={`Malanghub - Cari Berita - ${router?.query?.search}`}
-        />
-        <meta
-          name="description"
-          content={`Malanghub - Cari Berita - ${router?.query?.search} - Situs yang menyediakan informasi sekitar Malang Raya!`}
-        />
-
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:url"
-          content={`https://www.malanghub.com/search/${router?.query?.search}`}
-        />
-        <meta
-          property="og:title"
-          content={`Malanghub - Cari Berita - ${router?.query?.search}`}
-        />
-        <meta
-          property="og:description"
-          content={`Malanghub - Cari Berita - ${router?.query?.search} - Situs yang menyediakan informasi sekitar Malang Raya!`}
-        />
-        <meta
-          property="og:image"
-          content="https://www.malanghub.com/malanghub-meta.png"
-        />
-
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta
-          property="twitter:url"
-          content={`https://www.malanghub.com/search/${router?.query?.search}`}
-        />
-        <meta
-          property="twitter:title"
-          content={`Malanghub - Cari Berita - ${router?.query?.search}`}
-        />
-        <meta
-          property="twitter:description"
-          content={`Malanghub - Cari Berita - ${router?.query?.search} - Situs yang menyediakan informasi sekitar Malang Raya!`}
-        />
-        <meta
-          property="twitter:image"
-          content="https://www.malanghub.com/malanghub-meta.png"
-        />
-      </Head>
+      <ListingSeo
+        title={title}
+        description={`${title} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+        collectionName={`Pencarian "${search}" - Malanghub`}
+        basePath={basePath}
+        page={page}
+        pageCount={pageCount}
+        limit={LIMIT}
+        news={news}
+        noindex
+      />
 
       <NewsListingLayout
         breadcrumbs={[
           { label: "Beranda", href: "/" },
           { label: "Pencarian" },
-          { label: router.query.search },
+          { label: search },
         ]}
-        title={`Pencarian "${router.query.search ?? ""}"`}
+        title={`Pencarian "${search}"`}
         trendingNews={trendingNews}
-        trendingLoading={newsLoading}
       >
-        {newsLoading || newsBySearch === null ? (
-          <LoadingBlock />
-        ) : newsBySearch?.data?.length > 0 ? (
-          <SearchNewsItem news={newsBySearch} search={searchQuery} />
+        {news.length > 0 ? (
+          <NewsGrid
+            news={news}
+            page={page}
+            pageCount={pageCount}
+            basePath={basePath}
+          />
         ) : (
           <EmptyNews>Berita Tidak Ditemukan</EmptyNews>
         )}
@@ -123,44 +86,58 @@ const SearchNews = ({
   );
 };
 
-export async function getServerSideProps({ params }: GetStaticPropsContext) {
+export async function getServerSideProps({
+  params,
+  query,
+}: GetServerSidePropsContext<{ search: string }>) {
+  const search = params?.search ?? "";
+  const page = parsePage(query.page);
+  if (page === null) return firstPageRedirect(searchBasePath(search));
+
   const result = await Sentry.startSpan(
     {
       name: "search.[search].getServerSideProps",
     },
     async () => {
-      const url = `${
+      const trendingNewsUrl = `${
         process.env.API_ADDRESS
       }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
         .subtract(1, "months")
         .toISOString()}`;
 
-      let data = {};
-      try {
-        const res = await fetch(url);
+      // A failing request degrades to an empty section instead of a 404.
+      const [trendingNews, list] = await Promise.all([
+        fetchJson(trendingNewsUrl)
+          .then((json) => json.data ?? [])
+          .catch((e) => {
+            Sentry.captureException(e);
+            return [];
+          }),
+        fetchNewsPage(
+          `/api/news/search?page=${page}&sort=-views&limit=${LIMIT}&search=${encodeURIComponent(search)}`,
+        ).catch((e) => {
+          Sentry.captureException(e);
+          return { meta: null, data: [] as News[] };
+        }),
+      ]);
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch trending news");
-        }
-
-        const jsonData = await res.json();
-        data = jsonData.data;
-      } catch (e) {
-        Sentry.captureException(e);
-        return { props: { trendingNews: data } }; // Return empty or partial data if an error occurs
+      if (isPageOutOfRange(page, list.meta)) {
+        return { notFound: true as const };
       }
 
-      return { props: { trendingNews: data } };
+      return {
+        props: {
+          trendingNews,
+          search,
+          news: list.data,
+          page,
+          pageCount: pageCountOf(list.meta),
+        },
+      };
     },
   );
 
   return result;
 }
 
-const mapStateToProps = (state: RootState) => ({
-  news: state.news,
-});
-
-export default connect(mapStateToProps, { getNewsBySearch, setActiveLink })(
-  SearchNews,
-);
+export default connect(null, { setActiveLink })(SearchNews);

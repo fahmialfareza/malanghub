@@ -31,6 +31,7 @@ const socialClass =
 interface NewsDraftProps {
   user: UserReducerState;
   loadUser: () => void;
+  setActiveLink: (link: string) => void;
   currentNewsDraft: News;
   newsDraft: NewsDraftReducerState;
 }
@@ -38,12 +39,24 @@ interface NewsDraftProps {
 const NewsDraft = ({
   user: { user },
   loadUser,
+  setActiveLink,
   currentNewsDraft,
   newsDraft: { loading: newsDraftLoading },
 }: NewsDraftProps) => {
   const router = useRouter();
 
   const contentRef = useRef<HTMLDivElement | null>(null);
+
+  // Admins previewing someone else's draft came from Persetujuan Berita.
+  const draftOwnerId =
+    currentNewsDraft?.user?.id || currentNewsDraft?.user?._id;
+  const fromAgreements =
+    !!user?.role?.includes("admin") &&
+    !!draftOwnerId &&
+    draftOwnerId !== (user.id || user._id);
+  const backLink = fromAgreements
+    ? { href: "/users/news/agreements", label: "Persetujuan Berita" }
+    : { href: "/users/news/drafts", label: "Antrian Berita" };
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -138,7 +151,8 @@ const NewsDraft = ({
       <Breadcrumbs
         items={[
           { label: "Beranda", href: "/" },
-          { label: "Antrian Berita" },
+          { label: "Dashboard", href: "/users" },
+          { label: backLink.label, href: backLink.href },
           {
             label: newsDraftLoading ? (
               <Spinner size="sm" />
@@ -266,7 +280,7 @@ const NewsDraft = ({
                               href={`/newsTags/${tag.slug}`}
                               className={badgeClass(
                                 "brand",
-                                "px-3 py-1 text-sm hover:bg-brand hover:text-brand-fg"
+                                "px-3 py-1 text-sm hover:bg-brand hover:text-brand-fg",
                               )}
                             >
                               {tag.name}
@@ -414,14 +428,15 @@ const NewsDraft = ({
               )}
 
               <Link
-                href="/users"
+                href={backLink.href}
                 className={buttonClass({
                   variant: "secondary",
                   block: true,
                   className: "mt-10",
                 })}
               >
-                Kembali
+                <i className="fa fa-angle-left" aria-hidden="true"></i> Kembali
+                ke {backLink.label}
               </Link>
             </article>
 
@@ -513,7 +528,7 @@ export async function getServerSideProps({
           props: {},
         };
       }
-    }
+    },
   );
 
   return result;
@@ -524,4 +539,4 @@ const mapStateToProps = (state: RootState) => ({
   user: state.user,
 });
 
-export default connect(mapStateToProps, { loadUser })(NewsDraft);
+export default connect(mapStateToProps, { loadUser, setActiveLink })(NewsDraft);

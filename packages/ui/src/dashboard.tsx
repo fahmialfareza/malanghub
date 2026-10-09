@@ -36,7 +36,6 @@ import {
   CardHeader,
   Checkbox,
   Container,
-  Dropdown,
   FileInput,
   Input,
   Modal,
@@ -45,6 +44,7 @@ import {
   Table,
   Textarea,
   buttonClass,
+  cardClass,
   controlClass,
   cx,
   labelClass,
@@ -60,7 +60,13 @@ import {
 } from "./content";
 import { excerpt, formatDate } from "./utils";
 
-type DashboardSection = "category" | "tag" | "news";
+type DashboardSection =
+  | "overview"
+  | "news"
+  | "drafts"
+  | "agreements"
+  | "categories"
+  | "tags";
 type NewsTableName = "Berita" | "Antrian Berita" | "Persetujuan Berita";
 type ModalKind =
   | "profile"
@@ -355,64 +361,166 @@ const DeleteAccountModal = ({
   </Modal>
 );
 
-const tabClass = (active: boolean) =>
+type DashboardSectionConfig = {
+  key: DashboardSection;
+  href: string;
+  label: string;
+  icon: string;
+  admin?: boolean;
+};
+
+/** Dashboard routes, mirrored by the web app's `/users/*` pages. */
+const dashboardSections: DashboardSectionConfig[] = [
+  { key: "overview", href: "/users", label: "Ringkasan", icon: "fa-th-large" },
+  { key: "news", href: "/users/news", label: "Berita", icon: "fa-newspaper-o" },
+  { key: "drafts", href: "/users/news/drafts", label: "Antrian Berita", icon: "fa-hourglass-half" },
+  { key: "agreements", href: "/users/news/agreements", label: "Persetujuan Berita", icon: "fa-check-square-o", admin: true },
+  { key: "categories", href: "/users/categories", label: "Kategori", icon: "fa-list-alt", admin: true },
+  { key: "tags", href: "/users/tags", label: "Tag", icon: "fa-tag", admin: true },
+];
+
+const getDashboardSection = (path: string): DashboardSectionConfig => {
+  const normalized = path.split(/[?#]/)[0].replace(/\/+$/, "") || "/";
+  return (
+    dashboardSections.find((section) => section.href === normalized) ??
+    dashboardSections[0]
+  );
+};
+
+const newsTableBySection: Partial<Record<DashboardSection, NewsTableName>> = {
+  news: "Berita",
+  drafts: "Antrian Berita",
+  agreements: "Persetujuan Berita",
+};
+
+const navItemClass = (active: boolean) =>
   cx(
-    "inline-flex h-10 items-center gap-2 rounded-lg border-0 px-4 text-sm font-semibold transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring",
+    "flex h-10 shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full border px-4 text-sm font-semibold no-underline transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring lg:h-11 lg:rounded-lg lg:border-transparent",
     active
-      ? "bg-surface text-brand shadow-card"
-      : "bg-transparent text-body hover:text-fg",
+      ? "border-brand bg-brand text-brand-fg hover:text-brand-fg lg:bg-brand-soft lg:text-brand lg:hover:text-brand"
+      : "border-line bg-surface text-body hover:border-brand hover:text-brand lg:bg-transparent lg:hover:bg-surface-2",
   );
 
-const DashboardWorkbench = ({ user }: { user: UserProfile }) => {
+const DashboardNav = ({
+  sections,
+  active,
+}: {
+  sections: DashboardSectionConfig[];
+  active: DashboardSection;
+}) => {
+  const { Link } = useAdapters();
+
+  return (
+    <nav
+      aria-label="Menu dashboard"
+      className="min-w-0 lg:sticky lg:top-24 lg:self-start"
+    >
+      {/* Pills scroll sideways on small screens; a sidebar list on lg. */}
+      <ul className="m-0 flex list-none gap-2 overflow-x-auto p-0 pb-1 [scrollbar-width:none] lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden">
+        {sections.map((section) => (
+          <li key={section.key} className="shrink-0">
+            <Link
+              href={section.href}
+              className={navItemClass(section.key === active)}
+              aria-current={section.key === active ? "page" : undefined}
+            >
+              <span className="inline-flex w-4 justify-center" aria-hidden="true">
+                <span className={`fa ${section.icon}`} />
+              </span>
+              {section.label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
+
+const DashboardWorkbench = ({
+  user,
+  section,
+}: {
+  user: UserProfile;
+  section: DashboardSectionConfig;
+}) => {
+  const { Link } = useAdapters();
   const admin = isAdmin(user);
-  const [activeSection, setActiveSection] = useState<DashboardSection>(
-    admin ? "category" : "news"
-  );
-
-  useEffect(() => {
-    setActiveSection(admin ? "category" : "news");
-  }, [admin]);
-
-  const sections: Array<{ key: DashboardSection; label: string; icon: string }> = [
-    ...(admin
-      ? [
-          { key: "category" as const, label: "Kategori", icon: "fa-list-alt" },
-          { key: "tag" as const, label: "Tag", icon: "fa-tag" },
-        ]
-      : []),
-    { key: "news", label: "Berita", icon: "fa-newspaper-o" },
-  ];
+  const sections = dashboardSections.filter((item) => admin || !item.admin);
+  const forbidden = Boolean(section.admin && !admin);
+  const newsTable = newsTableBySection[section.key];
 
   return (
     <PageSection>
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="m-0 flex items-center gap-3 font-heading text-2xl font-bold text-fg">
-          <span className="fa fa-cog text-brand" aria-hidden="true" /> Dashboard
-        </h2>
-        <div
-          className="inline-flex gap-1 self-start rounded-xl bg-surface-2 p-1"
-          role="group"
-          aria-label="Bagian dashboard"
-        >
-          {sections.map((section) => (
-            <button
-              key={section.key}
-              type="button"
-              className={tabClass(activeSection === section.key)}
-              aria-pressed={activeSection === section.key}
-              onClick={() => setActiveSection(section.key)}
-            >
-              <span className={`fa ${section.icon}`} aria-hidden="true" />
-              {section.label}
-            </button>
-          ))}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-10">
+        <DashboardNav sections={sections} active={section.key} />
+        <div className="min-w-0">
+          <h2 className="m-0 mb-6 flex items-center gap-3 font-heading text-2xl font-bold text-fg">
+            <span className="text-brand" aria-hidden="true">
+              <span className={`fa ${forbidden ? "fa-lock" : section.icon}`} />
+            </span>
+            {forbidden ? "Akses Ditolak" : section.label}
+          </h2>
+          {forbidden ? (
+            <EmptyState>
+              Halaman ini hanya dapat diakses oleh admin.
+              <Link href="/users" className={buttonClass({ variant: "secondary" })}>
+                Kembali ke Dashboard
+              </Link>
+            </EmptyState>
+          ) : section.key === "overview" ? (
+            <DashboardOverview admin={admin} />
+          ) : section.key === "categories" ? (
+            <CategoryManager />
+          ) : section.key === "tags" ? (
+            <TagManager />
+          ) : newsTable ? (
+            <NewsManager user={user} tableName={newsTable} />
+          ) : null}
         </div>
       </div>
-
-      {admin && activeSection === "category" && <CategoryManager />}
-      {admin && activeSection === "tag" && <TagManager />}
-      {activeSection === "news" && <NewsManager user={user} />}
     </PageSection>
+  );
+};
+
+const DashboardOverview = ({ admin }: { admin: boolean }) => {
+  const { api } = useMalanghubRuntime();
+  const myNews = useMyNews(api, true);
+  const myDrafts = useMyDrafts(api, true);
+  const allDrafts = useAllDrafts(api, admin);
+  const [addOpen, setAddOpen] = useState(false);
+
+  return (
+    <>
+      <div className="mb-6 flex flex-wrap gap-2">
+        <Button onClick={() => setAddOpen(true)}>
+          <span className="fa fa-plus" aria-hidden="true" /> Tambah Berita
+        </Button>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <StatCard title="Berita" icon="fa-newspaper-o" href="/users/news" count={myNews.data?.length ?? 0} loading={myNews.isLoading} />
+        <StatCard title="Antrian Berita" icon="fa-hourglass-half" href="/users/news/drafts" count={myDrafts.data?.length ?? 0} loading={myDrafts.isLoading} />
+        {admin && (
+          <>
+            <StatCard title="Persetujuan Berita" icon="fa-check-square-o" href="/users/news/agreements" count={allDrafts.data?.length ?? 0} loading={allDrafts.isLoading} />
+            <AdminTaxonomyStats />
+          </>
+        )}
+      </div>
+      <DraftFormModal mode="add" open={addOpen} onClose={() => setAddOpen(false)} />
+    </>
+  );
+};
+
+const AdminTaxonomyStats = () => {
+  const { api } = useMalanghubRuntime();
+  const categories = useCategories(api);
+  const tags = useTags(api);
+
+  return (
+    <>
+      <StatCard title="Kategori" icon="fa-list-alt" href="/users/categories" count={categories.data?.length ?? 0} loading={categories.isLoading} />
+      <StatCard title="Tag" icon="fa-tag" href="/users/tags" count={tags.data?.length ?? 0} loading={tags.isLoading} />
+    </>
   );
 };
 
@@ -425,12 +533,14 @@ const ManagerLayout = ({
   toolbar: React.ReactNode;
   title: string;
   table: React.ReactNode;
-  stats: React.ReactNode;
+  stats?: React.ReactNode;
 }) => (
   <>
     <div className="mb-4 flex flex-wrap gap-2">{toolbar}</div>
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">{stats}</div>
+      {stats && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">{stats}</div>
+      )}
       <Card className="min-w-0 overflow-hidden">
         <CardHeader title={title} />
         {table}
@@ -536,9 +646,6 @@ const CategoryManager = () => {
             </tbody>
           </Table>
         }
-        stats={
-          <StatCard title="Kategori" icon="fa-list-alt" count={categories.data?.length ?? 0} loading={categories.isLoading} />
-        }
       />
       <TaxonomyModal title="Tambah Kategori (Berita)" open={modal === "addCategory"} onClose={() => setModal(null)} onSubmit={(name) => mutate("create", name)} />
       <TaxonomyModal title="Edit Kategori (Berita)" open={modal === "editCategory"} initialName={selected?.name} onClose={() => setModal(null)} onSubmit={(name) => mutate("update", name, selected)} />
@@ -622,9 +729,6 @@ const TagManager = () => {
             </tbody>
           </Table>
         }
-        stats={
-          <StatCard title="Tag" icon="fa-tag" count={tags.data?.length ?? 0} loading={tags.isLoading} />
-        }
       />
       <TaxonomyModal title="Tambah Tag (Berita)" open={modal === "addTag"} onClose={() => setModal(null)} onSubmit={(name) => mutate("create", name)} />
       <TaxonomyModal title="Edit Tag (Berita)" open={modal === "editTag"} initialName={selected?.name} onClose={() => setModal(null)} onSubmit={(name) => mutate("update", name, selected)} />
@@ -638,43 +742,45 @@ const StatCard = ({
   icon,
   count,
   loading,
-  active,
-  onClick,
+  href,
 }: {
   title: string;
   icon: string;
   count: number;
   loading?: boolean;
-  active?: boolean;
-  onClick?(): void;
-}) => (
-  <Card
-    className={cx(
-      "flex items-center gap-4 p-5",
-      active && "border-brand ring-2 ring-brand-soft",
-    )}
-  >
-    <span
-      className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-xl text-brand"
-      aria-hidden="true"
+  href: string;
+}) => {
+  const { Link } = useAdapters();
+
+  return (
+    <Link
+      href={href}
+      aria-label={`Lihat ${title}`}
+      className={cx(
+        cardClass,
+        "group flex min-w-0 items-center gap-4 p-5 no-underline transition-colors hover:border-brand focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring",
+      )}
     >
-      <span className={`fa ${icon}`} />
-    </span>
-    <div className="min-w-0 flex-1">
-      <h3 className="m-0 truncate text-sm font-semibold text-muted">
-        {title}
-      </h3>
-      <div className="font-heading text-3xl font-bold leading-tight text-fg">
-        {loading ? <Spinner size="sm" /> : count}
-      </div>
-    </div>
-    {onClick && (
-      <Button size="sm" variant="ghost" onClick={onClick} aria-label={`Lihat ${title}`}>
-        Lihat
-      </Button>
-    )}
-  </Card>
-);
+      <span
+        className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-xl text-brand"
+        aria-hidden="true"
+      >
+        <span className={`fa ${icon}`} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-muted">
+          {title}
+        </span>
+        <span className="block font-heading text-3xl font-bold leading-tight text-fg">
+          {loading ? <Spinner size="sm" /> : count}
+        </span>
+      </span>
+      <span className="text-muted transition-colors group-hover:text-brand" aria-hidden="true">
+        <span className="fa fa-angle-right" />
+      </span>
+    </Link>
+  );
+};
 
 const TaxonomyModal = ({
   title,
@@ -759,14 +865,18 @@ const ConfirmModal = ({
   </Modal>
 );
 
-const NewsManager = ({ user }: { user: UserProfile }) => {
+const NewsManager = ({
+  user,
+  tableName,
+}: {
+  user: UserProfile;
+  tableName: NewsTableName;
+}) => {
   const { api } = useMalanghubRuntime();
-  const { Link } = useAdapters();
   const admin = isAdmin(user);
-  const myNews = useMyNews(api, true);
-  const myDrafts = useMyDrafts(api, true);
-  const allDrafts = useAllDrafts(api, admin);
-  const [tableName, setTableName] = useState<NewsTableName>("Berita");
+  const myNews = useMyNews(api, tableName === "Berita");
+  const myDrafts = useMyDrafts(api, tableName === "Antrian Berita");
+  const allDrafts = useAllDrafts(api, admin && tableName === "Persetujuan Berita");
   const [modal, setModal] = useState<ModalKind | null>(null);
   const [selectedDraft, setSelectedDraft] = useState<News | null>(null);
 
@@ -789,41 +899,9 @@ const NewsManager = ({ user }: { user: UserProfile }) => {
     <>
       <ManagerLayout
         toolbar={
-          <>
-            <Dropdown
-              label={
-                <>
-                  Berita <span className="fa fa-angle-down" aria-hidden="true" />
-                </>
-              }
-              buttonClassName={buttonClass({
-                variant: tableName === "Berita" ? "primary" : "secondary",
-              })}
-              items={[
-                { key: "view", label: "Lihat Berita", onSelect: () => setTableName("Berita") },
-                { key: "add", label: "Tambah Berita", onSelect: () => setModal("addNews") },
-              ]}
-              renderLink={({ href, className, children }) => (
-                <Link href={href} className={className}>
-                  {children}
-                </Link>
-              )}
-            />
-            <Button
-              variant={tableName === "Antrian Berita" ? "primary" : "secondary"}
-              onClick={() => setTableName("Antrian Berita")}
-            >
-              Antrian Berita
-            </Button>
-            {admin && (
-              <Button
-                variant={tableName === "Persetujuan Berita" ? "primary" : "secondary"}
-                onClick={() => setTableName("Persetujuan Berita")}
-              >
-                Persetujuan Berita
-              </Button>
-            )}
-          </>
+          <Button onClick={() => setModal("addNews")}>
+            <span className="fa fa-plus" aria-hidden="true" /> Tambah Berita
+          </Button>
         }
         title={tableName}
         table={
@@ -863,13 +941,6 @@ const NewsManager = ({ user }: { user: UserProfile }) => {
               )}
             </tbody>
           </Table>
-        }
-        stats={
-          <>
-            <StatCard title="Berita" icon="fa-newspaper-o" count={myNews.data?.length ?? 0} loading={myNews.isLoading} active={tableName === "Berita"} onClick={() => setTableName("Berita")} />
-            <StatCard title="Antrian Berita" icon="fa-hourglass-half" count={myDrafts.data?.length ?? 0} loading={myDrafts.isLoading} active={tableName === "Antrian Berita"} onClick={() => setTableName("Antrian Berita")} />
-            {admin && <StatCard title="Persetujuan Berita" icon="fa-check-square-o" count={allDrafts.data?.length ?? 0} loading={allDrafts.isLoading} active={tableName === "Persetujuan Berita"} onClick={() => setTableName("Persetujuan Berita")} />}
-          </>
         }
       />
       <DraftFormModal mode="add" open={modal === "addNews"} onClose={() => setModal(null)} />
@@ -1272,6 +1343,8 @@ export const DashboardPage = () => {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const currentUser = useCurrentUser(api, hasToken);
   const deleteAccount = useDeleteAccountMutation(api);
+  const section = getDashboardSection(adapters.useCurrentPath());
+  const isOverview = section.key === "overview";
 
   useEffect(() => {
     void Promise.resolve(authStorage.getToken()).then((token) => {
@@ -1313,36 +1386,50 @@ export const DashboardPage = () => {
   return (
     <>
       <Meta
-        title="Malanghub - Profil"
+        title={isOverview ? "Malanghub - Profil" : `Malanghub - Profil - ${section.label}`}
         description="Malanghub - Profil - Situs yang menyediakan informasi sekitar Malang Raya!"
         robots="noindex,nofollow"
       />
-      <PageBreadcrumbs items={[{ label: "Beranda", href: "/" }, { label: "Profil" }]} />
-      <ProfileHeader
-        user={currentUser.data}
-        greeting
-        actions={
-          <>
-            <Button onClick={() => setProfileModalOpen(true)}>
-              <span className="fa fa-edit" aria-hidden="true" />
-              Edit Profil
-            </Button>
-            <Button variant="secondary" onClick={() => void onLogout()}>
-              <span className="fa fa-sign-out" aria-hidden="true" />
-              Keluar
-            </Button>
-            <Button
-              variant="ghost"
-              className="text-danger! hover:bg-danger-soft!"
-              onClick={() => setDeleteModalOpen(true)}
-            >
-              <span className="fa fa-trash" aria-hidden="true" />
-              Hapus Akun
-            </Button>
-          </>
+      <PageBreadcrumbs
+        items={
+          isOverview
+            ? [{ label: "Beranda", href: "/" }, { label: "Profil" }]
+            : [
+                { label: "Beranda", href: "/" },
+                { label: "Dashboard", href: "/users" },
+                { label: section.label },
+              ]
         }
       />
-      {currentUser.data && <DashboardWorkbench user={currentUser.data} />}
+      {isOverview && (
+        <ProfileHeader
+          user={currentUser.data}
+          greeting
+          actions={
+            <>
+              <Button onClick={() => setProfileModalOpen(true)}>
+                <span className="fa fa-edit" aria-hidden="true" />
+                Edit Profil
+              </Button>
+              <Button variant="secondary" onClick={() => void onLogout()}>
+                <span className="fa fa-sign-out" aria-hidden="true" />
+                Keluar
+              </Button>
+              <Button
+                variant="ghost"
+                className="text-danger! hover:bg-danger-soft!"
+                onClick={() => setDeleteModalOpen(true)}
+              >
+                <span className="fa fa-trash" aria-hidden="true" />
+                Hapus Akun
+              </Button>
+            </>
+          }
+        />
+      )}
+      {currentUser.data && (
+        <DashboardWorkbench user={currentUser.data} section={section} />
+      )}
       <EditProfileModal user={currentUser.data} open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
       <DeleteAccountModal
         open={deleteModalOpen}
@@ -1399,7 +1486,7 @@ export const DraftPreviewPage = ({ slug }: { slug?: string }) => {
       <PageBreadcrumbs
         items={[
           { label: "Beranda", href: "/" },
-          { label: "Antrian Berita" },
+          { label: "Antrian Berita", href: "/users/news/drafts" },
           { label: draft.data.title },
         ]}
       />

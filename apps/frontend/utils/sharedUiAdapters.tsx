@@ -50,6 +50,12 @@ const NextMeta = ({
   </Head>
 );
 
+const useNextSearchParam = (name: string) => {
+  const router = useRouter();
+  const query = router.asPath.split("#")[0].split("?")[1] ?? "";
+  return new URLSearchParams(query).get(name);
+};
+
 export const useNextUiAdapters = (): PlatformAdapters => {
   const router = useRouter();
 
@@ -61,6 +67,7 @@ export const useNextUiAdapters = (): PlatformAdapters => {
       void router.push(href);
     },
     useCurrentPath: () => router.asPath.split("?")[0] || "/",
+    useSearchParam: useNextSearchParam,
     reportError: (error) => Sentry.captureException(error),
     googleAuthAvailable: true,
     offlineBannerEnabled: false,

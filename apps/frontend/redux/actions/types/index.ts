@@ -45,7 +45,6 @@ export const NEWS_DRAFTS_ERROR = "NEWS_DRAFTS_ERROR";
 export const NEWS_DRAFTS_CLEAR_ERROR = "NEWS_DRAFTS_CLEAR_ERROR";
 
 // NEWS
-export const GET_ALL_NEWS = "GET_ALL_NEWS";
 export const GET_RELATED_NEWS = "GET_RELATED_NEWS";
 export const GET_MY_NEWS = "GET_MY_NEWS";
 export const GET_ONE_NEWS = "GET_ONE_NEWS";

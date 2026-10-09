@@ -1,94 +1,59 @@
 import { useEffect } from "react";
-import Head from "next/head";
 import { connect } from "react-redux";
 import moment from "moment";
-import { getAllNews } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
-import AllNewsItem from "../../components/news/AllNewsItem";
 import NewsListingLayout, {
   EmptyNews,
 } from "../../components/news/NewsListingLayout";
-import { LoadingBlock } from "@malanghub/ui";
+import { NewsGrid } from "../../components/news/NewsCard";
+import ListingSeo from "../../components/seo/ListingSeo";
 import * as Sentry from "@sentry/nextjs";
-import { RootState } from "../../redux/store";
-import { News as NewsInterface, NewsWithPagination } from "../../models/news";
-import { NewsReducerState } from "../../redux/types";
+import { GetServerSidePropsContext } from "next";
+import { News as NewsInterface } from "../../models/news";
+import {
+  fetchJson,
+  fetchNewsPage,
+  firstPageRedirect,
+  isPageOutOfRange,
+  pageCountOf,
+  parsePage,
+} from "../../utils/pagination";
+
+const BASE_PATH = "/news";
+const LIMIT = 5;
 
 interface NewsProps {
   trendingNews: NewsInterface[];
-  news: NewsReducerState;
-  getAllNews: (page: number) => void;
+  news: NewsInterface[];
+  page: number;
+  pageCount: number;
   setActiveLink: (link: string) => void;
 }
 
 const News = ({
   trendingNews,
-  news: { allNews, loading: newsLoading },
-  getAllNews,
+  news,
+  page,
+  pageCount,
   setActiveLink,
 }: NewsProps) => {
   useEffect(() => {
     setActiveLink("news");
-    getAllNews(1);
   }, []);
 
   return (
     <>
-      <Head>
-        <title>Malanghub - Semua Berita</title>
-        <meta name="title" content="Malanghub - Semua Berita" />
-        <meta
-          name="description"
-          content="Malanghub - Semua Berita - Situs yang menyediakan informasi sekitar Malang Raya!"
-        />
-
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://www.malanghub.com/news" />
-        <meta property="og:title" content="Malanghub - Semua Berita" />
-        <meta
-          property="og:description"
-          content="Malanghub - Semua Berita - Situs yang menyediakan informasi sekitar Malang Raya!"
-        />
-        <meta
-          property="og:image"
-          content="https://www.malanghub.com/malanghub-meta.png"
-        />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="628" />
-
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:url" content="https://www.malanghub.com/news" />
-        <meta property="twitter:title" content="Malanghub - Semua Berita" />
-        <meta
-          property="twitter:description"
-          content="Malanghub - Semua Berita - Situs yang menyediakan informasi sekitar Malang Raya!"
-        />
-        <meta
-          property="twitter:image"
-          content="https://www.malanghub.com/malanghub-meta.png"
-        />
-
-        <link rel="canonical" href="https://www.malanghub.com/news" />
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "CollectionPage",
-              name: "Semua Berita - Malanghub",
-              description:
-                "Kumpulan seluruh berita terbaru seputar Malang Raya dari Malanghub.",
-              url: "https://www.malanghub.com/news",
-              inLanguage: "id-ID",
-              isPartOf: {
-                "@type": "WebSite",
-                "@id": "https://www.malanghub.com/#website",
-              },
-            }),
-          }}
-        />
-      </Head>
+      <ListingSeo
+        title="Malanghub - Semua Berita"
+        description="Malanghub - Semua Berita - Situs yang menyediakan informasi sekitar Malang Raya!"
+        collectionName="Semua Berita - Malanghub"
+        collectionDescription="Kumpulan seluruh berita terbaru seputar Malang Raya dari Malanghub."
+        basePath={BASE_PATH}
+        page={page}
+        pageCount={pageCount}
+        limit={LIMIT}
+        news={news}
+      />
 
       <NewsListingLayout
         breadcrumbs={[
@@ -97,12 +62,14 @@ const News = ({
         ]}
         title="Semua Berita"
         trendingNews={trendingNews}
-        trendingLoading={newsLoading}
       >
-        {newsLoading || allNews === null ? (
-          <LoadingBlock />
-        ) : allNews?.data?.length > 0 ? (
-          <AllNewsItem news={allNews} />
+        {news.length > 0 ? (
+          <NewsGrid
+            news={news}
+            page={page}
+            pageCount={pageCount}
+            basePath={BASE_PATH}
+          />
         ) : (
           <EmptyNews>Belum Ada Berita</EmptyNews>
         )}
@@ -111,7 +78,10 @@ const News = ({
   );
 };
 
-export async function getServerSideProps() {
+export async function getServerSideProps({ query }: GetServerSidePropsContext) {
+  const page = parsePage(query.page);
+  if (page === null) return firstPageRedirect(BASE_PATH);
+
   const result = await Sentry.startSpan(
     {
       name: "news.index.getServerSideProps",
@@ -123,33 +93,36 @@ export async function getServerSideProps() {
         .subtract(1, "months")
         .toISOString()}`;
 
-      let dataTrending = {};
-
       try {
-        const response = await fetch(trendingNewsUrl);
+        const [trendingJson, list] = await Promise.all([
+          fetchJson(trendingNewsUrl),
+          fetchNewsPage(
+            `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}`,
+          ),
+        ]);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch trending news");
+        if (isPageOutOfRange(page, list.meta)) {
+          return { notFound: true as const };
         }
 
-        const jsonData = await response.json();
-        dataTrending = jsonData.data;
+        return {
+          props: {
+            trendingNews: trendingJson.data,
+            news: list.data,
+            page,
+            pageCount: pageCountOf(list.meta),
+          },
+        };
       } catch (e) {
         Sentry.captureException(e);
         return {
-          notFound: true,
+          notFound: true as const,
         };
       }
-
-      return { props: { trendingNews: dataTrending } };
     },
   );
 
   return result;
 }
 
-const mapStateToProps = (state: RootState) => ({
-  news: state.news,
-});
-
-export default connect(mapStateToProps, { getAllNews, setActiveLink })(News);
+export default connect(null, { setActiveLink })(News);

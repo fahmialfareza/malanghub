@@ -7,6 +7,9 @@ export interface LinkProps {
   style?: React.CSSProperties;
   children: React.ReactNode;
   onClick?: React.MouseEventHandler<HTMLAnchorElement>;
+  rel?: string;
+  "aria-label"?: string;
+  "aria-current"?: "page";
 }
 
 export interface ImageProps {
@@ -33,6 +36,12 @@ export interface PlatformAdapters {
   Meta: React.ComponentType<MetaProps>;
   navigate(href: string): void;
   useCurrentPath(): string;
+  /**
+   * Reads a query-string parameter of the current route (e.g. `page` from
+   * `/news?page=2`). Must be a React hook. Optional: when omitted, the
+   * shared `useSearchParam` hook falls back to `window.location`.
+   */
+  useSearchParam?(name: string): string | null;
   reportError?(error: unknown): void;
   requestGoogleAuth?(): Promise<AuthResponse>;
   requestGoogleAccessToken?(): Promise<string>;
@@ -128,3 +137,47 @@ export const AdapterProvider = ({
 );
 
 export const useAdapters = () => useContext(AdapterContext);
+
+const subscribeToLocation = (onChange: () => void) => {
+  window.addEventListener("popstate", onChange);
+  window.addEventListener("hashchange", onChange);
+  return () => {
+    window.removeEventListener("popstate", onChange);
+    window.removeEventListener("hashchange", onChange);
+  };
+};
+
+/** Query string of the current URL, including hash routes like `#/news?page=2`. */
+const readLocationSearch = () => {
+  if (typeof window === "undefined") return "";
+  const { search, hash } = window.location;
+  const hashQuery = hash.includes("?") ? hash.slice(hash.indexOf("?")) : "";
+  return hashQuery || search;
+};
+
+const useWindowSearchParam = (name: string) => {
+  const search = React.useSyncExternalStore(
+    subscribeToLocation,
+    readLocationSearch,
+    () => ""
+  );
+  return new URLSearchParams(search).get(name);
+};
+
+/**
+ * Reads a query-string parameter through the platform adapter, falling back
+ * to `window.location` when the platform does not provide one. The adapter
+ * object is stable per platform, so the hook order never changes.
+ */
+export const useSearchParam = (name: string): string | null => {
+  const adapters = useAdapters();
+  const useAdapterSearchParam =
+    adapters.useSearchParam ?? useWindowSearchParam;
+  return useAdapterSearchParam(name);
+};
+
+/** Current `?page=N` as a positive integer (invalid or < 1 becomes 1). */
+export const usePageParam = (): number => {
+  const value = Number.parseInt(useSearchParam("page") ?? "", 10);
+  return Number.isFinite(value) && value >= 1 ? value : 1;
+};

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import Link from "next/link";
 import { connect } from "react-redux";
 import Moment from "react-moment";
@@ -13,18 +12,14 @@ interface NewsTableItemProps {
 }
 
 const NewsTableItem = ({ news, index, getMyNews }: NewsTableItemProps) => {
-  useEffect(() => {
-    getMyNews();
-  }, []);
-
   return (
     <tr>
-      <td className="text-muted">{index + 1}</td>
+      <td className="text-muted hidden 2xl:table-cell">{index + 1}</td>
       <td className="min-w-48 font-semibold text-fg">{news.title}</td>
       <td className="whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{news.created_at}</Moment>
       </td>
-      <td className="whitespace-nowrap">
+      <td className="whitespace-nowrap hidden 2xl:table-cell">
         <Moment format="MMMM Do, YYYY">{news.created_at}</Moment>
       </td>
       <td>

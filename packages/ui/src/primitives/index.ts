@@ -7,3 +7,4 @@ export * from "./Surface";
 export * from "./Overlay";
 export * from "./Breadcrumbs";
 export * from "./ThemeIcon";
+export * from "./Pagination";

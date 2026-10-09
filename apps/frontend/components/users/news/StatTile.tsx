@@ -9,12 +9,12 @@ interface StatTileProps {
   action?: ReactNode;
 }
 
-/** Small count card shown next to the dashboard tables. */
+/** Small count card shown on the dashboard overview. */
 const StatTile = ({ label, value, icon, active, action }: StatTileProps) => (
   <Card
     className={cx(
       "flex flex-col gap-3 p-4 transition-colors",
-      active && "border-brand ring-1 ring-brand"
+      active && "border-brand ring-1 ring-brand",
     )}
   >
     <div className="flex items-center justify-between gap-3">

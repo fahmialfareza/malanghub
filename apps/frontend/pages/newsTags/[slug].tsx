@@ -1,154 +1,112 @@
 import { useEffect } from "react";
-import Head from "next/head";
 import { connect } from "react-redux";
-import { useRouter } from "next/router";
 import moment from "moment";
-import { getNewsByTag } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
-import NewsByTagItem from "../../components/news/NewsByTagItem";
 import NewsListingLayout, {
   EmptyNews,
 } from "../../components/news/NewsListingLayout";
-import { LoadingBlock } from "@malanghub/ui";
+import { NewsGrid } from "../../components/news/NewsCard";
+import ListingSeo from "../../components/seo/ListingSeo";
 import * as Sentry from "@sentry/nextjs";
-import { GetStaticPropsContext } from "next";
-import { RootState } from "../../redux/store";
+import { GetServerSidePropsContext } from "next";
 import { News, NewsTag as NewsTg } from "../../models/news";
-import { NewsReducerState } from "../../redux/types";
+import {
+  fetchJson,
+  fetchNewsPage,
+  firstPageRedirect,
+  isPageOutOfRange,
+  pageCountOf,
+  parsePage,
+} from "../../utils/pagination";
+import { SITE_URL } from "../../utils/seo";
+
+const LIMIT = 5;
 
 interface NewsTagProps {
   trendingNews: News[];
   oneNewsTag: { tag: NewsTg };
-  news: NewsReducerState;
-  getNewsByTag: (id: string, page: number) => void;
+  news: News[];
+  page: number;
+  pageCount: number;
   setActiveLink: (link: string) => void;
 }
 
 const NewsTag = ({
   trendingNews,
   oneNewsTag,
-  news: { newsByTag, loading: newsLoading },
-  getNewsByTag,
+  news,
+  page,
+  pageCount,
   setActiveLink,
 }: NewsTagProps) => {
-  const router = useRouter();
-
   useEffect(() => {
     setActiveLink("news");
   }, []);
 
-  useEffect(() => {
-    getNewsByTag(oneNewsTag?.tag.id || "", 1);
-  }, [oneNewsTag]);
+  const tag = oneNewsTag?.tag;
+  const basePath = `/newsTags/${tag?.slug}`;
+  const title = `Malanghub - Tag Berita - ${tag?.name}`;
 
   return (
     <>
-      <Head>
-        <title>Malanghub - Tag Berita - {oneNewsTag?.tag.name}</title>
-        <meta
-          name="title"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name}`}
-        />
-        <meta
-          name="description"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
-        />
-
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:url"
-          content={`https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`}
-        />
-        <meta
-          property="og:title"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name}`}
-        />
-        <meta
-          property="og:description"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
-        />
-        <meta
-          property="og:image"
-          content="https://www.malanghub.com/malanghub-meta.png"
-        />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="628" />
-
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta
-          property="twitter:url"
-          content={`https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`}
-        />
-        <meta
-          property="twitter:title"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name}`}
-        />
-        <meta
-          property="twitter:description"
-          content={`Malanghub - Tag Berita - ${oneNewsTag?.tag.name} - Situs yang menyediakan informasi sekitar Malang Raya!`}
-        />
-        <meta
-          property="twitter:image"
-          content="https://www.malanghub.com/malanghub-meta.png"
-        />
-
-        <link
-          rel="canonical"
-          href={`https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`}
-        />
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "BreadcrumbList",
-              itemListElement: [
-                {
-                  "@type": "ListItem",
-                  position: 1,
-                  name: "Beranda",
-                  item: "https://www.malanghub.com/",
-                },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "Tag Berita",
-                  item: "https://www.malanghub.com/news",
-                },
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: oneNewsTag?.tag.name,
-                  item: `https://www.malanghub.com/newsTags/${oneNewsTag?.tag.slug}`,
-                },
-              ],
-            }),
-          }}
-        />
-      </Head>
+      <ListingSeo
+        title={title}
+        description={`${title} - Situs yang menyediakan informasi sekitar Malang Raya!`}
+        collectionName={`#${tag?.name} - Malanghub`}
+        collectionDescription={`Berita dengan tag ${tag?.name} dari Malanghub.`}
+        basePath={basePath}
+        page={page}
+        pageCount={pageCount}
+        limit={LIMIT}
+        news={news}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Beranda",
+                item: `${SITE_URL}/`,
+              },
+              {
+                "@type": "ListItem",
+                position: 2,
+                name: "Tag Berita",
+                item: `${SITE_URL}/news`,
+              },
+              {
+                "@type": "ListItem",
+                position: 3,
+                name: tag?.name,
+                item: `${SITE_URL}${basePath}`,
+              },
+            ],
+          },
+        ]}
+      />
 
       <NewsListingLayout
         breadcrumbs={[
           { label: "Beranda", href: "/" },
           { label: "Tag Berita" },
-          { label: oneNewsTag?.tag?.name ?? "" },
+          { label: tag?.name ?? "" },
         ]}
         title={
           <>
             <span className="text-muted">#</span>
-            {oneNewsTag?.tag?.name}
+            {tag?.name}
           </>
         }
         trendingNews={trendingNews}
-        trendingLoading={newsLoading}
       >
-        {newsLoading || newsByTag === null ? (
-          <LoadingBlock />
-        ) : newsByTag?.data?.length > 0 ? (
-          <NewsByTagItem
-            paramsId={oneNewsTag?.tag?.id || ""}
-            news={newsByTag}
+        {news.length > 0 ? (
+          <NewsGrid
+            news={news}
+            page={page}
+            pageCount={pageCount}
+            basePath={basePath}
           />
         ) : (
           <EmptyNews>Belum Ada Berita</EmptyNews>
@@ -160,7 +118,14 @@ const NewsTag = ({
 
 export async function getServerSideProps({
   params,
-}: GetStaticPropsContext<{ slug: string }>) {
+  query,
+}: GetServerSidePropsContext<{ slug: string }>) {
+  const slug = params?.slug ?? "";
+  const page = parsePage(query.page);
+  if (page === null) {
+    return firstPageRedirect(`/newsTags/${encodeURIComponent(slug)}`);
+  }
+
   const result = await Sentry.startSpan(
     {
       name: "newsTags.[slug].getServerSideProps",
@@ -171,48 +136,47 @@ export async function getServerSideProps({
       }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
         .subtract(1, "months")
         .toISOString()}`;
-      const newsTagUrl = `${process.env.API_ADDRESS}/api/newsTags/${params?.slug}`;
-
-      let dataTrending = {};
-      let dataNewsTag = {};
+      const newsTagUrl = `${process.env.API_ADDRESS}/api/newsTags/${encodeURIComponent(slug)}`;
 
       try {
-        // Fetch both trending news and news tag data concurrently
-        const [trendingNewsResponse, newsTagResponse] = await Promise.all([
-          fetch(trendingNewsUrl),
-          fetch(newsTagUrl),
+        // Trending and the tag load concurrently; the list starts as soon
+        // as the tag id is known.
+        const tagPromise = fetchJson(newsTagUrl);
+        const [trendingNewsJson, newsTagJson, list] = await Promise.all([
+          fetchJson(trendingNewsUrl),
+          tagPromise,
+          tagPromise.then((json) => {
+            const id = json?.data?.tag?.id;
+            if (!id) throw new Error("News tag not found");
+            return fetchNewsPage(
+              `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&tags=${id}`,
+            );
+          }),
         ]);
 
-        // Check if both responses are successful
-        if (!trendingNewsResponse.ok || !newsTagResponse.ok) {
-          throw new Error("Failed to fetch data");
+        if (isPageOutOfRange(page, list.meta)) {
+          return { notFound: true as const };
         }
 
-        const trendingNewsJson = await trendingNewsResponse.json();
-        const newsTagJson = await newsTagResponse.json();
-
-        dataTrending = trendingNewsJson.data;
-        dataNewsTag = newsTagJson.data;
+        return {
+          props: {
+            trendingNews: trendingNewsJson.data,
+            oneNewsTag: newsTagJson.data,
+            news: list.data,
+            page,
+            pageCount: pageCountOf(list.meta),
+          },
+        };
       } catch (e) {
         Sentry.captureException(e);
         return {
-          notFound: true,
+          notFound: true as const,
         };
       }
-
-      return { props: { trendingNews: dataTrending, oneNewsTag: dataNewsTag } };
     },
   );
 
   return result;
 }
 
-const mapStateToProps = (state: RootState) => ({
-  news: state.news,
-  newsTag: state.newsTag,
-});
-
-export default connect(mapStateToProps, {
-  getNewsByTag,
-  setActiveLink,
-})(NewsTag);
+export default connect(null, { setActiveLink })(NewsTag);

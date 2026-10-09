@@ -11,6 +11,7 @@ import {
   useNavigate,
   useNavigationType,
   useParams,
+  useSearchParams,
 } from "react-router-dom";
 import { onBackButtonPress } from "@tauri-apps/api/app";
 import {
@@ -572,6 +573,13 @@ const NativeLink = ({ href, children, onClick, ...props }: LinkProps) =>
       {children}
     </Link>
   );
+
+// Query params live inside the hash (`#/news?page=2`); react-router parses
+// them into `location.search`, so read them through the router.
+const useNativeSearchParam = (name: string) => {
+  const [searchParams] = useSearchParams();
+  return searchParams.get(name);
+};
 
 const NativeImage = ({
   fill,
@@ -1273,6 +1281,7 @@ const NativeProviders = ({ children }: { children: React.ReactNode }) => {
       Meta: NativeMeta,
       navigate: (href) => navigate(href),
       useCurrentPath: () => location.pathname,
+      useSearchParam: useNativeSearchParam,
       reportError: (error) => console.error(error),
       requestGoogleAuth: isMobilePlatform(nativePlatform)
         ? requestNativeGoogleAuth
@@ -1355,6 +1364,11 @@ const App = () => (
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignUpPage />} />
         <Route path="/users" element={<DashboardPage />} />
+        <Route path="/users/news" element={<DashboardPage />} />
+        <Route path="/users/news/drafts" element={<DashboardPage />} />
+        <Route path="/users/news/agreements" element={<DashboardPage />} />
+        <Route path="/users/categories" element={<DashboardPage />} />
+        <Route path="/users/tags" element={<DashboardPage />} />
         <Route path="/users/newsDrafts/:slug" element={<DraftPreviewRoute />} />
         <Route path="/users/:id" element={<UserRoute />} />
         <Route path="/contact" element={<ContactPage />} />

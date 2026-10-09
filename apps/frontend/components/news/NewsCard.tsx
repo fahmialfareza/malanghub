@@ -3,9 +3,8 @@ import Image from "next/image";
 import Moment from "react-moment";
 import "moment/locale/id";
 import parse from "html-react-parser";
-import ReactPaginate from "react-paginate";
-import { badgeClass, cx, paginationClasses } from "@malanghub/ui";
-import { News, NewsWithPagination } from "../../models/news";
+import { Pagination, PageLinkProps, badgeClass, cx } from "@malanghub/ui";
+import { News } from "../../models/news";
 
 /** Category name + slug, whether the API populated the category or not. */
 export const newsCategoryOf = (news: News) => {
@@ -238,43 +237,44 @@ export const NumberedNewsItem = ({
   </article>
 );
 
+const renderPageLink = ({ children, ...props }: PageLinkProps) => (
+  <Link {...props}>{children}</Link>
+);
+
+/** Crawlable `?page=N` pagination rendered with next/link. */
 export const NewsPagination = ({
-  meta,
-  onPageChange,
+  page,
+  pageCount,
+  basePath,
+  className,
 }: {
-  meta: NewsWithPagination["meta"];
-  onPageChange: (page: number) => void;
-}) =>
-  meta ? (
-    <nav aria-label="Navigasi halaman">
-      <ReactPaginate
-        {...paginationClasses}
-        previousLabel={"<"}
-        nextLabel={">"}
-        breakLabel={"..."}
-        initialPage={Math.max((meta.page || 1) - 1, 0)}
-        pageCount={Math.max(
-          Math.ceil((meta.total || 0) / (meta.limit || 1)),
-          1,
-        )}
-        marginPagesDisplayed={2}
-        pageRangeDisplayed={5}
-        onPageChange={(data: { selected: number }) =>
-          onPageChange(data.selected + 1)
-        }
-      />
-    </nav>
-  ) : null;
+  page: number;
+  pageCount: number;
+  basePath: string;
+  className?: string;
+}) => (
+  <Pagination
+    page={page}
+    pageCount={pageCount}
+    basePath={basePath}
+    renderLink={renderPageLink}
+    className={className}
+  />
+);
 
 /** First story as a featured card, the rest in a responsive grid, then pagination. */
 export const NewsGrid = ({
   news,
-  onPageChange,
+  page,
+  pageCount,
+  basePath,
 }: {
-  news: NewsWithPagination;
-  onPageChange: (page: number) => void;
+  news: News[];
+  page: number;
+  pageCount: number;
+  basePath: string;
 }) => {
-  const [first, ...rest] = news.data;
+  const [first, ...rest] = news;
   return (
     <div>
       {first && (
@@ -287,7 +287,7 @@ export const NewsGrid = ({
           ))}
         </div>
       )}
-      <NewsPagination meta={news.meta} onPageChange={onPageChange} />
+      <NewsPagination page={page} pageCount={pageCount} basePath={basePath} />
     </div>
   );
 };

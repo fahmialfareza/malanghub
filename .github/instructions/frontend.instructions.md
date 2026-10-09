@@ -58,3 +58,8 @@ Guidance for working in the Next.js frontend app.
 
 - "Add a new screen and navigation entry; wire state using existing `redux` store."
 - "Create a small hook in `utils/` to wrap local storage usage and add tests."
+
+## Pagination and dashboard routes
+
+- Listing pages paginate through the URL (`?page=N`) and render the list in `getServerSideProps` for SEO. Use `utils/pagination.ts` (`parsePage`, `firstPageRedirect`, `isPageOutOfRange`, `fetchNewsPage`), the `Pagination` primitive from `@malanghub/ui` (real links), and `components/seo/ListingSeo.tsx` (canonical, prev/next, ItemList JSON-LD). `?page=1`/invalid pages 308-redirect to the clean URL; pages past the end return 404.
+- The user dashboard is split into routes under `/users`: `/users` (overview), `/users/news`, `/users/news/drafts`, `/users/news/agreements` (admin), `/users/categories` (admin), `/users/tags` (admin). Wrap new dashboard pages in `components/users/DashboardLayout.tsx` (auth/admin guards, nav, noindex).

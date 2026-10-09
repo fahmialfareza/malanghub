@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   type AuthResponse,
   type News,
@@ -18,12 +18,13 @@ import {
   useTrendingNews,
   useUserProfile,
 } from "@malanghub/core";
-import { useAdapters } from "./adapters";
+import { useAdapters, usePageParam } from "./adapters";
 import { useMalanghubRuntime } from "./providers";
 import {
   Button,
   Card,
   Input,
+  Pagination,
   Select,
   Textarea,
   buttonClass,
@@ -172,128 +173,65 @@ const NewsListItem = ({ news }: { news: News }) => {
   );
 };
 
-function buildPageList(
-  page: number,
-  pageCount: number,
-  marginPages = 2,
-  pageRange = 5,
-): (number | "...")[] {
-  const pages = new Set<number>();
-  for (let i = 1; i <= Math.min(marginPages, pageCount); i++) pages.add(i);
-  for (let i = Math.max(pageCount - marginPages + 1, 1); i <= pageCount; i++)
-    pages.add(i);
-  const rangeStart = Math.max(
-    1,
-    Math.min(pageCount - pageRange + 1, page - Math.floor(pageRange / 2)),
-  );
-  const rangeEnd = Math.min(pageCount, rangeStart + pageRange - 1);
-  for (let i = rangeStart; i <= rangeEnd; i++) pages.add(i);
-  const sorted = Array.from(pages).sort((a, b) => a - b);
-  const result: (number | "...")[] = [];
-  for (let i = 0; i < sorted.length; i++) {
-    if (i > 0 && sorted[i] - sorted[i - 1] > 1) result.push("...");
-    result.push(sorted[i]);
-  }
-  return result;
-}
+// Last page shown per listing. Module-level because the grid unmounts while
+// the next page loads, so a ref would forget the previous page.
+const lastListingPage = new Map<string, number>();
 
-const pageButtonClass = (active?: boolean) =>
-  cx(
-    "flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-45",
-    active
-      ? "border-brand bg-brand text-brand-fg"
-      : "border-line bg-surface text-body hover:border-brand hover:text-brand",
-  );
-
-const Pagination = ({
-  page,
-  pageCount,
-  onPageChange,
-}: {
-  page: number;
-  pageCount: number;
-  onPageChange(page: number): void;
-}) => (
-  <nav aria-label="Navigasi halaman" className="mt-10">
-    <ul className="m-0 flex flex-wrap items-center justify-center gap-1.5 p-0 list-none">
-      <li>
-        <button
-          type="button"
-          className={pageButtonClass()}
-          aria-label="Halaman sebelumnya"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-        >
-          <span className="fa fa-angle-left" aria-hidden="true" />
-        </button>
-      </li>
-      {buildPageList(page, pageCount).map((item, index) =>
-        item === "..." ? (
-          <li
-            key={`ellipsis-${index}`}
-            className="px-1.5 text-muted"
-            aria-hidden="true"
-          >
-            ...
-          </li>
-        ) : (
-          <li key={item}>
-            <button
-              type="button"
-              className={pageButtonClass(page === item)}
-              aria-current={page === item ? "page" : undefined}
-              onClick={() => onPageChange(item)}
-            >
-              {item}
-            </button>
-          </li>
-        ),
-      )}
-      <li>
-        <button
-          type="button"
-          className={pageButtonClass()}
-          aria-label="Halaman berikutnya"
-          disabled={page >= pageCount}
-          onClick={() => onPageChange(page + 1)}
-        >
-          <span className="fa fa-angle-right" aria-hidden="true" />
-        </button>
-      </li>
-    </ul>
-  </nav>
-);
+/** Scrolls back to the top when the `?page=N` of a listing changes. */
+const useScrollTopOnPageChange = (basePath: string | undefined, page: number) => {
+  useEffect(() => {
+    if (!basePath) return;
+    const previous = lastListingPage.get(basePath);
+    lastListingPage.set(basePath, page);
+    if (previous !== undefined && previous !== page) {
+      window.scrollTo({ top: 0 });
+    }
+  }, [basePath, page]);
+};
 
 const NewsGrid = ({
   response,
-  onPageChange,
+  basePath,
+  page: requestedPage = 1,
 }: {
   response?: PaginatedResponse<News>;
-  onPageChange?: (page: number) => void;
+  /** Route of the listing; pages link to `basePath?page=N`. */
+  basePath?: string;
+  page?: number;
 }) => {
+  const { Link } = useAdapters();
   const news = response?.data ?? [];
   const meta = response?.meta ?? response?.pagination;
-  const page = meta?.page ?? 1;
+  const page = meta?.page ?? requestedPage;
   const limit = meta?.limit ?? 1;
   const total = meta?.total ?? news.length;
   const pageCount = Math.max(Math.ceil(total / limit), 1);
+
+  useScrollTopOnPageChange(basePath, requestedPage);
 
   if (!news.length) return <EmptyState>Belum Ada Berita</EmptyState>;
 
   return (
     <>
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {news.map((item, index) => (
-          <div key={item._id} className={index === 0 ? "sm:col-span-2" : ""}>
+          <div
+            key={item._id}
+            className={cx("min-w-0", index === 0 && "sm:col-span-2")}
+          >
             <NewsCard news={item} featured={index === 0} />
           </div>
         ))}
       </div>
-      {onPageChange && pageCount > 1 && (
+      {basePath && (
         <Pagination
           page={page}
           pageCount={pageCount}
-          onPageChange={onPageChange}
+          basePath={basePath}
+          className="mb-0"
+          renderLink={({ children, ...props }) => (
+            <Link {...props}>{children}</Link>
+          )}
         />
       )}
     </>
@@ -437,7 +375,7 @@ export const HomePage = () => {
 export const NewsListPage = () => {
   const { api } = useMalanghubRuntime();
   const { Meta } = useAdapters();
-  const [page, setPage] = useState(1);
+  const page = usePageParam();
   const news = useNewsList(api, { page, sort: "-created_at", limit: 5 });
   const trending = useTrendingNews(api, 4);
 
@@ -455,7 +393,7 @@ export const NewsListPage = () => {
         {news.isLoading ? (
           <LoadingState />
         ) : (
-          <NewsGrid response={news.data} onPageChange={setPage} />
+          <NewsGrid response={news.data} basePath="/news" page={page} />
         )}
       </TwoColumnNewsLayout>
     </>
@@ -471,7 +409,7 @@ const TaxonomyPage = ({
 }) => {
   const { api } = useMalanghubRuntime();
   const { Meta } = useAdapters();
-  const [page, setPage] = useState(1);
+  const page = usePageParam();
   const category = useCategoryDetail(
     api,
     type === "category" ? slug : undefined,
@@ -509,7 +447,11 @@ const TaxonomyPage = ({
         {isLoading ? (
           <LoadingState />
         ) : (
-          <NewsGrid response={news.data} onPageChange={setPage} />
+          <NewsGrid
+            response={news.data}
+            basePath={`/${routePrefix}/${slug ?? entity?.slug ?? ""}`}
+            page={page}
+          />
         )}
       </TwoColumnNewsLayout>
     </>
@@ -527,7 +469,7 @@ export const NewsTagPage = ({ slug }: { slug?: string }) => (
 export const SearchPage = ({ search }: { search?: string }) => {
   const { api } = useMalanghubRuntime();
   const { Meta } = useAdapters();
-  const [page, setPage] = useState(1);
+  const page = usePageParam();
   const news = useNewsSearch(api, search, page);
   const trending = useTrendingNews(api, 4);
 
@@ -550,7 +492,11 @@ export const SearchPage = ({ search }: { search?: string }) => {
         {news.isLoading ? (
           <LoadingState />
         ) : (
-          <NewsGrid response={news.data} onPageChange={setPage} />
+          <NewsGrid
+            response={news.data}
+            basePath={`/search/${encodeURIComponent(search ?? "")}`}
+            page={page}
+          />
         )}
       </TwoColumnNewsLayout>
     </>
@@ -1006,7 +952,7 @@ export const SignUpPage = () => {
 
 export const UserProfilePage = ({ id }: { id?: string }) => {
   const { api } = useMalanghubRuntime();
-  const [page, setPage] = useState(1);
+  const page = usePageParam();
   const userQuery = useUserProfile(api, id);
   const profileNews = useNewsList(api, { page, user: id, limit: 5 });
   const threeMonthsAgo = useMemo(() => {
@@ -1060,7 +1006,11 @@ export const UserProfilePage = ({ id }: { id?: string }) => {
               {profileNews.isLoading ? (
                 <LoadingState />
               ) : (
-                <NewsGrid response={profileNews.data} onPageChange={setPage} />
+                <NewsGrid
+                  response={profileNews.data}
+                  basePath={`/users/${encodeURIComponent(id ?? "")}`}
+                  page={page}
+                />
               )}
             </>
           }
