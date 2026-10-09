@@ -30,7 +30,6 @@ parts:
     source: .
     build-snaps:
       - node/24/stable
-      - rustup/latest/stable
     build-packages:
       - build-essential
       - curl
@@ -46,7 +45,15 @@ parts:
       - libwebkit2gtk-4.1-0
     override-build: |
       set -eu
-      rustup default stable
+      # Install Rust via rustup.rs rather than the rustup snap: the gnome
+      # extension puts the SDK's libc on LD_LIBRARY_PATH, which crashes the
+      # snap's bundled loader (undefined symbol __nptl_change_stack_perm).
+      export RUSTUP_HOME="$SNAPCRAFT_PART_BUILD/.rustup"
+      export CARGO_HOME="$SNAPCRAFT_PART_BUILD/.cargo"
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+        | sh -s -- -y --profile minimal --default-toolchain stable --no-modify-path
+      export PATH="$CARGO_HOME/bin:$PATH"
+      rustc --version
       npm install --prefix "$SNAPCRAFT_PART_BUILD/.pnpm" pnpm@10.20.0
       export PATH="$SNAPCRAFT_PART_BUILD/.pnpm/node_modules/.bin:$PATH"
       pnpm --version
