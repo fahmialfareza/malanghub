@@ -32,8 +32,11 @@ yarn-error.log*
 .env.development
 .env.production
 
-# vercel
-.vercel
+# cloudflare / opennext
+.open-next
+.wrangler
+.dev.vars
+cloudflare-env.d.ts
 
 stderr.txt
 stdout.txt

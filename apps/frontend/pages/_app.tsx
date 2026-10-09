@@ -1,6 +1,5 @@
 import Head from "next/head";
 import { Provider } from "react-redux";
-import { Analytics } from "@vercel/analytics/react";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MalanghubProviders, AppDownloadBanner } from "@malanghub/ui";
 import type { AppProps } from "next/app";
@@ -38,7 +37,6 @@ function MyApp({ Component, ...rest }: AppProps) {
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
           <Component {...pageProps} />
         </GoogleOAuthProvider>
-        <Analytics />
         <Footer />
       </Provider>
     </MalanghubProviders>

@@ -38,6 +38,7 @@ Guidance for working in the Next.js frontend app.
 
 - Dev: `pnpm --filter frontend install && pnpm --filter frontend dev` (or `next dev` in `apps/frontend`).
 - Build: `pnpm --filter frontend install && pnpm --filter frontend build` (or `next build` in `apps/frontend`).
+- Deploy target is Cloudflare Workers via OpenNext: `pnpm preview` runs the build in the local Workers runtime, `pnpm run deploy` deploys. Don't add `export const runtime = "edge"`, and avoid Node APIs that workerd lacks (e.g. `fs` at request time).
 
 ## Style & safety
 

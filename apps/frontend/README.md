@@ -27,8 +27,21 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on Cloudflare Workers
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The frontend runs on Cloudflare Workers through [OpenNext](https://opennext.js.org/cloudflare) (`wrangler.jsonc`, `open-next.config.ts`). Production deploys run from Cloudflare Workers Builds on push to `main`; other branches get preview URLs.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```bash
+pnpm preview     # build with OpenNext and serve in the local Workers runtime (http://localhost:8787)
+pnpm run deploy  # build and deploy to Cloudflare (needs `wrangler login`)
+pnpm upload      # build and upload a new version without promoting it
+```
+
+Notes:
+
+- Copy `.dev.vars.example` to `.dev.vars` for local Workers previews.
+- `NEXT_PUBLIC_*`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG` and `SENTRY_PROJECT` must be set as **build** variables (they are inlined/used at build time). `API_ADDRESS`, `INDEXNOW_KEY` and `SENTRY_DSN` are **runtime** variables/secrets on the Worker.
+- `API_ADDRESS` must be a public hostname (`global_fetch_strictly_public` blocks private addresses), so local previews against `localhost` will not load data.
+- `next/image` uses `utils/imageLoader.ts`: Cloudinary images are resized by Cloudinary, everything else is served as-is.
+- Don't use `export const runtime = "edge"`; OpenNext runs everything on the Node.js-compatible runtime.
+- `patches/@opennextjs__cloudflare@*.patch` works around Next.js 16.4's `preview-props.json` ([opennextjs-cloudflare#1355](https://github.com/opennextjs/opennextjs-cloudflare/issues/1355)); drop it once an upstream release includes the fix.

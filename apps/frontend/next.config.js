@@ -4,6 +4,10 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   disable: process.env.NODE_ENV === "development",
 });
 const { withSentryConfig } = require("@sentry/nextjs");
+const { initOpenNextCloudflareForDev } = require("@opennextjs/cloudflare");
+
+// Exposes Cloudflare bindings (getCloudflareContext) during `next dev`.
+initOpenNextCloudflareForDev();
 
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -49,6 +53,10 @@ const baseConfig = {
     ];
   },
   images: {
+    // Cloudflare Workers has no built-in image optimizer; Cloudinary resizes instead.
+    // remotePatterns is not enforced with a custom loader but documents allowed hosts.
+    loader: "custom",
+    loaderFile: "./utils/imageLoader.ts",
     remotePatterns: [
       {
         protocol: "https",
@@ -74,7 +82,6 @@ const sentryWrappedConfig = withSentryConfig(baseConfig, {
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
   tunnelRoute: "/monitoring",
-  automaticVercelMonitors: true,
   reactComponentAnnotation: {
     enabled: true,
   },

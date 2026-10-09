@@ -7,7 +7,7 @@ This file is the shared source of truth for AI coding agents working in this rep
 - Monorepo for `Malanghub`.
 - Primary apps:
   - `apps/backend`: Go backend using Gin Gonic.
-  - `apps/frontend`: Next.js frontend using `pnpm`.
+  - `apps/frontend`: Next.js frontend using `pnpm`, deployed to Cloudflare Workers via OpenNext (`pnpm --filter client run preview` / `run deploy`).
   - `apps/native`: Tauri v2 app (macOS, Windows, Linux, iOS, Android) built from the shared packages.
   - `apps/server`:
 - Shared packages:

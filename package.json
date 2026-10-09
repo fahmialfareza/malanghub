@@ -36,8 +36,12 @@
       "esbuild",
       "less",
       "protobufjs",
-      "sharp"
-    ]
+      "sharp",
+      "workerd"
+    ],
+    "patchedDependencies": {
+      "@opennextjs/cloudflare@1.20.10": "patches/@opennextjs__cloudflare@1.20.10.patch"
+    }
   },
   "packageManager": "pnpm@10.20.0",
   "volta": {
