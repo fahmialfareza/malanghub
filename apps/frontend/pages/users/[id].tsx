@@ -10,8 +10,17 @@ import moment from "moment";
 import ReactPaginate from "react-paginate";
 import { getNewsByUser } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
+import {
+  Badge,
+  Breadcrumbs,
+  Card,
+  Container,
+  LoadingBlock,
+  Spinner,
+  badgeClass,
+  paginationClasses,
+} from "@malanghub/ui";
 import assetsPath from "../../components/layouts/Assets";
-import Spinner from "../../components/layouts/Spinner";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../../redux/store";
 import { GetServerSidePropsContext } from "next";
@@ -59,6 +68,46 @@ const GetUserProfile = ({
       getNewsByUser(id, selected);
     }
   };
+
+  const socialLinks = userProfile
+    ? [
+        userProfile.facebook && {
+          key: "facebook",
+          label: "Facebook",
+          icon: "fab fa-facebook",
+          href: userProfile.facebook,
+        },
+        userProfile.twitter && {
+          key: "twitter",
+          label: "Twitter",
+          icon: "fab fa-twitter",
+          href: `https://twitter.com/${userProfile.twitter}`,
+        },
+        userProfile.instagram && {
+          key: "instagram",
+          label: "Instagram",
+          icon: "fab fa-instagram",
+          href: `https://instagram.com/${userProfile.instagram}`,
+        },
+        userProfile.linkedin && {
+          key: "linkedin",
+          label: "Linkedin",
+          icon: "fab fa-linkedin",
+          href: userProfile.linkedin,
+        },
+        userProfile.tiktok && {
+          key: "tiktok",
+          label: "Tiktok",
+          icon: "fab fa-tiktok",
+          href: `https://www.tiktok.com/@${userProfile.tiktok}`,
+        },
+      ].filter(
+        (
+          link,
+        ): link is { key: string; label: string; icon: string; href: string } =>
+          !!link,
+      )
+    : [];
 
   return (
     <>
@@ -141,340 +190,276 @@ const GetUserProfile = ({
           }}
         />
       </Head>
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> / Pengguna /{" "}
-          <span className="breadcrumb_last" aria-current="page">
-            {userLoading ? <Spinner /> : userProfile && userProfile.name}
-          </span>
-        </div>
-      </nav>
-      <section id="author" className="w3l-author py-5">
-        <div className="container py-md-3">
-          <div className="row align-items-center">
-            <div className="col-md-3 col-sm-4 col-7 order-first">
-              <div className="embed-responsive embed-responsive-1by1">
-                <Image
-                  src={
-                    userProfile && userProfile.photo
-                      ? userProfile.photo
-                      : assetsPath("images/author.jpg")
-                  }
-                  alt=""
-                  className="rounded-circle img-fluid embed-responsive-item"
-                  objectFit="cover"
-                  fill
-                />
+      <Breadcrumbs
+        items={[
+          { label: "Beranda", href: "/" },
+          { label: "Pengguna" },
+          {
+            label: userLoading ? (
+              <Spinner size="sm" />
+            ) : (
+              userProfile && userProfile.name
+            ),
+          },
+        ]}
+        renderLink={({ href, className, children }) => (
+          <Link href={href} className={className}>
+            {children}
+          </Link>
+        )}
+      />
+      <section className="tw:bg-bg tw:py-8 tw:sm:py-12">
+        <Container>
+          <Card className="tw:p-6 tw:sm:p-8">
+            {userLoading ? (
+              <div className="tw:flex tw:justify-center tw:py-10">
+                <Spinner size="lg" />
               </div>
-            </div>
-            <div className="col-md-9 col-sm-12 order-md-first mt-lg-0 mt-4">
-              <span className="category">
-                {userLoading ? (
-                  <Spinner />
-                ) : (
-                  userProfile && userProfile.motto && userProfile.motto
-                )}
-              </span>
-              <h1 className="mb-4 title">
-                <span className="typed-text">
-                  {userLoading ? <Spinner /> : userProfile && userProfile.name}
-                </span>
-                <span className="cursor typing">&nbsp;</span>
-              </h1>
-              <p>
-                {userLoading ? (
-                  <Spinner />
-                ) : (
-                  userProfile && userProfile.bio && parse(userProfile.bio)
-                )}
-              </p>
-              <ul className="author-icons mt-4">
-                {userLoading ? (
-                  <Spinner />
-                ) : (
-                  userProfile &&
-                  userProfile.facebook && (
-                    <li>
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        className="facebook"
-                        href={userProfile.facebook}
-                      >
-                        <span
-                          className="fab fa-facebook"
-                          aria-hidden="true"
-                        ></span>
-                      </a>
-                    </li>
-                  )
-                )}
-                {userLoading ? (
-                  <Spinner />
-                ) : (
-                  userProfile &&
-                  userProfile.twitter && (
-                    <li>
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        className="twitter"
-                        href={`https://twitter.com/${userProfile.twitter}`}
-                      >
-                        <span
-                          className="fab fa-twitter"
-                          aria-hidden="true"
-                        ></span>
-                      </a>
-                    </li>
-                  )
-                )}
-                {userLoading ? (
-                  <Spinner />
-                ) : (
-                  userProfile &&
-                  userProfile.instagram && (
-                    <li>
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        className="instagram"
-                        href={`https://instagram.com/${userProfile.instagram}`}
-                      >
-                        <span
-                          className="fab fa-instagram"
-                          aria-hidden="true"
-                        ></span>
-                      </a>
-                    </li>
-                  )
-                )}
-                {userLoading ? (
-                  <Spinner />
-                ) : (
-                  userProfile &&
-                  userProfile.linkedin && (
-                    <li>
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        className="linkedin"
-                        href={userProfile.linkedin}
-                      >
-                        <span
-                          className="fab fa-linkedin"
-                          aria-hidden="true"
-                        ></span>
-                      </a>
-                    </li>
-                  )
-                )}
-                {userLoading ? (
-                  <Spinner />
-                ) : (
-                  userProfile &&
-                  userProfile.tiktok && (
-                    <li>
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        className="tiktok"
-                        href={`https://www.tiktok.com/@${userProfile.tiktok}`}
-                      >
-                        <span
-                          className="fab fa-tiktok"
-                          aria-hidden="true"
-                        ></span>
-                      </a>
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-          </div>
-        </div>
+            ) : (
+              <div className="tw:flex tw:flex-col tw:items-center tw:gap-6 tw:text-center tw:md:flex-row tw:md:text-left">
+                <div className="tw:relative tw:size-32 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:border-4 tw:border-surface tw:bg-surface-2 tw:shadow-card tw:ring-1 tw:ring-line tw:sm:size-40">
+                  <Image
+                    src={
+                      userProfile && userProfile.photo
+                        ? userProfile.photo
+                        : assetsPath("images/author.jpg")
+                    }
+                    alt={
+                      userProfile?.name ? `Foto profil ${userProfile.name}` : ""
+                    }
+                    className="tw:object-cover"
+                    sizes="160px"
+                    fill
+                  />
+                </div>
+                <div className="tw:min-w-0 tw:flex-1">
+                  {userProfile && userProfile.motto && (
+                    <Badge className="tw:mb-3">{userProfile.motto}</Badge>
+                  )}
+                  <h1 className="tw:m-0 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg tw:sm:text-3xl">
+                    {userProfile && userProfile.name}
+                  </h1>
+                  {userProfile && userProfile.bio && (
+                    <div className="tw:mt-3 tw:max-w-2xl tw:text-[0.95rem] tw:leading-relaxed tw:text-body tw:[&_p]:mb-2 tw:[&_p]:text-body">
+                      {parse(userProfile.bio)}
+                    </div>
+                  )}
+                  {socialLinks.length > 0 && (
+                    <ul className="tw:m-0 tw:mt-5 tw:flex tw:list-none tw:flex-wrap tw:justify-center tw:gap-2 tw:p-0 tw:md:justify-start">
+                      {socialLinks.map((link) => (
+                        <li key={link.key}>
+                          <a
+                            target="_blank"
+                            rel="noreferrer"
+                            href={link.href}
+                            aria-label={link.label}
+                            className="tw:flex tw:size-10 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface-2 tw:font-normal tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:bg-brand-soft tw:hover:text-brand"
+                          >
+                            <span
+                              className={link.icon}
+                              aria-hidden="true"
+                            ></span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            )}
+          </Card>
+        </Container>
       </section>
       <div
         className="display-ad"
         style={{ margin: "8px auto", display: "block", textAlign: "center" }}
       ></div>
-      <div className="w3l-authorblock2 w3l-homeblock1 mb-5 pb-5">
-        <div className="container">
-          <div className="item mt-4">
-            <div className="row mt-5 pt-md-5 img-block-mobile">
-              <div className="col-lg-9 most-recent">
-                <h3 className="section-title-left">
-                  Pengguna Terbaru dari{" "}
-                  {userLoading ? (
-                    <Spinner />
-                  ) : (
-                    userProfile && userProfile.name
-                  )}{" "}
-                </h3>
-                <div className="list-view ">
-                  {newsLoading ? (
-                    <Spinner />
-                  ) : (
-                    newsByUser &&
+      <section className="tw:bg-bg tw:pb-16">
+        <Container>
+          <div className="tw:grid tw:gap-8 tw:lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="tw:min-w-0">
+              <h2 className="tw:mt-0 tw:mb-5 tw:font-heading tw:text-xl tw:font-semibold tw:text-fg tw:sm:text-2xl">
+                Pengguna Terbaru dari{" "}
+                {userLoading ? (
+                  <Spinner size="sm" />
+                ) : (
+                  userProfile && userProfile.name
+                )}
+              </h2>
+              {newsLoading ? (
+                <LoadingBlock />
+              ) : (
+                <div className="tw:flex tw:flex-col tw:gap-4">
+                  {newsByUser &&
                     newsByUser.data &&
                     newsByUser.data.length > 0 &&
                     newsByUser.data.map((news) => (
-                      <div key={news._id} className="grids5-info mt-5">
-                        <div className="blog-info">
-                          <span className="category">
+                      <Card
+                        key={news._id}
+                        className="tw:group tw:flex tw:flex-col-reverse tw:gap-4 tw:p-4 tw:sm:flex-row tw:sm:items-start tw:sm:p-5"
+                      >
+                        <div className="tw:min-w-0 tw:flex-1">
+                          <span className={badgeClass("brand", "tw:mb-2")}>
                             {news && news.category.name}
                           </span>
                           <Link
                             href={`/news/${news.slug}`}
-                            className="blog-desc mt-0"
+                            className="tw:block tw:font-heading tw:text-lg tw:leading-snug tw:font-bold tw:text-fg tw:no-underline tw:hover:text-brand"
                           >
                             {news && news.title}
                           </Link>
-                          <div className="text-truncate">
+                          <div className="tw:mt-2 tw:line-clamp-2 tw:text-sm tw:text-body">
                             {parse(news.content.replace(/<(.|\n)*?>/g, ""))}
                           </div>
-                          <div className="author align-items-center mt-3 mb-1">
+                          <div className="tw:mt-3 tw:text-sm tw:text-muted">
                             {news.user && news.user._id ? (
-                              <Link href={`/users/${news.user._id}`}>
-                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                                }
+                              <Link
+                                href={`/users/${news.user._id}`}
+                                className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                              >
                                 {news.user.name ?? "Penulis"}
                               </Link>
                             ) : (
-                              <span>{news.user?.name ?? "Penulis"}</span>
+                              <span className="tw:font-semibold tw:text-fg">
+                                {news.user?.name ?? "Penulis"}
+                              </span>
                             )}{" "}
                             di{" "}
                             {news.category && news.category.slug ? (
-                              <Link href={`/newsCategories/${news.category.slug}`}>
-                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                                }
+                              <Link
+                                href={`/newsCategories/${news.category.slug}`}
+                                className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                              >
                                 {news.category.name ?? "Kategori"}
                               </Link>
                             ) : (
-                              <span>{news.category?.name ?? "Kategori"}</span>
+                              <span className="tw:font-semibold tw:text-fg">
+                                {news.category?.name ?? "Kategori"}
+                              </span>
                             )}
                           </div>
-                          <ul className="blog-meta">
-                            <li className="meta-item blog-lesson">
-                              <span className="meta-value">
-                                {" "}
-                                <Moment format="dddd, Do MMMM YYYY">
-                                  {news.created_at}
-                                </Moment>{" "}
-                              </span>
-                            </li>
-                            <li className="meta-item blog-students">
-                              <span className="meta-value">
-                                {" "}
-                                {Math.ceil(news.time_read / 10)} menit
-                              </span>
-                            </li>
-                          </ul>
+                          <div className="tw:mt-1.5 tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:gap-y-1 tw:text-xs tw:text-muted">
+                            <span>
+                              <i
+                                className="fa fa-calendar tw:mr-1"
+                                aria-hidden="true"
+                              ></i>
+                              <Moment format="dddd, Do MMMM YYYY">
+                                {news.created_at}
+                              </Moment>
+                            </span>
+                            <span>
+                              <i
+                                className="fa fa-clock-o tw:mr-1"
+                                aria-hidden="true"
+                              ></i>
+                              {Math.ceil(news.time_read / 10)} menit
+                            </span>
+                          </div>
                         </div>
                         <Link
                           href={`/news/${news.slug}`}
-                          className="d-block zoom embed-responsive embed-responsive-1by1"
+                          className="tw:relative tw:block tw:aspect-video tw:w-full tw:shrink-0 tw:overflow-hidden tw:rounded-lg tw:bg-surface-2 tw:sm:aspect-square tw:sm:w-36"
                         >
                           <Image
                             src={news.mainImage}
                             alt=""
-                            className="img-fluid radius-image news-image mt-md-0 mt-3 embed-responsive-item"
-                            objectFit="cover"
+                            className="tw:object-cover tw:transition-transform tw:duration-300 tw:group-hover:scale-105"
+                            sizes="(min-width: 640px) 144px, 100vw"
                             fill
                           />
                         </Link>
-                      </div>
-                    ))
-                  )}
+                      </Card>
+                    ))}
                 </div>
+              )}
 
-                {newsLoading ? (
-                  <Spinner />
-                ) : newsByUser && newsByUser.meta ? (
-                  <div className="pagination-wrapper mt-5">
-                    <ReactPaginate
-                      previousLabel={"<"}
-                      nextLabel={">"}
-                      breakLabel={"..."}
-                      initialPage={(newsByUser.meta?.page || 1) - 1}
-                      pageCount={Math.ceil(
-                        (newsByUser.meta?.total || 0) /
-                          (newsByUser.meta?.limit || 10)
-                      )}
-                      marginPagesDisplayed={2}
-                      pageRangeDisplayed={5}
-                      onPageChange={handlePageClick}
-                      containerClassName={"page-pagination"}
-                      pageLinkClassName={"page-numbers"}
-                      activeLinkClassName={"active"}
-                    />
-                  </div>
-                ) : null}
-              </div>
+              {newsLoading ? null : newsByUser && newsByUser.meta ? (
+                <ReactPaginate
+                  previousLabel={"<"}
+                  nextLabel={">"}
+                  breakLabel={"..."}
+                  initialPage={(newsByUser.meta?.page || 1) - 1}
+                  pageCount={Math.ceil(
+                    (newsByUser.meta?.total || 0) /
+                      (newsByUser.meta?.limit || 10),
+                  )}
+                  marginPagesDisplayed={2}
+                  pageRangeDisplayed={5}
+                  onPageChange={handlePageClick}
+                  {...paginationClasses}
+                />
+              ) : null}
+            </div>
 
-              <div className="col-lg-3 trending mb-5 mt-lg-0 mt-5">
-                <div className="pos-sticky">
-                  <h3 className="section-title-left">
-                    Trending oleh {userProfile && userProfile.name}{" "}
-                  </h3>
+            <aside className="tw:min-w-0">
+              <div className="tw:lg:sticky tw:lg:top-24">
+                <Card className="tw:p-5">
+                  <h2 className="tw:mt-0 tw:mb-4 tw:font-heading tw:text-lg tw:font-semibold tw:text-fg">
+                    Trending oleh {userProfile && userProfile.name}
+                  </h2>
 
                   {newsLoading ? (
-                    <Spinner />
+                    <LoadingBlock />
                   ) : (
-                    trendingNewsByUser &&
-                    trendingNewsByUser.length > 0 &&
-                    trendingNewsByUser?.map((news, index) => (
-                      <div key={news._id} className="grids5-info">
-                        <h4>{index + 1}.</h4>
-                        <div className="blog-info">
-                          <Link
-                            href={`/news/${news.slug}`}
-                            className="blog-desc1"
+                    <ol className="tw:m-0 tw:flex tw:list-none tw:flex-col tw:divide-y tw:divide-line tw:p-0">
+                      {trendingNewsByUser &&
+                        trendingNewsByUser.length > 0 &&
+                        trendingNewsByUser?.map((news, index) => (
+                          <li
+                            key={news._id}
+                            className="tw:flex tw:gap-3 tw:py-3 tw:first:pt-0 tw:last:pb-0"
                           >
-                            {news.title}
-                          </Link>
-                          <div className="author align-items-center mt-2 mb-1">
-                            {news.user && news.user._id ? (
-                              <Link href={`/users/${news.user._id}`}>
-                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                                }
-                                {news.user.name ?? "Penulis"}
+                            <span className="tw:font-heading tw:text-2xl tw:leading-none tw:font-bold tw:text-brand/60">
+                              {index + 1}.
+                            </span>
+                            <div className="tw:min-w-0">
+                              <Link
+                                href={`/news/${news.slug}`}
+                                className="tw:block tw:text-[0.95rem] tw:leading-snug tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                              >
+                                {news.title}
                               </Link>
-                            ) : (
-                              <span>{news.user?.name ?? "Penulis"}</span>
-                            )}{" "}
-                            di{" "}
-                            <Link href={`/newsCategories/${news.category.slug}`}>
-                              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                              }
-                              {news.category.name}
-                            </Link>
-                          </div>
-                          <ul className="blog-meta">
-                            <li className="meta-item blog-lesson">
-                              <span className="meta-value">
+                              <div className="tw:mt-1.5 tw:text-xs tw:text-muted">
+                                {news.user && news.user._id ? (
+                                  <Link
+                                    href={`/users/${news.user._id}`}
+                                    className="tw:font-semibold tw:text-body tw:no-underline tw:hover:text-brand"
+                                  >
+                                    {news.user.name ?? "Penulis"}
+                                  </Link>
+                                ) : (
+                                  <span className="tw:font-semibold tw:text-body">
+                                    {news.user?.name ?? "Penulis"}
+                                  </span>
+                                )}{" "}
+                                di{" "}
+                                <Link
+                                  href={`/newsCategories/${news.category.slug}`}
+                                  className="tw:font-semibold tw:text-body tw:no-underline tw:hover:text-brand"
+                                >
+                                  {news.category.name}
+                                </Link>
+                              </div>
+                              <div className="tw:mt-1 tw:flex tw:flex-wrap tw:gap-x-3 tw:text-xs tw:text-muted">
                                 <Moment format="dddd, Do MMMM YYYY">
                                   {news.created_at}
                                 </Moment>
-                              </span>
-                            </li>
-                            <li className="meta-item blog-students">
-                              <span className="meta-value">
-                                {" "}
-                                {Math.ceil(news.time_read / 10)} menit
-                              </span>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    ))
+                                <span>
+                                  {Math.ceil(news.time_read / 10)} menit
+                                </span>
+                              </div>
+                            </div>
+                          </li>
+                        ))}
+                    </ol>
                   )}
-                </div>
+                </Card>
               </div>
-            </div>
+            </aside>
           </div>
-        </div>
-      </div>
+        </Container>
+      </section>
       <div
         className="display-ad"
         style={{ margin: "8px auto", display: "block", textAlign: "center" }}
@@ -533,7 +518,7 @@ export async function getServerSideProps({
       return {
         props: { trendingNewsByUser: dataTrending, userProfile: dataUser },
       };
-    }
+    },
   );
 
   return result;

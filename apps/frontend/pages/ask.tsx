@@ -14,6 +14,8 @@ import { askAi } from "../redux/actions/aiActions";
 import { RootState } from "../redux/store";
 import { AiReducerState } from "../redux/types";
 import { AiSource } from "../models/ai";
+import { Breadcrumbs, Container, cx } from "@malanghub/ui";
+import { renderNextLink } from "../components/news/NewsListingLayout";
 import styles from "../styles/Ask.module.css";
 
 interface AskProps {
@@ -183,23 +185,24 @@ function Ask({
         <link rel="canonical" href="https://www.malanghub.com/ask" />
       </Head>
 
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> /{" "}
-          <span className="breadcrumb_last" aria-current="page">
-            Tanya Malanghub AI
-          </span>
-        </div>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: "Beranda", href: "/" },
+          { label: "Tanya Malanghub AI" },
+        ]}
+        renderLink={renderNextLink}
+      />
 
-      <section className="py-5">
-        <div className="container py-lg-4">
+      <section className="tw:py-10 tw:lg:py-14">
+        <Container>
           <div className={styles.page}>
             <header className={styles.hero}>
               <div className={styles.heroIcon} aria-hidden="true">
                 <span className="fa fa-comments"></span>
               </div>
-              <h1 className={styles.title}>Tanya Malanghub AI</h1>
+              <h1 className={cx(styles.title, "tw:font-heading")}>
+                Tanya Malanghub AI
+              </h1>
               <p className={styles.subtitle}>
                 Tanyakan apa saja dari berita Malanghub seputar Kota Malang,
                 Kabupaten Malang, dan Kota Batu. Setiap jawaban dilengkapi
@@ -209,7 +212,7 @@ function Ask({
             </header>
 
             <form onSubmit={onSubmit} className={styles.composer}>
-              <label htmlFor="ask-question" className="sr-only">
+              <label htmlFor="ask-question" className="tw:sr-only">
                 Pertanyaan
               </label>
               <textarea
@@ -395,7 +398,7 @@ function Ask({
               <Link href="/privacy">Kebijakan Privasi</Link>.
             </p>
           </div>
-        </div>
+        </Container>
       </section>
     </>
   );

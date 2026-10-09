@@ -1,14 +1,15 @@
 import { useEffect } from "react";
 import Head from "next/head";
 import { connect } from "react-redux";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import moment from "moment";
 import { getNewsByCategory } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
-import Spinner from "../../components/layouts/Spinner";
 import NewsByCategoryItem from "../../components/news/NewsByCategoryItem";
-import TrendingNews from "../../components/news/TrendingNews";
+import NewsListingLayout, {
+  EmptyNews,
+} from "../../components/news/NewsListingLayout";
+import { LoadingBlock } from "@malanghub/ui";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../../redux/store";
 import { GetServerSidePropsContext } from "next";
@@ -143,54 +144,27 @@ const NewsCategory = ({
         />
       </Head>
 
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> / Kategori Berita /
-          <span className="breadcrumb_last" aria-current="page">
-            {!newsLoading && oneNewsCategory?.category?.name}
-          </span>
-        </div>
-      </nav>
-      <div className="w3l-searchblock w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <div className="row">
-            <div className="col-lg-8 most-recent">
-              <h3 className="section-title-left">
-                {!newsLoading && oneNewsCategory?.category?.name}
-              </h3>
-
-              {newsLoading || newsByCategory === null ? (
-                <Spinner />
-              ) : !newsLoading && newsByCategory?.data?.length > 0 ? (
-                <NewsByCategoryItem
-                  news={newsByCategory}
-                  paramsId={oneNewsCategory?.category?.id || ""}
-                />
-              ) : (
-                <h1>Belum Ada Berita</h1>
-              )}
-            </div>
-
-            <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-              <div className="pos-sticky">
-                <h3 className="section-title-left">Trending </h3>
-
-                {newsLoading || trendingNews === null ? (
-                  <Spinner />
-                ) : !newsLoading && trendingNews?.length > 0 ? (
-                  trendingNews.map((news, index) => {
-                    return (
-                      <TrendingNews key={news._id} index={index} news={news} />
-                    );
-                  })
-                ) : (
-                  <h1>Belum Ada Berita</h1>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <NewsListingLayout
+        breadcrumbs={[
+          { label: "Beranda", href: "/" },
+          { label: "Kategori Berita" },
+          { label: oneNewsCategory?.category?.name ?? "" },
+        ]}
+        title={oneNewsCategory?.category?.name}
+        trendingNews={trendingNews}
+        trendingLoading={newsLoading}
+      >
+        {newsLoading || newsByCategory === null ? (
+          <LoadingBlock />
+        ) : newsByCategory?.data?.length > 0 ? (
+          <NewsByCategoryItem
+            news={newsByCategory}
+            paramsId={oneNewsCategory?.category?.id || ""}
+          />
+        ) : (
+          <EmptyNews>Belum Ada Berita</EmptyNews>
+        )}
+      </NewsListingLayout>
     </>
   );
 };
@@ -243,7 +217,7 @@ export async function getServerSideProps({
           oneNewsCategory: dataNewsCategory,
         },
       };
-    }
+    },
   );
 
   return result;

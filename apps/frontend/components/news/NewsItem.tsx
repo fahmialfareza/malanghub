@@ -1,146 +1,46 @@
 import Link from "next/link";
-import Image from "next/image";
-import Moment from "react-moment";
-import "moment/locale/id";
-import parse from "html-react-parser";
+import { buttonClass } from "@malanghub/ui";
 import { News } from "../../models/news";
+import { NewsCard } from "./NewsCard";
 
 interface NewsItemProps {
   news: News[];
 }
 
+/** Home page: the newest story as a hero, the next ones as a compact list. */
 const NewsItem = ({ news }: NewsItemProps) => {
+  const [hero, ...rest] = news;
+
   return (
-    <>
-      <div className="row">
-        <div className="col-lg-5 col-md-6 item">
-          <div className="card">
-            <div className="card-header p-0 position-relative">
-              <Link
-                href={`/news/${news[0].slug}`}
-                className="embed-responsive embed-responsive-1by1"
-              >
-                <Image
-                  className="card-img-bottom d-block radius-image embed-responsive-item"
-                  objectFit="cover"
-                  src={news[0].mainImage}
-                  alt={news[0].mainImage}
-                  fill
-                />
-              </Link>
-            </div>
-            <div className="card-body p-0 blog-details">
-              <Link href={`/news/${news[0].slug}`} className="blog-desc">
-                {news[0].title}
-              </Link>
-              <div className="text-truncate">
-                {parse(news[0].content.replace(/<(.|\n)*?>/g, ""))}
-              </div>
-              <div className="author align-items-center mt-3 mb-1">
-                {news[0].user && news[0].user._id ? (
-                  <Link href={`/users/${news[0].user._id}`}>
-                    {news[0].user.name ?? "Penulis"}
-                  </Link>
-                ) : (
-                  <span>{news[0].user?.name ?? "Penulis"}</span>
-                )}{" "}
-                di{" "}
-                <Link href={`/newsCategories/${news[0].category?.slug}`}>
-                  {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                  }
-                  {news[0].category?.name}
-                </Link>
-              </div>
-              <ul className="blog-meta">
-                <li className="meta-item blog-lesson">
-                  <span className="meta-value">
-                    {" "}
-                    <Moment format="dddd, Do MMMM YYYY">
-                      {news[0].created_at}
-                    </Moment>{" "}
-                  </span>
-                </li>
-                <li className="meta-item blog-students">
-                  <span className="meta-value">
-                    {" "}
-                    {Math.ceil(news[0].time_read / 10)} menit
-                  </span>
-                </li>
-              </ul>
-              <Link href="/news" className="btn btn-style btn-outline mt-4">
-                Semua Berita
-              </Link>
-            </div>
-          </div>
-        </div>
-        <div className="col-lg-7 col-md-6 mt-md-0 mt-5">
-          <div className="list-view list-view1">
-            {news.length > 0 &&
-              news.map((item, index) => {
-                if (index > 0)
-                  return (
-                    <div
-                      key={item._id}
-                      className={`grids5-info ` + (index > 1 && "mt-5")}
-                    >
-                      <Link
-                        href={`/news/${item.slug}`}
-                        className="d-block zoom embed-responsive embed-responsive-1by1"
-                      >
-                        <Image
-                          src={item.mainImage}
-                          alt={item.mainImage}
-                          objectFit="cover"
-                          className="img-fluid radius-image news-image embed-responsive-item"
-                          fill
-                        />
-                      </Link>
-                      <div className="blog-info align-self">
-                        <Link
-                          href={`/news/${item.slug}`}
-                          className="blog-desc1"
-                        >
-                          {item.title}
-                        </Link>
-                        <div className="author align-items-center mt-3 mb-1">
-                          {item.user && item.user._id ? (
-                            <Link href={`/users/${item.user._id}`}>
-                              {item.user.name ?? "Penulis"}
-                            </Link>
-                          ) : (
-                            <span>{item.user?.name ?? "Penulis"}</span>
-                          )}{" "}
-                          di{" "}
-                          <Link href={`/newsCategories/${item.category?.slug}`}>
-                            {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                            }
-                            {item.category?.name}
-                          </Link>
-                        </div>
-                        <ul className="blog-meta">
-                          <li className="meta-item blog-lesson">
-                            <span className="meta-value">
-                              {" "}
-                              <Moment format="dddd, Do MMMM YYYY">
-                                {item.created_at}
-                              </Moment>{" "}
-                            </span>
-                          </li>
-                          <li className="meta-item blog-students">
-                            <span className="meta-value">
-                              {" "}
-                              {Math.ceil(item.time_read / 10)} menit
-                            </span>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  );
-              })}
-          </div>
-        </div>
+    <div className="tw:grid tw:gap-8 tw:md:grid-cols-12">
+      <div className="tw:flex tw:flex-col tw:gap-6 tw:md:col-span-7">
+        <NewsCard news={hero} variant="featured" headingLevel="h2" priority />
+        <Link
+          href="/news"
+          className={buttonClass({
+            variant: "secondary",
+            className: "tw:self-start",
+          })}
+        >
+          Semua Berita
+          <span className="fa fa-arrow-right" aria-hidden="true"></span>
+        </Link>
       </div>
-    </>
+      {rest.length > 0 && (
+        <div className="tw:flex tw:flex-col tw:gap-6 tw:md:col-span-5 tw:md:border-l tw:md:border-line tw:md:pl-8">
+          {rest.map((item, index) => (
+            <NewsCard
+              key={item._id}
+              news={item}
+              variant="compact"
+              className={
+                index > 0 ? "tw:border-t tw:border-line tw:pt-6" : undefined
+              }
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 

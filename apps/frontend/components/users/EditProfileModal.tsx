@@ -3,20 +3,23 @@ import { connect } from "react-redux";
 import { updateProfile } from "../../redux/actions/userActions";
 import { setAlert } from "../../redux/actions/layoutActions";
 import { RootState } from "../../redux/store";
-import { LayoutReducerState, UserReducerState } from "../../redux/types";
+import { UserReducerState } from "../../redux/types";
 import { UpdateProfileRequest } from "../../redux/actions/types/user";
 import { User } from "../../models/user";
+import { Button, FileInput, Input, Modal, Textarea } from "@malanghub/ui";
 
 interface EditProfileModalProps {
+  open: boolean;
+  onClose: () => void;
   user: UserReducerState;
-  layout: LayoutReducerState;
   updateProfile: (formData: UpdateProfileRequest) => void;
   setAlert: (message: string, type: string) => void;
 }
 
 const EditProfileModal = ({
+  open,
+  onClose,
   user: { user, error },
-  layout: { theme },
   updateProfile,
   setAlert,
 }: EditProfileModalProps) => {
@@ -107,8 +110,7 @@ const EditProfileModal = ({
   }, [user, error]);
 
   const hideModal = () => {
-    // @ts-ignore
-    window.$("#editProfileModal").modal("toggle");
+    onClose();
   };
 
   const onSubmit = (event: FormEvent) => {
@@ -132,167 +134,121 @@ const EditProfileModal = ({
   };
 
   return (
-    <>
-      <div className="modal fade" id="editProfileModal">
-        <div className="modal-dialog modal-lg">
-          <div
-            className={
-              theme === "dark"
-                ? "modal-content bg-dark text-light"
-                : "modal-content"
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Edit Profil"
+      size="lg"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Keluar
+          </Button>
+          <Button type="submit" form="form-update" loading={loading}>
+            {loading ? "Memuat..." : "Simpan"}
+          </Button>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} id="form-update">
+        <Input
+          type="text"
+          id="edit-profile-name"
+          name="name"
+          label="Nama *"
+          placeholder="Nama"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          required
+        />
+        <FileInput
+          id="edit-profile-photo"
+          name="photo"
+          label="Update Foto Profil"
+          accept="image/*"
+          hint={photoName ? `${photoName} - Max Size 1 MB` : "Max Size 1 MB"}
+          onChange={(event) => {
+            if (event.target.files && event.target.files.length > 0) {
+              setPhoto(event.target.files[0]);
+              setPhotoName(event.target.files[0].name);
             }
-          >
-            <div className="modal-header bg-primary text-light">
-              <h5 className="modal-title" style={{ color: "#f8f9fa" }}>
-                Edit Profil
-              </h5>
-              <button className="close" data-dismiss="modal">
-                <span>&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={onSubmit} id="form-update">
-                <div className="form-group">
-                  <label htmlFor="name">Nama *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Nama"
-                    className="form-control"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="image">Update Foto Profil</label>
-                  <div className="custom-file">
-                    <input
-                      type="file"
-                      className="custom-file-input"
-                      id="image"
-                      name="photo"
-                      accept="image/*"
-                      onChange={(event) => {
-                        if (
-                          event.target.files &&
-                          event.target.files.length > 0
-                        ) {
-                          setPhoto(event.target.files[0]);
-                          setPhotoName(event.target.files[0].name);
-                        }
-                      }}
-                    />
-                    <label htmlFor="image" className="custom-file-label">
-                      {photoName ? photoName : "Pilih File"}
-                    </label>
-                  </div>
-                  <small className="form-text text-muted">Max Size 1 MB</small>
-                </div>
-                <div className="form-group">
-                  <label htmlFor="motto">Motto</label>
-                  <input
-                    type="text"
-                    name="motto"
-                    placeholder="Motto"
-                    className="form-control"
-                    value={motto}
-                    onChange={(event) => setMotto(event.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="body">Bio</label>
-                  <textarea
-                    className="form-control"
-                    name="name"
-                    aria-rowspan={5}
-                    placeholder="Bio..."
-                    value={bio}
-                    onChange={(event) => setBio(event.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="instagram">Instagram</label>
-                  <input
-                    type="text"
-                    name="instagram"
-                    placeholder="malanghub"
-                    className="form-control"
-                    value={instagram}
-                    onChange={(event) => setInstagram(event.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="facebook">Facebook</label>
-                  <input
-                    type="text"
-                    name="facebook"
-                    placeholder="https://www.facebook.com/malanghub"
-                    className="form-control"
-                    value={facebook}
-                    onChange={(event) => setFacebook(event.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="twitter">Twitter</label>
-                  <input
-                    type="text"
-                    name="twitter"
-                    placeholder="malanghub"
-                    className="form-control"
-                    value={twitter}
-                    onChange={(event) => setTwitter(event.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="tiktok">Tiktok</label>
-                  <input
-                    type="text"
-                    name="tiktok"
-                    placeholder="malanghub"
-                    className="form-control"
-                    value={tiktok}
-                    onChange={(event) => setTiktok(event.target.value)}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="linkedin">Linkedin</label>
-                  <input
-                    type="text"
-                    name="linkedin"
-                    placeholder="https://www.linkedin.com/in/malanghub"
-                    className="form-control"
-                    value={linkedin}
-                    onChange={(event) => setLinkedin(event.target.value)}
-                  />
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-outline-primary" data-dismiss="modal">
-                Keluar
-              </button>
-              <button
-                type="submit"
-                form="form-update"
-                value="Submit"
-                className="btn btn-primary"
-              >
-                {loading ? "Memuat..." : "Simpan"}
-              </button>
-            </div>
-          </div>
+          }}
+        />
+        <Input
+          type="text"
+          id="edit-profile-motto"
+          name="motto"
+          label="Motto"
+          placeholder="Motto"
+          value={motto}
+          onChange={(event) => setMotto(event.target.value)}
+        />
+        <Textarea
+          id="edit-profile-bio"
+          name="bio"
+          label="Bio"
+          rows={5}
+          placeholder="Bio..."
+          value={bio}
+          onChange={(event) => setBio(event.target.value)}
+        />
+        <div className="tw:grid tw:gap-x-4 tw:sm:grid-cols-2">
+          <Input
+            type="text"
+            id="edit-profile-instagram"
+            name="instagram"
+            label="Instagram"
+            placeholder="malanghub"
+            value={instagram}
+            onChange={(event) => setInstagram(event.target.value)}
+          />
+          <Input
+            type="text"
+            id="edit-profile-facebook"
+            name="facebook"
+            label="Facebook"
+            placeholder="https://www.facebook.com/malanghub"
+            value={facebook}
+            onChange={(event) => setFacebook(event.target.value)}
+          />
+          <Input
+            type="text"
+            id="edit-profile-twitter"
+            name="twitter"
+            label="Twitter"
+            placeholder="malanghub"
+            value={twitter}
+            onChange={(event) => setTwitter(event.target.value)}
+          />
+          <Input
+            type="text"
+            id="edit-profile-tiktok"
+            name="tiktok"
+            label="Tiktok"
+            placeholder="malanghub"
+            value={tiktok}
+            onChange={(event) => setTiktok(event.target.value)}
+          />
+          <Input
+            type="text"
+            id="edit-profile-linkedin"
+            name="linkedin"
+            label="Linkedin"
+            placeholder="https://www.linkedin.com/in/malanghub"
+            value={linkedin}
+            onChange={(event) => setLinkedin(event.target.value)}
+            wrapperClassName="tw:sm:col-span-2"
+          />
         </div>
-      </div>
-    </>
+      </form>
+    </Modal>
   );
 };
 
 const mapStateToProps = (state: RootState) => ({
   user: state.user,
-  layout: state.layout,
 });
 
 export default connect(mapStateToProps, { updateProfile, setAlert })(
-  EditProfileModal
+  EditProfileModal,
 );

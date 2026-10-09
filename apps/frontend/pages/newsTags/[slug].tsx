@@ -1,14 +1,15 @@
 import { useEffect } from "react";
 import Head from "next/head";
 import { connect } from "react-redux";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import moment from "moment";
 import { getNewsByTag } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
-import Spinner from "../../components/layouts/Spinner";
 import NewsByTagItem from "../../components/news/NewsByTagItem";
-import TrendingNews from "../../components/news/TrendingNews";
+import NewsListingLayout, {
+  EmptyNews,
+} from "../../components/news/NewsListingLayout";
+import { LoadingBlock } from "@malanghub/ui";
 import * as Sentry from "@sentry/nextjs";
 import { GetStaticPropsContext } from "next";
 import { RootState } from "../../redux/store";
@@ -127,57 +128,32 @@ const NewsTag = ({
         />
       </Head>
 
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> / Tag Berita /
-          <span className="breadcrumb_last" aria-current="page">
-            {oneNewsTag && oneNewsTag?.tag.name}
-          </span>
-        </div>
-      </nav>
-      <div className="w3l-searchblock w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <div className="row">
-            <div className="col-lg-8 most-recent">
-              <h3 className="section-title-left">
-                {oneNewsTag && oneNewsTag?.tag.name}
-              </h3>
-
-              {newsLoading || newsByTag === null ? (
-                <Spinner />
-              ) : !newsLoading &&
-                newsByTag &&
-                newsByTag.data &&
-                newsByTag.data.length > 0 ? (
-                <NewsByTagItem
-                  paramsId={oneNewsTag?.tag?.id || ""}
-                  news={newsByTag}
-                />
-              ) : (
-                <h1>Belum Ada Berita</h1>
-              )}
-            </div>
-
-            <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-              <div className="pos-sticky">
-                <h3 className="section-title-left">Trending </h3>
-
-                {newsLoading || trendingNews === null ? (
-                  <Spinner />
-                ) : !newsLoading && trendingNews && trendingNews.length > 0 ? (
-                  trendingNews.map((news, index) => {
-                    return (
-                      <TrendingNews key={news._id} index={index} news={news} />
-                    );
-                  })
-                ) : (
-                  <h1>Belum Ada Berita</h1>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <NewsListingLayout
+        breadcrumbs={[
+          { label: "Beranda", href: "/" },
+          { label: "Tag Berita" },
+          { label: oneNewsTag?.tag?.name ?? "" },
+        ]}
+        title={
+          <>
+            <span className="tw:text-muted">#</span>
+            {oneNewsTag?.tag?.name}
+          </>
+        }
+        trendingNews={trendingNews}
+        trendingLoading={newsLoading}
+      >
+        {newsLoading || newsByTag === null ? (
+          <LoadingBlock />
+        ) : newsByTag?.data?.length > 0 ? (
+          <NewsByTagItem
+            paramsId={oneNewsTag?.tag?.id || ""}
+            news={newsByTag}
+          />
+        ) : (
+          <EmptyNews>Belum Ada Berita</EmptyNews>
+        )}
+      </NewsListingLayout>
     </>
   );
 };
@@ -225,7 +201,7 @@ export async function getServerSideProps({
       }
 
       return { props: { trendingNews: dataTrending, oneNewsTag: dataNewsTag } };
-    }
+    },
   );
 
   return result;

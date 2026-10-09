@@ -1,63 +1,57 @@
 import { connect } from "react-redux";
 import Moment from "react-moment";
+import { Button } from "@malanghub/ui";
 import { selectNewsTag } from "../../../../redux/actions/newsTagActions";
 import { NewsTag } from "../../../../models/news";
-import { MouseEvent } from "react";
 
 interface TagTableItemProps {
   tag: NewsTag;
   index: number;
+  onEdit: () => void;
+  onDelete: () => void;
   selectNewsTag: (newsTag: NewsTag) => void;
 }
 
-const TagTableItem = ({ tag, index, selectNewsTag }: TagTableItemProps) => {
-  const onClickEdit = (event: MouseEvent) => {
-    event.preventDefault();
-
+const TagTableItem = ({
+  tag,
+  index,
+  onEdit,
+  onDelete,
+  selectNewsTag,
+}: TagTableItemProps) => {
+  const onClickEdit = () => {
     if (tag) {
       selectNewsTag(tag);
     }
 
-    // @ts-ignore
-    window.$("#editNewsTagModal").modal("toggle");
+    onEdit();
   };
 
-  const onClickDelete = (event: MouseEvent) => {
-    event.preventDefault();
-
+  const onClickDelete = () => {
     selectNewsTag(tag);
 
-    // @ts-ignore
-    window.$("#deleteNewsTagModal").modal("toggle");
+    onDelete();
   };
 
   return (
     <tr>
-      <td>{index + 1}</td>
-      <td>{tag.name}</td>
-      <td>
+      <td className="tw:text-muted">{index + 1}</td>
+      <td className="tw:font-semibold tw:text-fg">{tag.name}</td>
+      <td className="tw:whitespace-nowrap">
+        <Moment format="MMMM Do, YYYY">{tag.created_at}</Moment>
+      </td>
+      <td className="tw:whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{tag.created_at}</Moment>
       </td>
       <td>
-        <Moment format="MMMM Do, YYYY">{tag.created_at}</Moment>
-      </td>
-      <td>
-        <button
-          className="btn btn-primary m-1"
-          data-toggle="modal"
-          data-target="#editNewsTagModal"
-          onClick={onClickEdit}
-        >
-          <i className="fa fa-edit" aria-hidden="true"></i> Edit
-        </button>
-        <button
-          className="btn btn-danger m-1"
-          data-toggle="modal"
-          data-target="#deleteNewsTagModal"
-          onClick={onClickDelete}
-        >
-          <i className="fa fa-trash" aria-hidden="true"></i> Hapus
-        </button>
+        <div className="tw:flex tw:justify-end tw:gap-2">
+          <Button size="sm" variant="secondary" onClick={onClickEdit}>
+            <i className="fa fa-edit" aria-hidden="true"></i> Edit
+          </Button>
+          <Button size="sm" variant="danger" onClick={onClickDelete}>
+            <i className="fa fa-trash" aria-hidden="true"></i> Hapus
+          </Button>
+        </div>
       </td>
     </tr>
   );

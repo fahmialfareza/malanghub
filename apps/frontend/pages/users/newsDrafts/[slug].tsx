@@ -9,12 +9,24 @@ import parse from "html-react-parser";
 import * as cookie from "cookie";
 import { loadUser } from "../../../redux/actions/userActions";
 import { setActiveLink } from "../../../redux/actions/layoutActions";
-import Spinner from "../../../components/layouts/Spinner";
 import * as Sentry from "@sentry/nextjs";
+import {
+  Badge,
+  Breadcrumbs,
+  Card,
+  Container,
+  LoadingBlock,
+  Spinner,
+  badgeClass,
+  buttonClass,
+} from "@malanghub/ui";
 import { RootState } from "../../../redux/store";
 import { GetServerSidePropsContext } from "next";
 import { NewsDraftReducerState, UserReducerState } from "../../../redux/types";
 import { News } from "../../../models/news";
+
+const socialClass =
+  "tw:flex tw:size-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:text-brand";
 
 interface NewsDraftProps {
   user: UserReducerState;
@@ -123,76 +135,65 @@ const NewsDraft = ({
         />
         <meta property="twitter:image" content={currentNewsDraft?.mainImage} />
       </Head>
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> / Antrian Berita /{" "}
-          <span className="breadcrumb_last" aria-current="page">
-            {newsDraftLoading ? (
-              <Spinner />
+      <Breadcrumbs
+        items={[
+          { label: "Beranda", href: "/" },
+          { label: "Antrian Berita" },
+          {
+            label: newsDraftLoading ? (
+              <Spinner size="sm" />
             ) : (
               currentNewsDraft && currentNewsDraft.title
-            )}
-          </span>
-        </div>
-      </nav>
-      <div className="w3l-searchblock w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <div className="row">
-            <div className="col-lg-8 most-recent">
-              <div className="pb-5 w3l-homeblock1 text-center">
-                <div className="container mt-md-3">
-                  <h3 className="blog-desc-big text-center mb-4">
-                    {newsDraftLoading ? (
-                      <Spinner />
-                    ) : (
-                      currentNewsDraft && currentNewsDraft.title
-                    )}
-                  </h3>
-                  <div className="blog-post-align">
-                    <div className="blog-post-img embed-responsive embed-responsive-1by1">
-                      {newsDraftLoading ? (
-                        <Spinner />
-                      ) : (
-                        currentNewsDraft &&
-                        currentNewsDraft.user && (
-                          <Link href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}>
-                            {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                            }
+            ),
+          },
+        ]}
+        renderLink={({ href, className, children }) => (
+          <Link href={href} className={className}>
+            {children}
+          </Link>
+        )}
+      />
+      <div className="tw:bg-bg tw:py-10 tw:lg:py-14">
+        <Container>
+          <div className="tw:grid tw:gap-10 tw:lg:grid-cols-3">
+            <article className="tw:min-w-0 tw:lg:col-span-2">
+              {newsDraftLoading ? (
+                <LoadingBlock />
+              ) : (
+                <>
+                  <header className="tw:mb-8 tw:text-center">
+                    <Badge tone="warning" className="tw:mb-4">
+                      Pratinjau Antrian Berita
+                    </Badge>
+                    <h1 className="tw:mt-0 tw:mb-5 tw:font-heading tw:text-3xl tw:leading-tight tw:font-bold tw:text-fg tw:md:text-4xl">
+                      {currentNewsDraft && currentNewsDraft.title}
+                    </h1>
+                    <div className="tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-3 tw:text-sm tw:text-muted">
+                      {currentNewsDraft && currentNewsDraft.user && (
+                        <Link
+                          href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
+                          className="tw:relative tw:block tw:size-10 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2"
+                          aria-label={currentNewsDraft.user.name}
+                        >
+                          {currentNewsDraft.user.photo && (
                             <Image
-                              src={
-                                (currentNewsDraft &&
-                                  currentNewsDraft.user &&
-                                  currentNewsDraft.user.photo) ||
-                                ""
-                              }
+                              src={currentNewsDraft.user.photo}
                               alt=""
-                              className="rounded-circle img-fluid embed-responsive-item"
-                              objectFit="cover"
+                              className="tw:object-cover"
+                              sizes="40px"
                               fill
                             />
-                          </Link>
-                        )
+                          )}
+                        </Link>
                       )}
-                    </div>
-                    <div className="blog-post-info">
-                      <div className="author align-items-center mb-1">
-                        {newsDraftLoading ? (
-                          <Spinner />
-                        ) : (
-                          currentNewsDraft &&
-                          currentNewsDraft.user && (
-                            <Link href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}>
-                              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                              }
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.name
-                              )}
-                            </Link>
-                          )
+                      <span>
+                        {currentNewsDraft && currentNewsDraft.user && (
+                          <Link
+                            href={`/users/${currentNewsDraft.user.id || currentNewsDraft.user._id}`}
+                            className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                          >
+                            {currentNewsDraft.user.name}
+                          </Link>
                         )}{" "}
                         di{" "}
                         {currentNewsDraft &&
@@ -200,291 +201,244 @@ const NewsDraft = ({
                           (currentNewsDraft.category.id ||
                             currentNewsDraft.category._id) && (
                             <Link
-                              href={`/newsCategories/${currentNewsDraft.category.id || currentNewsDraft.category._id}`}>
-                              {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                              }
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.category &&
-                                currentNewsDraft.category.name
-                              )}
+                              href={`/newsCategories/${currentNewsDraft.category.id || currentNewsDraft.category._id}`}
+                              className="tw:font-semibold tw:text-brand tw:no-underline tw:hover:underline"
+                            >
+                              {currentNewsDraft.category.name}
                             </Link>
                           )}
+                      </span>
+                      <span aria-hidden className="tw:text-line-strong">
+                        &bull;
+                      </span>
+                      <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+                        <i className="fa fa-calendar" aria-hidden="true"></i>
+                        <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
+                          {currentNewsDraft && currentNewsDraft.created_at}
+                        </Moment>
+                      </span>
+                      <span aria-hidden className="tw:text-line-strong">
+                        &bull;
+                      </span>
+                      <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+                        <i className="fa fa-clock-o" aria-hidden="true"></i>
+                        {currentNewsDraft &&
+                          currentNewsDraft.time_read &&
+                          Math.ceil(currentNewsDraft.time_read / 10)}{" "}
+                        menit
+                      </span>
+                    </div>
+                  </header>
+
+                  {currentNewsDraft && currentNewsDraft.mainImage && (
+                    <div className="tw:relative tw:mb-8 tw:aspect-[4/3] tw:overflow-hidden tw:rounded-2xl tw:bg-surface-2 tw:shadow-card">
+                      <Image
+                        src={currentNewsDraft.mainImage}
+                        className="tw:object-cover"
+                        sizes="(min-width: 1024px) 66vw, 100vw"
+                        alt=""
+                        fill
+                      />
+                    </div>
+                  )}
+
+                  {currentNewsDraft && currentNewsDraft.content && (
+                    <div
+                      ref={contentRef}
+                      className="tw:text-justify tw:text-body tw:[&_p]:mb-4 tw:[&_p]:leading-relaxed tw:[&_img]:mx-auto tw:[&_img]:my-4 tw:[&_img]:h-auto tw:[&_img]:max-w-full tw:[&_img]:rounded-xl tw:[&_a]:text-brand tw:[&_h2]:mt-8 tw:[&_h2]:mb-3 tw:[&_h2]:font-heading tw:[&_h2]:text-fg tw:[&_h3]:mt-6 tw:[&_h3]:mb-3 tw:[&_h3]:font-heading tw:[&_h3]:text-fg tw:[&_ul]:mb-4 tw:[&_ul]:pl-6 tw:[&_ol]:mb-4 tw:[&_ol]:pl-6 tw:[&_blockquote]:my-6 tw:[&_blockquote]:border-l-4 tw:[&_blockquote]:border-brand tw:[&_blockquote]:pl-4 tw:[&_blockquote]:italic"
+                    >
+                      {parse(currentNewsDraft.content)}
+                    </div>
+                  )}
+
+                  <div className="tw:mt-10 tw:flex tw:flex-col tw:gap-6 tw:border-t tw:border-line tw:pt-6 tw:sm:flex-row tw:sm:items-start tw:sm:justify-between">
+                    <div>
+                      <h2 className="tw:mt-0 tw:mb-3 tw:text-sm tw:font-semibold tw:tracking-wide tw:text-muted tw:uppercase">
+                        Tags :
+                      </h2>
+                      <div className="tw:flex tw:flex-wrap tw:gap-2">
+                        {currentNewsDraft &&
+                          currentNewsDraft.tags &&
+                          currentNewsDraft.tags.length > 0 &&
+                          currentNewsDraft.tags.map((tag) => (
+                            <Link
+                              key={tag.id || tag._id}
+                              href={`/newsTags/${tag.slug}`}
+                              className={badgeClass(
+                                "brand",
+                                "tw:px-3 tw:py-1 tw:text-sm tw:hover:bg-brand tw:hover:text-brand-fg"
+                              )}
+                            >
+                              {tag.name}
+                            </Link>
+                          ))}
                       </div>
-                      <ul className="blog-meta">
-                        <li className="meta-item blog-lesson">
-                          <span className="meta-value">
-                            {" "}
-                            {newsDraftLoading ? (
-                              <Spinner />
-                            ) : (
-                              <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
-                                currentNewsDraft && currentNewsDraft.created_at
-                              </Moment>
-                            )}{" "}
-                          </span>
-                        </li>
-                        <li className="meta-item blog-students">
-                          <span className="meta-value">
-                            {" "}
-                            {newsDraftLoading ? (
-                              <Spinner />
-                            ) : (
-                              currentNewsDraft &&
-                              currentNewsDraft.time_read &&
-                              Math.ceil(currentNewsDraft.time_read / 10)
-                            )}
-                            menit
-                          </span>
-                        </li>
-                      </ul>
+                    </div>
+                    <div>
+                      <h2 className="tw:mt-0 tw:mb-3 tw:text-sm tw:font-semibold tw:tracking-wide tw:text-muted tw:uppercase">
+                        Share :
+                      </h2>
+                      <div className="tw:flex tw:gap-2">
+                        <a
+                          href="#blog-share"
+                          aria-label="Facebook"
+                          className={socialClass}
+                        >
+                          <span
+                            className="fa fa-facebook"
+                            aria-hidden="true"
+                          ></span>
+                        </a>
+                        <a
+                          href="#blog-share"
+                          aria-label="Twitter"
+                          className={socialClass}
+                        >
+                          <span
+                            className="fa fa-twitter"
+                            aria-hidden="true"
+                          ></span>
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <section className="blog-post-main w3l-homeblock1">
-                <div className="blog-content-inf pb-5">
-                  <div className="container pb-lg-4">
-                    <div className="single-post-image">
-                      <div className="post-content embed-responsive embed-responsive-4by3">
-                        {newsDraftLoading ? (
-                          <Spinner />
-                        ) : (
+                  {currentNewsDraft && currentNewsDraft.user && (
+                    <Card className="tw:mt-10 tw:flex tw:flex-col tw:gap-5 tw:p-6 tw:sm:flex-row tw:sm:items-center">
+                      <div className="tw:relative tw:size-24 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2">
+                        {currentNewsDraft.user.photo && (
                           <Image
-                            src={currentNewsDraft && currentNewsDraft.mainImage}
-                            className="radius-image img-fluid pb-5 embed-responsive-item"
-                            objectFit="cover"
+                            src={currentNewsDraft.user.photo}
                             alt=""
+                            className="tw:object-cover"
+                            sizes="96px"
                             fill
                           />
                         )}
                       </div>
-                    </div>
-
-                    <div className="single-post-content text-justify">
-                      {newsDraftLoading ? (
-                        <Spinner />
-                      ) : (
-                        currentNewsDraft &&
-                        currentNewsDraft.content && (
-                          <div ref={contentRef}>
-                            {parse(currentNewsDraft.content)}
-                          </div>
-                        )
-                      )}
-
-                      <div className="d-grid left-right mt-5 pb-md-5">
-                        <div className="buttons-singles tags">
-                          <h4>Tags :</h4>
-                          {newsDraftLoading ? (
-                            <Spinner />
-                          ) : (
-                            currentNewsDraft &&
-                            currentNewsDraft.tags &&
-                            currentNewsDraft.tags.length > 0 &&
-                            currentNewsDraft.tags.map((tag) => (
-                              <Link key={tag.id || tag._id} href={`/newsTags/${tag.slug}`}>
-                                {/* @next-codemod-error This Link previously used the now removed `legacyBehavior` prop, and has a child that might not be an anchor. The codemod bailed out of lifting the child props to the Link. Check that the child component does not render an anchor, and potentially move the props manually to Link. */
-                                }
-                                {tag.name}
-                              </Link>
-                            ))
+                      <div className="tw:min-w-0">
+                        <h3 className="tw:mt-0 tw:mb-2 tw:font-heading tw:text-xl tw:font-semibold tw:text-fg">
+                          {currentNewsDraft.user.name}
+                        </h3>
+                        {currentNewsDraft.user.bio && (
+                          <p className="tw:mb-4 tw:text-body">
+                            {currentNewsDraft.user.bio}
+                          </p>
+                        )}
+                        <ul className="tw:m-0 tw:flex tw:list-none tw:gap-2 tw:p-0">
+                          {currentNewsDraft.user.facebook && (
+                            <li>
+                              <a
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="Facebook"
+                                className={socialClass}
+                                href={currentNewsDraft.user.facebook}
+                              >
+                                <span
+                                  className="fab fa-facebook"
+                                  aria-hidden="true"
+                                ></span>
+                              </a>
+                            </li>
                           )}
-                        </div>
-                        <div className="buttons-singles">
-                          <h4>Share :</h4>
-                          <a href="#blog-share">
-                            <span
-                              className="fa fa-facebook"
-                              aria-hidden="true"
-                            ></span>
-                          </a>
-                          <a href="#blog-share">
-                            <span
-                              className="fa fa-twitter"
-                              aria-hidden="true"
-                            ></span>
-                          </a>
-                        </div>
+                          {currentNewsDraft.user.twitter && (
+                            <li>
+                              <a
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="Twitter"
+                                className={socialClass}
+                                href={`https://twitter.com/${currentNewsDraft.user.twitter}`}
+                              >
+                                <span
+                                  className="fab fa-twitter"
+                                  aria-hidden="true"
+                                ></span>
+                              </a>
+                            </li>
+                          )}
+                          {currentNewsDraft.user.instagram && (
+                            <li>
+                              <a
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="Instagram"
+                                className={socialClass}
+                                href={`https://instagram.com/${currentNewsDraft.user.instagram}`}
+                              >
+                                <span
+                                  className="fab fa-instagram"
+                                  aria-hidden="true"
+                                ></span>
+                              </a>
+                            </li>
+                          )}
+                          {currentNewsDraft.user.linkedin && (
+                            <li>
+                              <a
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="LinkedIn"
+                                className={socialClass}
+                                href={currentNewsDraft.user.linkedin}
+                              >
+                                <span
+                                  className="fab fa-linkedin"
+                                  aria-hidden="true"
+                                ></span>
+                              </a>
+                            </li>
+                          )}
+                          {currentNewsDraft.user.tiktok && (
+                            <li>
+                              <a
+                                target="_blank"
+                                rel="noreferrer"
+                                aria-label="TikTok"
+                                className={socialClass}
+                                href={`https://www.tiktok.com/@${currentNewsDraft.user.tiktok}`}
+                              >
+                                <span
+                                  className="fab fa-tiktok"
+                                  aria-hidden="true"
+                                ></span>
+                              </a>
+                            </li>
+                          )}
+                        </ul>
                       </div>
+                    </Card>
+                  )}
+                </>
+              )}
 
-                      <div className="author-card mt-5">
-                        <div className="row align-items-center">
-                          <div className="col-sm-3 col-6">
-                            <div className="embed-responsive embed-responsive-1by1">
-                              <Image
-                                src={
-                                  (currentNewsDraft &&
-                                    currentNewsDraft.user &&
-                                    currentNewsDraft.user.photo) ||
-                                  ""
-                                }
-                                alt=""
-                                className="rounded-circle img-fluid embed-responsive-item"
-                                objectFit="cover"
-                                fill
-                              />
-                            </div>
-                          </div>
-                          <div className="col-sm-9 mt-sm-0 mt-3">
-                            <h3 className="mb-3 title">
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.name
-                              )}
-                            </h3>
-                            <p>
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.bio
-                              )}
-                            </p>
-                            <ul className="author-icons mt-4">
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.facebook && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="facebook"
-                                      href={currentNewsDraft.user.facebook}
-                                    >
-                                      <span
-                                        className="fab fa-facebook"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
-                              )}
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.twitter && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="twitter"
-                                      href={`https://twitter.com/${currentNewsDraft.user.twitter}`}
-                                    >
-                                      <span
-                                        className="fab fa-twitter"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
-                              )}
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.instagram && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="instagram"
-                                      href={`https://instagram.com/${currentNewsDraft.user.instagram}`}
-                                    >
-                                      <span
-                                        className="fab fa-instagram"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
-                              )}
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.linkedin && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="linkedin"
-                                      href={currentNewsDraft.user.linkedin}
-                                    >
-                                      <span
-                                        className="fab fa-linkedin"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
-                              )}
-                              {newsDraftLoading ? (
-                                <Spinner />
-                              ) : (
-                                currentNewsDraft &&
-                                currentNewsDraft.user &&
-                                currentNewsDraft.user.tiktok && (
-                                  <li>
-                                    <a
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="tiktok"
-                                      href={`https://www.tiktok.com/@${currentNewsDraft.user.tiktok}`}
-                                    >
-                                      <span
-                                        className="fab fa-tiktok"
-                                        aria-hidden="true"
-                                      ></span>
-                                    </a>
-                                  </li>
-                                )
-                              )}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+              <Link
+                href="/users"
+                className={buttonClass({
+                  variant: "secondary",
+                  block: true,
+                  className: "tw:mt-10",
+                })}
+              >
+                Kembali
+              </Link>
+            </article>
 
-                    <div className="row mt-5">
-                      <div className="col">
-                        <Link
-                          href="/users"
-                          className="btn btn-outline-primary btn-block"
-                        >
-                          Kembali
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>
-            <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-              <div className="pos-sticky">
-                <h3 className="section-title-left">Mungkin Anda Tertarik </h3>
-
-                <h1>
-                  Halaman Pratinjau Tidak Dapat Menampilkan Berita Terkait
-                </h1>
+            <aside className="tw:lg:col-span-1">
+              <div className="tw:lg:sticky tw:lg:top-24">
+                <Card className="tw:p-6">
+                  <h2 className="tw:mt-0 tw:mb-3 tw:font-heading tw:text-lg tw:font-semibold tw:text-fg">
+                    Mungkin Anda Tertarik
+                  </h2>
+                  <p className="tw:m-0 tw:text-muted">
+                    Halaman Pratinjau Tidak Dapat Menampilkan Berita Terkait
+                  </p>
+                </Card>
               </div>
-            </div>
+            </aside>
           </div>
-        </div>
+        </Container>
       </div>
       <div
         className="display-ad"

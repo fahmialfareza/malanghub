@@ -1,5 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { connect } from "react-redux";
+import {
+  Button,
+  Card,
+  CardHeader,
+  Container,
+  LoadingBlock,
+  Spinner,
+  Table,
+  cx,
+} from "@malanghub/ui";
 import AddNews from "./AddNews";
 import EditNewsDraft from "./drafts/EditNewsDraft";
 import DeleteNewsDraft from "./drafts/DeleteNewsDraft";
@@ -7,7 +17,7 @@ import AllNewsDraftTableItem from "./drafts/AllNewsDraftTableItem";
 import NewsDraftTableItem from "./drafts/NewsDraftTableItem";
 import NewsTableItem from "./NewsTableItem";
 import EditNews from "./EditNews";
-import Spinner from "../../layouts/Spinner";
+import StatTile from "./StatTile";
 import {
   getAllNewsDrafts,
   getMyNewsDrafts,
@@ -15,14 +25,12 @@ import {
 import { getMyNews } from "../../../redux/actions/newsActions";
 import { RootState } from "../../../redux/store";
 import {
-  LayoutReducerState,
   NewsDraftReducerState,
   NewsReducerState,
 } from "../../../redux/types";
 import { UserProfile } from "../../../models/user";
 
 interface NewsProps {
-  layout: LayoutReducerState;
   user: UserProfile;
   news: NewsReducerState;
   newsDraft: NewsDraftReducerState;
@@ -31,8 +39,11 @@ interface NewsProps {
   getMyNews: () => void;
 }
 
+type TableName = "Berita" | "Antrian Berita" | "Persetujuan Berita";
+
+type NewsModal = "add" | "editDraft" | "deleteDraft" | "approve" | null;
+
 const News = ({
-  layout: { theme },
   user,
   news: { myNews, loading: newsLoading },
   newsDraft: { allNewsDrafts, myNewsDrafts, loading: newsDraftLoading },
@@ -40,7 +51,14 @@ const News = ({
   getMyNewsDrafts,
   getMyNews,
 }: NewsProps) => {
-  const [tableName, setTableName] = useState("Berita");
+  const [tableName, setTableName] = useState<TableName>("Berita");
+  const [modal, setModal] = useState<NewsModal>(null);
+  const closeModal = () => setModal(null);
+
+  const isAdmin = !!user?.role?.includes("admin");
+  const showDraftColumns =
+    tableName === "Antrian Berita" || tableName === "Persetujuan Berita";
+  const columnCount = showDraftColumns ? 7 : 5;
 
   useEffect(() => {
     getMyNews();
@@ -48,232 +66,182 @@ const News = ({
     getMyNewsDrafts();
   }, []);
 
+  const tabs: { name: TableName; count: ReactNode; icon: string }[] = [
+    {
+      name: "Berita",
+      icon: "fa fa-newspaper-o",
+      count: newsLoading ? <Spinner /> : myNews ? myNews.length : 0,
+    },
+    {
+      name: "Antrian Berita",
+      icon: "fa fa-clock-o",
+      count: newsDraftLoading ? (
+        <Spinner />
+      ) : myNewsDrafts ? (
+        myNewsDrafts.length
+      ) : (
+        0
+      ),
+    },
+    ...(isAdmin
+      ? [
+          {
+            name: "Persetujuan Berita" as TableName,
+            icon: "fa fa-check-square-o",
+            count: newsDraftLoading ? (
+              <Spinner />
+            ) : allNewsDrafts ? (
+              allNewsDrafts.length
+            ) : (
+              0
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  const loading =
+    (tableName === "Berita" && newsLoading) ||
+    (tableName !== "Berita" && newsDraftLoading);
+
+  const rows =
+    tableName === "Berita"
+      ? myNews?.map((news, index) => (
+          <NewsTableItem key={news._id} news={news} index={index} />
+        ))
+      : tableName === "Antrian Berita"
+        ? myNewsDrafts?.map((draft, index) => (
+            <NewsDraftTableItem
+              key={draft._id}
+              draft={draft}
+              index={index}
+              onEdit={() => setModal("editDraft")}
+              onDelete={() => setModal("deleteDraft")}
+            />
+          ))
+        : allNewsDrafts?.map((draft, index) => (
+            <AllNewsDraftTableItem
+              key={draft._id}
+              draft={draft}
+              index={index}
+              onEdit={() => setModal("approve")}
+              onDelete={() => setModal("deleteDraft")}
+            />
+          ));
+
   return (
-    <section
-      id="news"
-      className={"collapse mb-5 " + (!user?.role?.includes("admin") && "show")}
-    >
-      <section id="actions" className="py-4 mb-1">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-3 mb-2">
-              <div className="dropdown">
-                <button
-                  className="btn btn-primary btn-block dropdown-toggle"
-                  type="button"
-                  id="dropdownMenuButton"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false"
-                >
+    <section id="news" className="tw:mb-12">
+      <Container>
+        <div
+          role="group"
+          aria-label="Pilih tabel berita"
+          className="tw:mb-6 tw:flex tw:flex-wrap tw:gap-2"
+        >
+          {tabs.map((tab) => {
+            const active = tableName === tab.name;
+            return (
+              <button
+                key={tab.name}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setTableName(tab.name)}
+                className={cx(
+                  "tw:inline-flex tw:h-10 tw:cursor-pointer tw:items-center tw:gap-2 tw:rounded-lg tw:border tw:px-4 tw:text-sm tw:font-semibold tw:transition-colors tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring",
+                  active
+                    ? "tw:border-brand tw:bg-brand-soft tw:text-brand"
+                    : "tw:border-line tw:bg-surface tw:text-body tw:hover:bg-surface-2 tw:hover:text-fg"
+                )}
+              >
+                <i className={tab.icon} aria-hidden="true"></i> {tab.name}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="tw:grid tw:gap-6 tw:lg:grid-cols-4">
+          <Card className="tw:overflow-hidden tw:lg:col-span-3">
+            <CardHeader
+              title={tableName}
+              actions={
+                <Button size="sm" onClick={() => setModal("add")}>
+                  <i className="fa fa-plus" aria-hidden="true"></i> Tambah
                   Berita
-                </button>
-                <div
-                  className="dropdown-menu"
-                  aria-labelledby="dropdownMenuButton"
-                >
-                  <a
-                    href="#"
-                    className="dropdown-item"
-                    onClick={() => setTableName("Berita")}
+                </Button>
+              }
+            />
+            <Table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Judul</th>
+                  {showDraftColumns && <th>Pesan Dari Admin</th>}
+                  {showDraftColumns && <th>Status</th>}
+                  <th>Dibuat</th>
+                  <th>Diperbaharui</th>
+                  <th>
+                    <span className="tw:sr-only">Aksi</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr>
+                    <td colSpan={columnCount}>
+                      <LoadingBlock />
+                    </td>
+                  </tr>
+                ) : rows && rows.length > 0 ? (
+                  rows
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={columnCount}
+                      className="tw:py-10! tw:text-center tw:text-muted"
+                    >
+                      Belum ada data.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          </Card>
+
+          <div className="tw:order-first tw:grid tw:grid-cols-2 tw:content-start tw:gap-4 tw:sm:grid-cols-3 tw:lg:order-none tw:lg:grid-cols-1">
+            {tabs.map((tab) => (
+              <StatTile
+                key={tab.name}
+                label={tab.name}
+                icon={tab.icon}
+                value={tab.count}
+                active={tableName === tab.name}
+                action={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="tw:-ml-3 tw:self-start tw:text-brand"
+                    onClick={() => setTableName(tab.name)}
                   >
-                    Lihat Berita
-                  </a>
-                  <a
-                    href="#"
-                    className="dropdown-item"
-                    data-toggle="modal"
-                    data-target="#addNewsModal"
-                  >
-                    Tambah Berita
-                  </a>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3 mb-2">
-              <a
-                href="#"
-                className="btn btn-primary btn-block"
-                onClick={() => setTableName("Antrian Berita")}
-              >
-                Antrian Berita
-              </a>
-            </div>
-            {user?.role?.includes("admin") && (
-              <div className="col-md-3">
-                <a
-                  href="#"
-                  className="btn btn-primary btn-block"
-                  onClick={() => setTableName("Persetujuan Berita")}
-                >
-                  Persetujuan Berita
-                </a>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-      <div className="container">
-        <div className="row">
-          <div className="col-md-9 mb-2">
-            <div className={theme === "dark" ? "card bg-dark" : "card"}>
-              <div
-                className={
-                  theme === "dark" ? "card-header text-light" : "card-header"
+                    Lihat <i className="fa fa-angle-right" aria-hidden="true"></i>
+                  </Button>
                 }
-              >
-                <h4>{tableName}</h4>
-              </div>
-              <div className="table-responsive">
-                <table
-                  className={
-                    theme === "dark"
-                      ? "table table-striped table-dark"
-                      : "table table-striped"
-                  }
-                >
-                  <thead
-                    className={theme === "dark" ? "thead-dark" : "thead-light"}
-                  >
-                    <tr>
-                      <th>ID</th>
-                      <th>Judul</th>
-                      {(tableName === "Antrian Berita" ||
-                        tableName === "Persetujuan Berita") && (
-                        <th>Pesan Dari Admin</th>
-                      )}
-                      {(tableName === "Antrian Berita" ||
-                        tableName === "Persetujuan Berita") && <th>Status</th>}
-                      <th>Dibuat</th>
-                      <th>Diperbaharui</th>
-                      <th></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tableName === "Berita" && newsLoading ? (
-                      <Spinner />
-                    ) : (
-                      tableName === "Berita" &&
-                      myNews &&
-                      myNews.map((news, index) => (
-                        <NewsTableItem
-                          key={news._id}
-                          news={news}
-                          index={index}
-                        />
-                      ))
-                    )}
-                    {tableName === "Antrian Berita" && newsDraftLoading ? (
-                      <Spinner />
-                    ) : (
-                      tableName === "Antrian Berita" &&
-                      myNewsDrafts &&
-                      myNewsDrafts.map((draft, index) => (
-                        <NewsDraftTableItem
-                          key={draft._id}
-                          draft={draft}
-                          index={index}
-                        />
-                      ))
-                    )}
-                    {tableName === "Persetujuan Berita" && newsDraftLoading ? (
-                      <Spinner />
-                    ) : (
-                      tableName === "Persetujuan Berita" &&
-                      allNewsDrafts &&
-                      allNewsDrafts.map((draft, index) => (
-                        <AllNewsDraftTableItem
-                          key={draft._id}
-                          draft={draft}
-                          index={index}
-                        />
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-3">
-            <div className="card text-center bg-primary text-light mb-3">
-              <div className="card-body">
-                <h3 style={{ color: "#f8f9fa" }}>Berita</h3>
-                <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                  <i className="fa fa-pencil-alt" aria-hidden="true"></i>{" "}
-                  {newsLoading ? <Spinner /> : myNews ? myNews.length : 0}
-                </h4>
-                <a
-                  href="#"
-                  className="btn btn-outline-light btn-sm"
-                  onClick={() => setTableName("Berita")}
-                >
-                  Lihat
-                </a>
-              </div>
-            </div>
-            <div className="card text-center bg-primary text-light mb-3">
-              <div className="card-body">
-                <h3 style={{ color: "#f8f9fa" }}>Antrian Berita</h3>
-                <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                  <i className="fa fa-pencil-alt" aria-hidden="true"></i>{" "}
-                  {newsDraftLoading ? (
-                    <Spinner />
-                  ) : myNewsDrafts ? (
-                    myNewsDrafts.length
-                  ) : (
-                    0
-                  )}
-                </h4>
-                <a
-                  href="#"
-                  className="btn btn-outline-light btn-sm"
-                  onClick={() => setTableName("Antrian Berita")}
-                >
-                  Lihat
-                </a>
-              </div>
-            </div>
-            {user?.role?.includes("admin") && (
-              <div className="card text-center bg-primary text-light mb-3">
-                <div className="card-body">
-                  <h3 style={{ color: "#f8f9fa" }}>Persetujuan Berita</h3>
-                  <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                    <i className="fa fa-pencil-alt" aria-hidden="true"></i>{" "}
-                    {newsDraftLoading ? (
-                      <Spinner />
-                    ) : allNewsDrafts ? (
-                      allNewsDrafts.length
-                    ) : (
-                      0
-                    )}
-                  </h4>
-                  <a
-                    href="#"
-                    className="btn btn-outline-light btn-sm"
-                    onClick={() => setTableName("Persetujuan Berita")}
-                  >
-                    Lihat
-                  </a>
-                </div>
-              </div>
-            )}
+              />
+            ))}
           </div>
         </div>
-      </div>
+      </Container>
 
-      <AddNews />
+      <AddNews open={modal === "add"} onClose={closeModal} />
 
-      <DeleteNewsDraft />
+      <DeleteNewsDraft open={modal === "deleteDraft"} onClose={closeModal} />
 
-      <EditNewsDraft />
+      <EditNewsDraft open={modal === "editDraft"} onClose={closeModal} />
 
-      <EditNews />
+      <EditNews open={modal === "approve"} onClose={closeModal} />
     </section>
   );
 };
 
 const mapStateToProps = (state: RootState) => ({
-  layout: state.layout,
   newsDraft: state.newsDraft,
   news: state.news,
 });

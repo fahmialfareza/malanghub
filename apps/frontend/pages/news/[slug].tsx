@@ -9,12 +9,41 @@ import Moment from "react-moment";
 import parse from "html-react-parser";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import RelatedNews from "../../components/news/RelatedNews";
+import { CategoryBadge } from "../../components/news/NewsCard";
+import {
+  EmptyNews,
+  SectionTitle,
+  renderNextLink,
+} from "../../components/news/NewsListingLayout";
+import { Breadcrumbs, Container, badgeClass, cx } from "@malanghub/ui";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../../redux/store";
 import { GetServerSidePropsContext } from "next";
 import { UserReducerState } from "../../redux/types";
 import { News, NewsCategory, NewsTag } from "../../models/news";
 import { User } from "../../models/user";
+
+const shareButtonClass =
+  "tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface tw:text-body tw:no-underline tw:transition-colors tw:hover:border-brand tw:hover:bg-brand tw:hover:text-brand-fg tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring";
+
+// Readable typography for the article HTML coming from the editor.
+const articleBodyClass = cx(
+  "tw:break-words tw:font-sans tw:text-[1.06rem] tw:leading-8 tw:text-body",
+  "tw:[&_p]:mb-5 tw:[&_p]:text-[1.06rem] tw:[&_p]:leading-8 tw:[&_p]:text-body",
+  "tw:[&_h2]:mt-10 tw:[&_h2]:mb-4 tw:[&_h2]:font-heading tw:[&_h2]:text-2xl tw:[&_h2]:font-bold tw:[&_h2]:leading-snug tw:[&_h2]:text-fg",
+  "tw:[&_h3]:mt-8 tw:[&_h3]:mb-3 tw:[&_h3]:font-heading tw:[&_h3]:text-xl tw:[&_h3]:font-bold tw:[&_h3]:leading-snug tw:[&_h3]:text-fg",
+  "tw:[&_h4]:mt-6 tw:[&_h4]:mb-2 tw:[&_h4]:font-heading tw:[&_h4]:text-lg tw:[&_h4]:font-semibold tw:[&_h4]:text-fg",
+  "tw:[&_a]:font-semibold tw:[&_a]:text-brand tw:[&_a]:underline tw:[&_a]:decoration-brand/40 tw:[&_a]:underline-offset-2 tw:[&_a:hover]:decoration-brand",
+  "tw:[&_strong]:text-fg tw:[&_b]:text-fg",
+  "tw:[&_ul]:mb-5 tw:[&_ul]:list-disc tw:[&_ul]:pl-6 tw:[&_ol]:mb-5 tw:[&_ol]:list-decimal tw:[&_ol]:pl-6 tw:[&_li]:mb-2 tw:[&_li]:leading-7 tw:[&_li::marker]:text-brand",
+  "tw:[&_blockquote]:my-8 tw:[&_blockquote]:rounded-r-xl tw:[&_blockquote]:border-l-4 tw:[&_blockquote]:border-brand tw:[&_blockquote]:bg-brand-soft tw:[&_blockquote]:px-6 tw:[&_blockquote]:py-4 tw:[&_blockquote]:text-lg tw:[&_blockquote]:italic tw:[&_blockquote]:text-fg tw:[&_blockquote_p]:mb-0",
+  "tw:[&_img]:my-6 tw:[&_img]:h-auto tw:[&_img]:max-w-full tw:[&_img]:rounded-xl",
+  "tw:[&_figure]:my-8 tw:[&_figure]:mx-0 tw:[&_figure_img]:my-0 tw:[&_figcaption]:mt-2 tw:[&_figcaption]:text-center tw:[&_figcaption]:text-sm tw:[&_figcaption]:text-muted",
+  "tw:[&_iframe]:my-6 tw:[&_iframe]:max-w-full tw:[&_iframe]:rounded-xl",
+  "tw:[&_table]:my-6 tw:[&_table]:w-full tw:[&_table]:border-collapse tw:[&_td]:border tw:[&_td]:border-line tw:[&_td]:p-2 tw:[&_th]:border tw:[&_th]:border-line tw:[&_th]:bg-surface-2 tw:[&_th]:p-2",
+  "tw:[&_hr]:my-10 tw:[&_hr]:border-line",
+  "tw:[&>*:first-child]:mt-0 tw:[&>*:last-child]:mb-0",
+);
 
 interface SingleNewsProps {
   currentNews: News;
@@ -39,7 +68,7 @@ const SingleNews = ({
   useEffect(() => {
     if (contentRef && contentRef.current) {
       contentRef.current.querySelectorAll("*").forEach(function (
-        node: Element
+        node: Element,
       ) {
         node.removeAttribute("style");
       });
@@ -102,8 +131,12 @@ const SingleNews = ({
         {Array.isArray(currentNews?.tags) &&
           currentNews.tags.map((tag: any) =>
             tag?.name ? (
-              <meta key={tag._id || tag.name} property="article:tag" content={tag.name} />
-            ) : null
+              <meta
+                key={tag._id || tag.name}
+                property="article:tag"
+                content={tag.name}
+              />
+            ) : null,
           )}
 
         <meta property="twitter:card" content="summary_large_image" />
@@ -154,8 +187,8 @@ const SingleNews = ({
               dateModified: currentNews?.updated_at
                 ? new Date(currentNews.updated_at).toISOString()
                 : currentNews?.created_at
-                ? new Date(currentNews.created_at).toISOString()
-                : undefined,
+                  ? new Date(currentNews.created_at).toISOString()
+                  : undefined,
               author: currentNews?.user
                 ? {
                     "@type": "Person",
@@ -230,271 +263,262 @@ const SingleNews = ({
         />
       </Head>
 
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> / Berita /{" "}
-          <span className="breadcrumb_last" aria-current="page">
-            {currentNews && currentNews.title}
-          </span>
-        </div>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: "Beranda", href: "/" },
+          { label: "Berita", href: "/news" },
+          { label: currentNews && currentNews.title },
+        ]}
+        renderLink={renderNextLink}
+      />
 
-      <div className="w3l-searchblock w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <div className="row">
-            <div className="col-lg-8 most-recent">
-              <div className="pb-5 w3l-homeblock1 text-center">
-                <div className="container mt-md-3">
-                  <h3 className="blog-desc-big text-center mb-4">
-                    {currentNews?.title}
-                  </h3>
-                  <div className="blog-post-align">
-                    <div className="blog-post-img embed-responsive embed-responsive-1by1">
-                      {currentNews?.user && (
-                        <Link
-                          href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
-                        >
-                          <Image
-                            src={
-                              (currentNews &&
-                                currentNews &&
-                                currentNews.user &&
-                                currentNews.user.photo) ||
-                              ""
-                            }
-                            alt=""
-                            className="rounded-circle img-fluid embed-responsive-item"
-                            objectFit="cover"
-                            fill
-                          />
-                        </Link>
-                      )}
-                    </div>
-                    <div className="blog-post-info">
-                      <div className="author align-items-center mb-1">
-                        {currentNews?.user && (
-                          <Link
-                            href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
-                          >
-                            {currentNews?.user?.name}
-                          </Link>
-                        )}{" "}
-                        di{" "}
-                        {currentNews?.category && (
-                          <Link
-                            href={`/newsCategories/${currentNews?.category?.slug}`}
-                          >
-                            {currentNews?.category?.name}
-                          </Link>
-                        )}
-                      </div>
-                      <ul className="blog-meta">
-                        <li className="meta-item blog-lesson">
-                          <span className="meta-value">
-                            {" "}
-                            <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
-                              {currentNews?.created_at}
-                            </Moment>{" "}
-                          </span>
-                        </li>
-                        <li className="meta-item blog-students">
-                          <span className="meta-value">
-                            {" "}
-                            {currentNews &&
-                              Math.ceil(currentNews.time_read / 10)}
-                            menit
-                          </span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
+      <main>
+        <article className="tw:mx-auto tw:w-full tw:max-w-3xl tw:px-4 tw:pt-10 tw:pb-12 tw:sm:px-6 tw:lg:pt-14">
+          <header className="tw:mb-8">
+            {currentNews?.category && (
+              <CategoryBadge news={currentNews} className="tw:mb-4" />
+            )}
+            <h1 className="blog-desc-big tw:m-0 tw:mb-6 tw:font-heading tw:text-3xl tw:font-bold tw:leading-tight tw:tracking-tight tw:text-fg tw:sm:text-4xl tw:lg:text-[2.75rem]">
+              {currentNews?.title}
+            </h1>
+
+            <div className="tw:flex tw:items-center tw:gap-3">
+              {currentNews?.user && (
+                <Link
+                  href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
+                  className="tw:relative tw:block tw:size-11 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2 tw:ring-2 tw:ring-line"
+                  aria-hidden
+                  tabIndex={-1}
+                >
+                  {currentNews?.user?.photo && (
+                    <Image
+                      src={currentNews.user.photo}
+                      alt=""
+                      className="tw:object-cover"
+                      sizes="44px"
+                      fill
+                    />
+                  )}
+                </Link>
+              )}
+              <div className="tw:flex tw:min-w-0 tw:flex-col tw:gap-0.5 tw:text-sm">
+                {currentNews?.user && (
+                  <Link
+                    href={`/users${currentNews?.user?._id ? `/${currentNews?.user?._id}` : ""}`}
+                    className="tw:font-semibold tw:text-fg tw:no-underline tw:hover:text-brand"
+                  >
+                    {currentNews?.user?.name}
+                  </Link>
+                )}
+                <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-x-2 tw:text-muted">
+                  <Moment format="dddd, Do MMMM YYYY HH:mm:ss">
+                    {currentNews?.created_at}
+                  </Moment>
+                  <span aria-hidden className="tw:text-line-strong">
+                    &middot;
+                  </span>
+                  <span className="tw:inline-flex tw:items-center tw:gap-1">
+                    <span className="fa fa-clock-o" aria-hidden="true"></span>
+                    {currentNews && Math.ceil(currentNews.time_read / 10)} menit
+                  </span>
                 </div>
               </div>
-
-              <section className="blog-post-main w3l-homeblock1">
-                <div className="blog-content-inf pb-5">
-                  <div className="container pb-lg-4">
-                    <div className="single-post-image">
-                      <div className="post-content embed-responsive embed-responsive-4by3">
-                        <Image
-                          src={currentNews?.mainImage}
-                          className="radius-image img-fluid pb-5 embed-responsive-item"
-                          objectFit="cover"
-                          alt=""
-                          fill
-                        />
-                      </div>
-                    </div>
-
-                    <div className="single-post-content text-justify">
-                      {currentNews && currentNews.content && (
-                        <div ref={contentRef}>{parse(currentNews.content)}</div>
-                      )}
-
-                      <div className="d-grid left-right mt-5 pb-md-5">
-                        <div className="buttons-singles tags">
-                          <h4>Tag :</h4>
-                          {currentNews?.tags &&
-                            currentNews?.tags.map((tag) => (
-                              <Link
-                                key={tag._id}
-                                href={`/newsTags/${tag.slug}`}
-                              >
-                                {tag.name}
-                              </Link>
-                            ))}
-                        </div>
-                        <div className="buttons-singles">
-                          <h4>Bagikan :</h4>
-                          <a
-                            target="_blank"
-                            rel="noreferrer"
-                            href={`https://www.facebook.com/share.php?u=https://www.malanghub.com/news/${slug}`}
-                          >
-                            <span
-                              className="fa fa-facebook"
-                              aria-hidden="true"
-                            ></span>
-                          </a>
-                          <a
-                            target="_blank"
-                            rel="noreferrer"
-                            href={`https://twitter.com/intent/tweet?text=https://www.malanghub.com/news/${slug}`}
-                          >
-                            <span
-                              className="fa fa-twitter"
-                              aria-hidden="true"
-                            ></span>
-                          </a>
-                        </div>
-                      </div>
-
-                      <div className="author-card mt-5">
-                        <div className="row align-items-center">
-                          <div className="col-sm-3 col-6">
-                            <div className="embed-responsive embed-responsive-1by1">
-                              <Image
-                                src={currentNews?.user?.photo || ""}
-                                alt=""
-                                className="rounded-circle img-fluid embed-responsive-item"
-                                objectFit="cover"
-                                fill
-                              />
-                            </div>
-                          </div>
-                          <div className="col-sm-9 mt-sm-0 mt-3">
-                            <h3 className="mb-3 title">
-                              {currentNews?.user?.name}
-                            </h3>
-                            <p>{currentNews?.user?.bio}</p>
-                            <ul className="author-icons mt-4">
-                              {currentNews?.user?.facebook && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="facebook"
-                                    href={currentNews?.user?.facebook}
-                                  >
-                                    <span
-                                      className="fab fa-facebook"
-                                      aria-hidden="true"
-                                    ></span>
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews?.user?.twitter && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="twitter"
-                                    href={`https://twitter.com/${currentNews?.user?.twitter}`}
-                                  >
-                                    <span
-                                      className="fab fa-twitter"
-                                      aria-hidden="true"
-                                    ></span>
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews?.user?.instagram && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="instagram"
-                                    href={`https://instagram.com/${currentNews?.user?.instagram}`}
-                                  >
-                                    <span
-                                      className="fab fa-instagram"
-                                      aria-hidden="true"
-                                    ></span>
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews?.user?.linkedin && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="linkedin"
-                                    href={currentNews?.user?.linkedin}
-                                  >
-                                    <span
-                                      className="fab fa-linkedin"
-                                      aria-hidden="true"
-                                    ></span>
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews?.user?.tiktok && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="tiktok"
-                                    href={`https://www.tiktok.com/@${currentNews?.user?.tiktok}`}
-                                  >
-                                    <span
-                                      className="fab fa-tiktok"
-                                      aria-hidden="true"
-                                    ></span>
-                                  </a>
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
             </div>
-            <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-              <div className="pos-sticky">
-                <h3 className="section-title-left">Mungkin Anda Tertarik </h3>
+          </header>
 
-                {relatedNews?.length > 0 ? (
-                  relatedNews.map((news, index) => {
-                    return (
-                      <RelatedNews key={news._id} index={index} news={news} />
-                    );
-                  })
-                ) : (
-                  <h1>Belum Ada Berita</h1>
+          {currentNews?.mainImage && (
+            <figure className="tw:relative tw:m-0 tw:mb-10 tw:aspect-video tw:overflow-hidden tw:rounded-2xl tw:bg-surface-2 tw:shadow-card tw:sm:-mx-6 tw:lg:-mx-16">
+              <Image
+                src={currentNews.mainImage}
+                className="tw:object-cover"
+                alt={currentNews.title}
+                sizes="(min-width: 1024px) 896px, 100vw"
+                priority
+                fill
+              />
+            </figure>
+          )}
+
+          <div className="single-post-content">
+            {currentNews && currentNews.content && (
+              <div ref={contentRef} className={articleBodyClass}>
+                {parse(currentNews.content)}
+              </div>
+            )}
+          </div>
+
+          <footer className="tw:mt-12 tw:flex tw:flex-col tw:gap-6 tw:border-t tw:border-line tw:pt-8 tw:sm:flex-row tw:sm:items-start tw:sm:justify-between">
+            <div className="tw:flex tw:flex-wrap tw:items-center tw:gap-2">
+              <span className="tw:mr-1 tw:text-sm tw:font-semibold tw:text-fg">
+                Tag :
+              </span>
+              {currentNews?.tags &&
+                currentNews?.tags.map((tag) => (
+                  <Link
+                    key={tag._id}
+                    href={`/newsTags/${tag.slug}`}
+                    className={badgeClass(
+                      "neutral",
+                      "tw:px-3 tw:py-1 tw:transition-colors tw:hover:bg-brand-soft tw:hover:text-brand",
+                    )}
+                  >
+                    #{tag.name}
+                  </Link>
+                ))}
+            </div>
+            <div className="tw:flex tw:shrink-0 tw:items-center tw:gap-2">
+              <span className="tw:mr-1 tw:text-sm tw:font-semibold tw:text-fg">
+                Bagikan :
+              </span>
+              <a
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Bagikan ke Facebook"
+                className={shareButtonClass}
+                href={`https://www.facebook.com/share.php?u=https://www.malanghub.com/news/${slug}`}
+              >
+                <span className="fa fa-facebook" aria-hidden="true"></span>
+              </a>
+              <a
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Bagikan ke Twitter"
+                className={shareButtonClass}
+                href={`https://twitter.com/intent/tweet?text=https://www.malanghub.com/news/${slug}`}
+              >
+                <span className="fa fa-twitter" aria-hidden="true"></span>
+              </a>
+            </div>
+          </footer>
+
+          {currentNews?.user && (
+            <section className="tw:mt-10 tw:flex tw:flex-col tw:gap-5 tw:rounded-2xl tw:border tw:border-line tw:bg-surface tw:p-6 tw:shadow-card tw:sm:flex-row tw:sm:items-start">
+              <div className="tw:relative tw:size-20 tw:shrink-0 tw:overflow-hidden tw:rounded-full tw:bg-surface-2">
+                {currentNews?.user?.photo && (
+                  <Image
+                    src={currentNews.user.photo}
+                    alt=""
+                    className="tw:object-cover"
+                    sizes="80px"
+                    fill
+                  />
                 )}
               </div>
-            </div>
-          </div>
-        </div>
-      </div>
+              <div className="tw:min-w-0">
+                <h2 className="tw:m-0 tw:mb-2 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+                  {currentNews?.user?.name}
+                </h2>
+                {currentNews?.user?.bio && (
+                  <p className="tw:m-0 tw:text-[0.95rem] tw:leading-relaxed tw:text-body">
+                    {currentNews?.user?.bio}
+                  </p>
+                )}
+                <ul className="tw:m-0 tw:mt-4 tw:flex tw:list-none tw:flex-wrap tw:gap-2 tw:p-0">
+                  {currentNews?.user?.facebook && (
+                    <li>
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Facebook"
+                        className={shareButtonClass}
+                        href={currentNews?.user?.facebook}
+                      >
+                        <span
+                          className="fab fa-facebook"
+                          aria-hidden="true"
+                        ></span>
+                      </a>
+                    </li>
+                  )}
+                  {currentNews?.user?.twitter && (
+                    <li>
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Twitter"
+                        className={shareButtonClass}
+                        href={`https://twitter.com/${currentNews?.user?.twitter}`}
+                      >
+                        <span
+                          className="fab fa-twitter"
+                          aria-hidden="true"
+                        ></span>
+                      </a>
+                    </li>
+                  )}
+                  {currentNews?.user?.instagram && (
+                    <li>
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Instagram"
+                        className={shareButtonClass}
+                        href={`https://instagram.com/${currentNews?.user?.instagram}`}
+                      >
+                        <span
+                          className="fab fa-instagram"
+                          aria-hidden="true"
+                        ></span>
+                      </a>
+                    </li>
+                  )}
+                  {currentNews?.user?.linkedin && (
+                    <li>
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="LinkedIn"
+                        className={shareButtonClass}
+                        href={currentNews?.user?.linkedin}
+                      >
+                        <span
+                          className="fab fa-linkedin"
+                          aria-hidden="true"
+                        ></span>
+                      </a>
+                    </li>
+                  )}
+                  {currentNews?.user?.tiktok && (
+                    <li>
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="TikTok"
+                        className={shareButtonClass}
+                        href={`https://www.tiktok.com/@${currentNews?.user?.tiktok}`}
+                      >
+                        <span
+                          className="fab fa-tiktok"
+                          aria-hidden="true"
+                        ></span>
+                      </a>
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </section>
+          )}
+        </article>
 
-      <div
-        className="display-ad"
-        style={{ margin: "8px auto", display: "block", textAlign: "center" }}
-      ></div>
+        <section className="tw:border-t tw:border-line tw:bg-surface-2/50">
+          <Container className="tw:py-12 tw:lg:py-16">
+            <SectionTitle>Mungkin Anda Tertarik</SectionTitle>
+            {relatedNews?.length > 0 ? (
+              <div className="tw:grid tw:gap-x-6 tw:gap-y-10 tw:sm:grid-cols-2 tw:lg:grid-cols-4">
+                {relatedNews.map((news, index) => {
+                  return (
+                    <RelatedNews key={news._id} index={index} news={news} />
+                  );
+                })}
+              </div>
+            ) : (
+              <EmptyNews>Belum Ada Berita</EmptyNews>
+            )}
+          </Container>
+        </section>
+      </main>
+
+      <div className="display-ad tw:mx-auto tw:my-2 tw:block tw:text-center"></div>
     </>
   );
 };
@@ -524,7 +548,7 @@ export async function getServerSideProps({
       try {
         // Fetch the current news item based on the slug
         const currentNewsResponse = await fetch(
-          `${process.env.API_ADDRESS}/api/news/${rawSlug}`
+          `${process.env.API_ADDRESS}/api/news/${rawSlug}`,
         );
 
         if (!currentNewsResponse.ok) {
@@ -558,7 +582,7 @@ export async function getServerSideProps({
 
       // Return the current news and related news as props
       return { props: { currentNews: data[0], relatedNews: data[1] } };
-    }
+    },
   );
 
   return result;

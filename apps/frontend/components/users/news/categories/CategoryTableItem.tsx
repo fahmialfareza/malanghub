@@ -1,69 +1,53 @@
 import { connect } from "react-redux";
 import Moment from "react-moment";
+import { Button } from "@malanghub/ui";
 import { selectNewsCategory } from "../../../../redux/actions/newsCategoryActions";
 import { NewsCategory } from "../../../../models/news";
-import { MouseEvent } from "react";
 
 interface CategoryTableItemProps {
   category: NewsCategory;
   index: number;
+  onEdit: () => void;
+  onDelete: () => void;
   selectNewsCategory: (newsCategory: NewsCategory) => void;
 }
 
 const CategoryTableItem = ({
   category,
   index,
+  onEdit,
+  onDelete,
   selectNewsCategory,
 }: CategoryTableItemProps) => {
-  const onClickEdit = (
-    event: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
-  ) => {
-    event.preventDefault();
-
+  const onClickEdit = () => {
     selectNewsCategory(category);
-
-    // @ts-ignore
-    window.$("#editNewsCategoryModal").modal("toggle");
+    onEdit();
   };
 
-  const onClickDelete = (
-    event: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
-  ) => {
-    event.preventDefault();
-
+  const onClickDelete = () => {
     selectNewsCategory(category);
-
-    // @ts-ignore
-    window.$("#deleteNewsCategoryModal").modal("toggle");
+    onDelete();
   };
 
   return (
     <tr>
-      <td>{index + 1}</td>
-      <td>{category.name}</td>
-      <td>
+      <td className="tw:text-muted">{index + 1}</td>
+      <td className="tw:font-semibold tw:text-fg">{category.name}</td>
+      <td className="tw:whitespace-nowrap">
+        <Moment format="MMMM Do, YYYY">{category.created_at}</Moment>
+      </td>
+      <td className="tw:whitespace-nowrap">
         <Moment format="MMMM Do, YYYY">{category.created_at}</Moment>
       </td>
       <td>
-        <Moment format="MMMM Do, YYYY">{category.created_at}</Moment>
-      </td>
-      <td>
-        <button
-          className="btn btn-primary m-1"
-          data-toggle="modal"
-          data-target="#editNewsCategoryModal"
-          onClick={onClickEdit}
-        >
-          <i className="fa fa-edit" aria-hidden="true"></i> Edit
-        </button>
-        <button
-          className="btn btn-danger m-1"
-          data-toggle="modal"
-          data-target="#deleteNewsCategoryModal"
-          onClick={onClickDelete}
-        >
-          <i className="fa fa-trash" aria-hidden="true"></i> Hapus
-        </button>
+        <div className="tw:flex tw:justify-end tw:gap-2">
+          <Button size="sm" variant="secondary" onClick={onClickEdit}>
+            <i className="fa fa-edit" aria-hidden="true"></i> Edit
+          </Button>
+          <Button size="sm" variant="danger" onClick={onClickDelete}>
+            <i className="fa fa-trash" aria-hidden="true"></i> Hapus
+          </Button>
+        </div>
       </td>
     </tr>
   );

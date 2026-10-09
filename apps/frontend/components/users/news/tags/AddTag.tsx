@@ -1,23 +1,23 @@
 import { useState, useEffect, FormEvent } from "react";
 import { connect } from "react-redux";
+import { Button, Input, Modal } from "@malanghub/ui";
 import { createNewsTag } from "../../../../redux/actions/newsTagActions";
 import { setAlert } from "../../../../redux/actions/layoutActions";
 import { RootState } from "../../../../redux/store";
-import {
-  LayoutReducerState,
-  NewsTagReducerState,
-} from "../../../../redux/types";
+import { NewsTagReducerState } from "../../../../redux/types";
 import { CreateUpdateNewsTag } from "../../../../redux/actions/types/newsTag";
 
 interface AddTagProps {
-  layout: LayoutReducerState;
+  open: boolean;
+  onClose: () => void;
   newsTag: NewsTagReducerState;
   createNewsTag: (formData: CreateUpdateNewsTag) => void;
   setAlert: (message: string, type: string) => void;
 }
 
 const AddTag = ({
-  layout: { theme },
+  open,
+  onClose,
   newsTag: { error },
   createNewsTag,
   setAlert,
@@ -30,11 +30,6 @@ const AddTag = ({
     }
   }, [error]);
 
-  const hideModal = () => {
-    // @ts-ignore
-    window.$("#addNewsTagModal").modal("toggle");
-  };
-
   const onSubmit = (event: FormEvent) => {
     event.preventDefault();
 
@@ -44,65 +39,41 @@ const AddTag = ({
 
     setName("");
 
-    hideModal();
+    onClose();
   };
 
   return (
-    <>
-      <div className="modal fade" id="addNewsTagModal">
-        <div className="modal-dialog modal-lg">
-          <div
-            className={
-              theme === "dark"
-                ? "modal-content bg-dark text-light"
-                : "modal-content"
-            }
-          >
-            <div className="modal-header bg-primary">
-              <h5 className="modal-title" style={{ color: "#f8f9fa" }}>
-                Tambah Tag (Berita)
-              </h5>
-              <button className="close" data-dismiss="modal">
-                <span>&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">
-              <form onSubmit={onSubmit} id="form-addNewsTagModal">
-                <div className="form-group">
-                  <label htmlFor="name">Nama *</label>
-                  <input
-                    type="text"
-                    name="name"
-                    placeholder="Nama Tag"
-                    className="form-control"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                  />
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-outline-primary" data-dismiss="modal">
-                Keluar
-              </button>
-              <button
-                type="submit"
-                form="form-addNewsTagModal"
-                value="Submit"
-                className="btn btn-primary"
-              >
-                Simpan
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Tambah Tag (Berita)"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>
+            Keluar
+          </Button>
+          <Button type="submit" form="form-addNewsTagModal">
+            Simpan
+          </Button>
+        </>
+      }
+    >
+      <form onSubmit={onSubmit} id="form-addNewsTagModal">
+        <Input
+          label="Nama *"
+          type="text"
+          name="name"
+          placeholder="Nama Tag"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          wrapperClassName="tw:mb-0"
+        />
+      </form>
+    </Modal>
   );
 };
 
 const mapStateToProps = (state: RootState) => ({
-  layout: state.layout,
   newsTag: state.newsTag,
 });
 

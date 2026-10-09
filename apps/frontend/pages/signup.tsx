@@ -7,6 +7,7 @@ import { signUp, googleLogin } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
 import { useGoogleLogin } from "@react-oauth/google";
 import * as Sentry from "@sentry/nextjs";
+import { Breadcrumbs, Button, Card, Input } from "@malanghub/ui";
 import { RootState } from "../redux/store";
 import { GetServerSidePropsContext } from "next";
 import * as cookie from "cookie";
@@ -131,80 +132,97 @@ const SignUp = ({
         />
       </Head>
 
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> /{" "}
-          <span className="breadcrumb_last" aria-current="page">
-            Daftar
-          </span>
-        </div>
-      </nav>
-      <section className="w3l-contact-2 py-5">
-        <div className="container py-lg-5 py-md-4">
-          <h3 className="section-title-left">Daftar </h3>
-          <div className="contact-grids d-grid">
-            <div className="contact-left m-auto">
-              <a
-                onClick={(event) => {
-                  event.preventDefault();
-                  loginWithGoogle();
-                }}
-                className="btn btn-danger btn-block btn-lg text-light"
-              >
-                <i className="fa fa-google"></i> Daftar dengan <b>Google</b>
-              </a>
-            </div>
-            <div className="contact-right">
-              <form onSubmit={onSubmit} className="signin-form">
-                <div className="input-grids">
-                  <input
-                    type="text"
-                    name="name"
-                    value={name}
-                    id="w3lName"
-                    placeholder="Nama*"
-                    className="contact-input"
-                    onChange={onChange}
-                    required
-                  />
-                  <input
-                    type="email"
-                    name="email"
-                    value={email}
-                    id="w3lSender"
-                    placeholder="Email*"
-                    className="contact-input"
-                    onChange={onChange}
-                    required
-                  />
-                  <input
-                    type="password"
-                    name="password"
-                    value={password}
-                    id="w3lSubect"
-                    placeholder="Password*"
-                    className="contact-input"
-                    onChange={onChange}
-                    required
-                  />
-                  <input
-                    type="password"
-                    value={passwordConfirmation}
-                    name="passwordConfirmation"
-                    id="w3lSubect-confirm"
-                    placeholder="Konfirmasi Password*"
-                    className="contact-input"
-                    onChange={onChange}
-                    required
-                  />
-                </div>
-                <button type="submit" className="btn btn-style btn-outline">
-                  Daftar
-                </button>
-              </form>
-            </div>
+      <Breadcrumbs
+        items={[{ label: "Beranda", href: "/" }, { label: "Daftar" }]}
+        renderLink={({ href, className, children }) => (
+          <Link href={href} className={className}>
+            {children}
+          </Link>
+        )}
+      />
+      <section className="tw:bg-bg tw:px-4 tw:py-12 tw:sm:py-16">
+        <Card className="tw:mx-auto tw:w-full tw:max-w-md tw:p-6 tw:sm:p-8">
+          <div className="tw:mb-6 tw:text-center">
+            <h1 className="tw:m-0 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg tw:sm:text-3xl">
+              Daftar
+            </h1>
+            <p className="tw:mt-2 tw:text-sm tw:leading-relaxed tw:text-muted">
+              Buat akun Malanghub untuk mulai menulis dan berbagi informasi
+              sekitar Malang Raya.
+            </p>
           </div>
-        </div>
+
+          <form onSubmit={onSubmit}>
+            <Input
+              type="text"
+              name="name"
+              id="signup-name"
+              label="Nama"
+              placeholder="Nama lengkap"
+              autoComplete="name"
+              value={name}
+              onChange={onChange}
+              required
+            />
+            <Input
+              type="email"
+              name="email"
+              id="signup-email"
+              label="Email"
+              placeholder="nama@email.com"
+              autoComplete="email"
+              value={email}
+              onChange={onChange}
+              required
+            />
+            <Input
+              type="password"
+              name="password"
+              id="signup-password"
+              label="Password"
+              placeholder="Password"
+              autoComplete="new-password"
+              value={password}
+              onChange={onChange}
+              required
+            />
+            <Input
+              type="password"
+              name="passwordConfirmation"
+              id="signup-password-confirmation"
+              label="Konfirmasi Password"
+              placeholder="Ulangi password"
+              autoComplete="new-password"
+              value={passwordConfirmation}
+              onChange={onChange}
+              required
+            />
+            <Button type="submit" block className="tw:mt-2">
+              Daftar
+            </Button>
+          </form>
+
+          <div className="tw:my-6 tw:flex tw:items-center tw:gap-3 tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wider tw:text-muted">
+            <span aria-hidden className="tw:h-px tw:flex-1 tw:bg-line" />
+            atau
+            <span aria-hidden className="tw:h-px tw:flex-1 tw:bg-line" />
+          </div>
+
+          <Button variant="secondary" block onClick={() => loginWithGoogle()}>
+            <i className="fa fa-google tw:text-danger" aria-hidden="true"></i>
+            Daftar dengan Google
+          </Button>
+
+          <p className="tw:mt-6 tw:text-center tw:text-sm tw:text-muted">
+            Sudah punya akun?{" "}
+            <Link
+              href="/signin"
+              className="tw:font-semibold tw:text-brand tw:hover:text-brand-hover"
+            >
+              Masuk
+            </Link>
+          </p>
+        </Card>
       </section>
     </>
   );
@@ -246,7 +264,7 @@ export async function getServerSideProps({ req }: GetServerSidePropsContext) {
         Sentry.captureException(e);
         return { props: {} };
       }
-    }
+    },
   );
 
   return result;

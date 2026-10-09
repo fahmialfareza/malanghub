@@ -1,13 +1,14 @@
 import { useEffect } from "react";
 import Head from "next/head";
 import { connect } from "react-redux";
-import Link from "next/link";
 import moment from "moment";
 import { getAllNews } from "../../redux/actions/newsActions";
 import { setActiveLink } from "../../redux/actions/layoutActions";
-import Spinner from "../../components/layouts/Spinner";
 import AllNewsItem from "../../components/news/AllNewsItem";
-import TrendingNews from "../../components/news/TrendingNews";
+import NewsListingLayout, {
+  EmptyNews,
+} from "../../components/news/NewsListingLayout";
+import { LoadingBlock } from "@malanghub/ui";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../../redux/store";
 import { News as NewsInterface, NewsWithPagination } from "../../models/news";
@@ -89,49 +90,23 @@ const News = ({
         />
       </Head>
 
-      <nav id="breadcrumbs" className="breadcrumbs">
-        <div className="container page-wrapper">
-          <Link href="/">Beranda</Link> /
-          <span className="breadcrumb_last" aria-current="page">
-            Semua Berita
-          </span>
-        </div>
-      </nav>
-      <div className="w3l-searchblock w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <div className="row">
-            <div className="col-lg-8 most-recent">
-              <h3 className="section-title-left">Semua Berita</h3>
-
-              {newsLoading || allNews === null ? (
-                <Spinner />
-              ) : !newsLoading && allNews?.data?.length > 0 ? (
-                <AllNewsItem news={allNews} />
-              ) : (
-                <h1>Belum Ada Berita</h1>
-              )}
-            </div>
-
-            <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-              <div className="pos-sticky">
-                <h3 className="section-title-left">Trending </h3>
-
-                {newsLoading || trendingNews === null ? (
-                  <Spinner />
-                ) : !newsLoading && trendingNews?.length > 0 ? (
-                  trendingNews.map((news, index) => {
-                    return (
-                      <TrendingNews key={news._id} index={index} news={news} />
-                    );
-                  })
-                ) : (
-                  <h1>Belum Ada Berita</h1>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <NewsListingLayout
+        breadcrumbs={[
+          { label: "Beranda", href: "/" },
+          { label: "Semua Berita" },
+        ]}
+        title="Semua Berita"
+        trendingNews={trendingNews}
+        trendingLoading={newsLoading}
+      >
+        {newsLoading || allNews === null ? (
+          <LoadingBlock />
+        ) : allNews?.data?.length > 0 ? (
+          <AllNewsItem news={allNews} />
+        ) : (
+          <EmptyNews>Belum Ada Berita</EmptyNews>
+        )}
+      </NewsListingLayout>
     </>
   );
 };
@@ -167,7 +142,7 @@ export async function getServerSideProps() {
       }
 
       return { props: { trendingNews: dataTrending } };
-    }
+    },
   );
 
   return result;

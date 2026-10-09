@@ -3,8 +3,12 @@ import Head from "next/head";
 import { connect } from "react-redux";
 import moment from "moment";
 import { setActiveLink } from "../redux/actions/layoutActions";
-import Spinner from "../components/layouts/Spinner";
-import TrendingNews from "../components/news/TrendingNews";
+import { Container, LoadingBlock } from "@malanghub/ui";
+import {
+  EmptyNews,
+  SectionTitle,
+  TrendingPanel,
+} from "../components/news/NewsListingLayout";
 import NewsItem from "../components/news/NewsItem";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../redux/store";
@@ -113,38 +117,26 @@ const Home = ({
         />
       </Head>
 
-      <div className="w3l-homeblock1 py-5">
-        <div className="container pt-lg-5 pt-md-4">
-          <div className="row">
-            <div className="col-lg-9">
-              <h3 className="section-title-left">Berita Terbaru </h3>
-              {newsLoading || recentNews === null ? (
-                <Spinner />
-              ) : !newsLoading && recentNews?.length > 0 ? (
-                <NewsItem news={recentNews} />
-              ) : (
-                <h1>Belum Ada Berita</h1>
-              )}
-            </div>
+      <Container className="tw:py-10 tw:lg:py-14">
+        <div className="tw:grid tw:gap-10 tw:lg:grid-cols-12">
+          <main className="tw:min-w-0 tw:lg:col-span-8 tw:xl:col-span-9">
+            <SectionTitle as="h1">Berita Terbaru</SectionTitle>
+            {newsLoading || recentNews === null ? (
+              <LoadingBlock />
+            ) : recentNews?.length > 0 ? (
+              <NewsItem news={recentNews} />
+            ) : (
+              <EmptyNews>Belum Ada Berita</EmptyNews>
+            )}
+          </main>
 
-            <div className="col-lg-3 trending mt-lg-0 mt-5">
-              <h3 className="section-title-left">Trending </h3>
-
-              {newsLoading || trendingNews === null ? (
-                <Spinner />
-              ) : !newsLoading && trendingNews?.length > 0 ? (
-                trendingNews.map((news, index) => {
-                  return (
-                    <TrendingNews key={news._id} index={index} news={news} />
-                  );
-                })
-              ) : (
-                <h1>Belum Ada Berita</h1>
-              )}
+          <aside className="tw:lg:col-span-4 tw:xl:col-span-3">
+            <div className="tw:lg:sticky tw:lg:top-24">
+              <TrendingPanel news={trendingNews} loading={newsLoading} />
             </div>
-          </div>
+          </aside>
         </div>
-      </div>
+      </Container>
     </>
   );
 };
@@ -186,7 +178,7 @@ export async function getServerSideProps() {
       }
 
       return { props: { recentNews: dataRecent, trendingNews: dataTrending } };
-    }
+    },
   );
 
   return result;
