@@ -44,4 +44,6 @@ Notes:
 - `API_ADDRESS` must be a public hostname (`global_fetch_strictly_public` blocks private addresses), so local previews against `localhost` will not load data.
 - `next/image` uses `utils/imageLoader.ts`: Cloudinary images are resized by Cloudinary, everything else is served as-is.
 - Don't use `export const runtime = "edge"`; OpenNext runs everything on the Node.js-compatible runtime.
-- `patches/@opennextjs__cloudflare@*.patch` works around Next.js 16.4's `preview-props.json` ([opennextjs-cloudflare#1355](https://github.com/opennextjs/opennextjs-cloudflare/issues/1355)); drop it once an upstream release includes the fix.
+- `patches/@opennextjs__cloudflare@*.patch` patches OpenNext in two places; drop them once upstream releases fixes:
+  - inlines Next.js 16.4's `preview-props.json` ([opennextjs-cloudflare#1355](https://github.com/opennextjs/opennextjs-cloudflare/issues/1355)); without it every SSR page 500s.
+  - keeps the pages-router context redirect (`*.shared-runtime` → `pages/vendored/contexts`) on Next ≥ 15.3, like Next's Node require-hook. Without it `next-redux-wrapper` throws "NextRouter was not mounted" on every server-rendered page.

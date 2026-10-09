@@ -1,6 +1,6 @@
 diff --git a/dist/cli/build/patches/plugins/load-manifest.js b/dist/cli/build/patches/plugins/load-manifest.js
 index bff72bd613f34fc7e2f785f0961c15678d524a71..c6758d696e908fbdbcd824783f8c3a085319d4fa 100644
---- a/dist/cli/build/patches/plugins/load-manifest.js
+--- a/dist/cli/build/patches/plugins/load-manifest.js	
 +++ b/dist/cli/build/patches/plugins/load-manifest.js
 @@ -31,7 +31,7 @@ async function getLoadManifestRule(buildOpts) {
      const { outputDir } = buildOpts;
@@ -11,3 +11,20 @@ index bff72bd613f34fc7e2f785f0961c15678d524a71..c6758d696e908fbdbcd824783f8c3a08
          windowsPathsNoEscape: true,
          nodir: true,
      });
+diff --git a/dist/cli/build/patches/plugins/pages-router-context.js b/dist/cli/build/patches/plugins/pages-router-context.js
+index 8363e6c2f07475d76458c94d0951acbb34baf487..64878a55c334a5375b1318468ca63141b9fc5b01 100644
+--- a/dist/cli/build/patches/plugins/pages-router-context.js	
++++ b/dist/cli/build/patches/plugins/pages-router-context.js
+@@ -12,10 +12,8 @@ export function patchPagesRouterContext(buildOpts) {
+     return {
+         name: "pages-router-context",
+         setup: (build) => {
+-            // If we are after 15.3, we don't need to patch the context anymore
+-            if (isAfter153) {
+-                return;
+-            }
++            // Still needed after 15.3: externals that import `next/router` (e.g. next-redux-wrapper)
++            // must share the pages runtime's RouterContext, as Next's require-hook does in Node.
+             // We need to modify some imports (i.e. https://github.com/vercel/next.js/blob/48540b836642525b38a2cba40a92b4532c553a52/packages/next/src/server/require-hook.ts#L59-L68)
+             build.onResolve({ filter: /.*shared-runtime/ }, async ({ path, resolveDir, ...options }) => {
+                 const match = path.match(pathRegex);
