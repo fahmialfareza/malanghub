@@ -1,4 +1,5 @@
 import type {
+  AiAnswer,
   ApiEnvelope,
   AppleLoginRequest,
   ApproveNewsDraftRequest,
@@ -99,6 +100,9 @@ export interface ApiClient {
     byNews(newsId: string): Promise<ApiEnvelope<NewsComment[]>>;
     create(newsId: string, comment: string): Promise<ApiEnvelope<NewsComment>>;
     reply(commentId: string, comment: string): Promise<ApiEnvelope<NewsComment>>;
+  };
+  ai: {
+    ask(question: string): Promise<ApiEnvelope<AiAnswer>>;
   };
 }
 
@@ -480,6 +484,13 @@ export const createApiClient = ({
             body: { comment },
           }
         ),
+    },
+    ai: {
+      ask: (question) =>
+        request<ApiEnvelope<AiAnswer>>("/api/ai/ask", {
+          method: "POST",
+          body: { question },
+        }),
     },
   };
 };

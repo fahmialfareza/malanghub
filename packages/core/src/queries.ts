@@ -195,6 +195,11 @@ export const useDeleteAccountMutation = (api: ApiClient) =>
     mutationFn: () => api.users.deleteAccount(),
   });
 
+export const useAskAiMutation = (api: ApiClient) =>
+  useMutation({
+    mutationFn: async (question: string) => (await api.ai.ask(question)).data,
+  });
+
 export const useCreateCategoryMutation = (api: ApiClient) => {
   const queryClient = useQueryClient();
 

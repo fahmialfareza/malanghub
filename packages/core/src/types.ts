@@ -185,3 +185,19 @@ export interface NewsCommentReply {
   created_at?: string | Date;
   updated_at?: string | Date;
 }
+
+export interface AiSource {
+  id: string;
+  title: string;
+  slug: string;
+  created_at: string;
+}
+
+export interface AiAnswer {
+  answer: string;
+  sources: AiSource[];
+  // True when the AI could not generate an answer; the sources are still
+  // returned as related articles.
+  fallback: boolean;
+  provider?: string;
+}
