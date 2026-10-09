@@ -1795,6 +1795,14 @@ export const PrivacyPage = () => {
             </strong>{" "}
             Untuk fitur publikasi berita.
           </li>
+          <li>
+            <strong className="text-fg">Google Gemini & Groq:</strong> Untuk
+            fitur Tanya AI. Pertanyaan yang Anda kirim (tanpa data akun)
+            beserta potongan artikel Malanghub diproses oleh penyedia AI ini
+            untuk menyusun jawaban, dan dapat digunakan oleh penyedia untuk
+            meningkatkan layanannya. Jangan menuliskan data pribadi di
+            pertanyaan.
+          </li>
         </ul>
       </LegalSection>
       <LegalSection title="5. Cookie">

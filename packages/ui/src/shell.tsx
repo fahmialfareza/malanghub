@@ -197,6 +197,9 @@ const Header = () => {
               </Link>
             )}
           />
+          <Link href="/ask" className={navLinkClass(isActive("/ask"))}>
+            Tanya AI
+          </Link>
           <Link href="/contact" className={navLinkClass(isActive("/contact"))}>
             Kontak
           </Link>
@@ -204,6 +207,17 @@ const Header = () => {
         </nav>
 
         <div className="flex items-center gap-1">
+          {/* The mobile app has no header nav, so Tanya AI gets its own button there. */}
+          <span className="hidden native-mobile:contents">
+            <Link
+              href="/ask"
+              className={cx(iconButtonClass, isActive("/ask") && "text-brand")}
+              aria-label="Tanya AI"
+              aria-current={isActive("/ask") ? "page" : undefined}
+            >
+              <span className="fa fa-comments" aria-hidden="true" />
+            </Link>
+          </span>
           <button
             type="button"
             className={cx(iconButtonClass, "native-mobile:hidden!")}
@@ -268,6 +282,13 @@ const Header = () => {
                 </Link>
               ))}
             </Collapse>
+            <Link
+              href="/ask"
+              className={mobileLinkClass(isActive("/ask"))}
+              onClick={closeMenus}
+            >
+              Tanya AI
+            </Link>
             <Link
               href="/contact"
               className={mobileLinkClass(isActive("/contact"))}
