@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useId, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   Dialog,
   DialogBackdrop,
@@ -23,6 +24,12 @@ export type ModalProps = {
   size?: "sm" | "md" | "lg" | "xl";
   /** Tints the header for destructive confirmations. */
   danger?: boolean;
+  /**
+   * Set for dialogs that host widgets rendering popups outside the dialog
+   * (TinyMCE menus/dialogs). Headless UI makes everything outside the panel
+   * inert, which would block them, so a lighter modal is used instead.
+   */
+  allowExternalPopups?: boolean;
 };
 
 const modalSizes = {
@@ -36,7 +43,53 @@ const modalSizes = {
  * Accessible modal (focus trap, Escape, backdrop click) replacing the
  * Bootstrap/jQuery `.modal()` dialogs.
  */
-export const Modal = ({
+const backdropClass =
+  "tw:fixed tw:inset-0 tw:bg-overlay tw:backdrop-blur-[2px] tw:transition-opacity tw:duration-200 tw:data-closed:opacity-0";
+const positionerClass =
+  "tw:flex tw:min-h-full tw:items-end tw:justify-center tw:p-3 tw:sm:items-center tw:sm:p-6";
+const panelClass = (size: NonNullable<ModalProps["size"]>) =>
+  cx(
+    "tw:flex tw:max-h-[calc(100dvh-1.5rem)] tw:w-full tw:flex-col tw:overflow-hidden tw:rounded-2xl tw:border tw:border-line tw:bg-surface tw:text-body tw:shadow-pop tw:transition tw:duration-200 tw:data-closed:translate-y-3 tw:data-closed:opacity-0 tw:sm:max-h-[calc(100dvh-3rem)]",
+    modalSizes[size]
+  );
+const headerClass = (danger?: boolean) =>
+  cx(
+    "tw:flex tw:items-center tw:justify-between tw:gap-4 tw:border-b tw:border-line tw:px-5 tw:py-4",
+    danger && "tw:bg-danger-soft"
+  );
+const titleClass = (danger?: boolean) =>
+  cx(
+    "tw:m-0 tw:font-heading tw:text-lg tw:font-semibold",
+    danger ? "tw:text-danger" : "tw:text-fg"
+  );
+
+const CloseButton = ({ onClose }: { onClose(): void }) => (
+  <button
+    type="button"
+    onClick={onClose}
+    aria-label="Tutup"
+    className="tw:-mr-1 tw:flex tw:size-9 tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-xl tw:text-muted tw:transition-colors tw:hover:bg-surface-2 tw:hover:text-fg tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring"
+  >
+    <span aria-hidden>×</span>
+  </button>
+);
+
+const ModalBody = ({
+  children,
+  footer,
+}: Pick<ModalProps, "children" | "footer">) => (
+  <>
+    <div className="tw:overflow-y-auto tw:px-5 tw:py-5">{children}</div>
+    {footer && (
+      <div className="tw:flex tw:flex-wrap tw:justify-end tw:gap-2 tw:border-t tw:border-line tw:bg-surface-2/40 tw:px-5 tw:py-3.5">
+        {footer}
+      </div>
+    )}
+  </>
+);
+
+/** Modal without Headless UI's inert-outside behavior; see `allowExternalPopups`. */
+const LightModal = ({
   open,
   onClose,
   title,
@@ -44,56 +97,95 @@ export const Modal = ({
   footer,
   size = "md",
   danger,
-}: ModalProps) => (
-  <Dialog open={open} onClose={onClose} className="tw:relative tw:z-[1060]">
-    <DialogBackdrop
-      transition
-      className="tw:fixed tw:inset-0 tw:bg-overlay tw:backdrop-blur-[2px] tw:transition-opacity tw:duration-200 tw:data-closed:opacity-0"
-    />
-    <div className="tw:fixed tw:inset-0 tw:overflow-y-auto">
-      <div className="tw:flex tw:min-h-full tw:items-end tw:justify-center tw:p-3 tw:sm:items-center tw:sm:p-6">
-        <DialogPanel
-          transition
-          className={cx(
-            "tw:flex tw:max-h-[calc(100dvh-1.5rem)] tw:w-full tw:flex-col tw:overflow-hidden tw:rounded-2xl tw:border tw:border-line tw:bg-surface tw:text-body tw:shadow-pop tw:transition tw:duration-200 tw:data-closed:translate-y-3 tw:data-closed:opacity-0 tw:sm:max-h-[calc(100dvh-3rem)]",
-            modalSizes[size]
-          )}
+}: ModalProps) => {
+  const titleId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    panelRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onCloseRef.current();
+    };
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousFocus?.focus?.();
+    };
+  }, [open]);
+
+  if (!open || typeof document === "undefined") return null;
+
+  return createPortal(
+    <div className="tw:relative tw:z-[1060]">
+      <div className={backdropClass} aria-hidden />
+      <div
+        className="tw:fixed tw:inset-0 tw:overflow-y-auto"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget) onClose();
+        }}
+      >
+        <div
+          className={positionerClass}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) onClose();
+          }}
         >
           <div
-            className={cx(
-              "tw:flex tw:items-center tw:justify-between tw:gap-4 tw:border-b tw:border-line tw:px-5 tw:py-4",
-              danger && "tw:bg-danger-soft"
-            )}
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            className={cx(panelClass(size), "tw:focus:outline-none")}
           >
-            <DialogTitle
-              as="h2"
-              className={cx(
-                "tw:m-0 tw:font-heading tw:text-lg tw:font-semibold",
-                danger ? "tw:text-danger" : "tw:text-fg"
-              )}
-            >
-              {title}
-            </DialogTitle>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Tutup"
-              className="tw:-mr-1 tw:flex tw:size-9 tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-xl tw:text-muted tw:transition-colors tw:hover:bg-surface-2 tw:hover:text-fg tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring"
-            >
-              <span aria-hidden>×</span>
-            </button>
-          </div>
-          <div className="tw:overflow-y-auto tw:px-5 tw:py-5">{children}</div>
-          {footer && (
-            <div className="tw:flex tw:flex-wrap tw:justify-end tw:gap-2 tw:border-t tw:border-line tw:bg-surface-2/40 tw:px-5 tw:py-3.5">
-              {footer}
+            <div className={headerClass(danger)}>
+              <h2 id={titleId} className={titleClass(danger)}>
+                {title}
+              </h2>
+              <CloseButton onClose={onClose} />
             </div>
-          )}
-        </DialogPanel>
+            <ModalBody footer={footer}>{children}</ModalBody>
+          </div>
+        </div>
       </div>
-    </div>
-  </Dialog>
-);
+    </div>,
+    document.body
+  );
+};
+
+export const Modal = (props: ModalProps) => {
+  const { open, onClose, title, children, footer, size = "md", danger } = props;
+
+  if (props.allowExternalPopups) return <LightModal {...props} />;
+
+  return (
+    <Dialog open={open} onClose={onClose} className="tw:relative tw:z-[1060]">
+      <DialogBackdrop transition className={backdropClass} />
+      <div className="tw:fixed tw:inset-0 tw:overflow-y-auto">
+        <div className={positionerClass}>
+          <DialogPanel transition className={panelClass(size)}>
+            <div className={headerClass(danger)}>
+              <DialogTitle as="h2" className={titleClass(danger)}>
+                {title}
+              </DialogTitle>
+              <CloseButton onClose={onClose} />
+            </div>
+            <ModalBody footer={footer}>{children}</ModalBody>
+          </DialogPanel>
+        </div>
+      </div>
+    </Dialog>
+  );
+};
 
 export type DropdownItem = {
   key: string;
