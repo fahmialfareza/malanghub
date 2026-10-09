@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Editor } from "@tinymce/tinymce-react";
 import {
   type CreateUpdateNewsDraftRequest,
@@ -30,17 +30,35 @@ import {
 import { useAdapters } from "./adapters";
 import { useMalanghubRuntime } from "./providers";
 import {
-  excerpt,
-  formatDate,
-  getAuthorHref,
-  getCategoryHref,
-  getCategoryName,
-  getSocialHref,
-  readingTime,
-  siteUrl,
-} from "./utils";
-
-const DEFAULT_AVATAR_SRC = "/assets/images/author.jpg";
+  Badge,
+  Button,
+  Card,
+  CardHeader,
+  Checkbox,
+  Container,
+  Dropdown,
+  FileInput,
+  Input,
+  Modal,
+  Select,
+  Spinner,
+  Table,
+  Textarea,
+  buttonClass,
+  controlClass,
+  cx,
+  labelClass,
+  useTheme,
+} from "./primitives";
+import {
+  ArticleView,
+  EmptyState,
+  LoadingState,
+  PageBreadcrumbs,
+  PageSection,
+  ProfileHeader,
+} from "./content";
+import { excerpt, formatDate } from "./utils";
 
 type DashboardSection = "category" | "tag" | "news";
 type NewsTableName = "Berita" | "Antrian Berita" | "Persetujuan Berita";
@@ -70,25 +88,6 @@ const getNewsTagIds = (news?: News | null) =>
     .map((tag) => (typeof tag === "string" ? tag : getId(tag)))
     .filter(Boolean);
 
-const getNewsTags = (news: News) =>
-  (news.tags ?? []).filter(
-    (tag): tag is Exclude<(typeof news.tags)[number], string> =>
-      typeof tag !== "string"
-  );
-
-const formatDateTime = (value?: string | Date) => {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(new Date(value));
-};
-
 const isAdmin = (user?: UserProfile) => Boolean(user?.role?.includes("admin"));
 
 const isNativeMobileApp = () => {
@@ -112,126 +111,21 @@ const isNativeMobileApp = () => {
   );
 };
 
-const useThemeSnapshot = () => {
-  const readTheme = () =>
-    typeof document === "undefined"
-      ? "light"
-      : document.documentElement.getAttribute("data-theme") ?? "light";
-  const [theme, setTheme] = useState(readTheme);
-
-  useEffect(() => {
-    if (typeof document === "undefined") return undefined;
-    const observer = new MutationObserver(() => setTheme(readTheme()));
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-    return () => observer.disconnect();
-  }, []);
-
-  return theme;
-};
-
-const Spinner = () => (
-  <div className="malanghub-loading" aria-live="polite">
-    Loading...
-  </div>
-);
-
-const Breadcrumbs = ({ label }: { label: string }) => {
-  const { Link } = useAdapters();
-
-  return (
-    <nav id="breadcrumbs" className="breadcrumbs">
-      <div className="container page-wrapper">
-        <Link href="/">Beranda</Link> /{" "}
-        <span className="breadcrumb_last" aria-current="page">
-          {label}
-        </span>
-      </div>
-    </nav>
-  );
-};
-
-const DraftBreadcrumbs = ({ label }: { label: string }) => {
-  const { Link } = useAdapters();
-
-  return (
-    <nav id="breadcrumbs" className="breadcrumbs">
-      <div className="container page-wrapper">
-        <Link href="/">Beranda</Link> / Antrian Berita /{" "}
-        <span className="breadcrumb_last" aria-current="page">
-          {label}
-        </span>
-      </div>
-    </nav>
-  );
-};
-
-const Modal = ({
-  title,
-  open,
-  onClose,
+/** Group label for controls that are not a single input (editor, toggles). */
+const FieldGroup = ({
+  label,
   children,
-  footer,
-  danger,
 }: {
-  title: string;
-  open: boolean;
-  onClose(): void;
+  label: React.ReactNode;
   children: React.ReactNode;
-  footer: React.ReactNode;
-  danger?: boolean;
-}) => {
-  const theme = useThemeSnapshot();
-
-  useEffect(() => {
-    if (!open) {
-      return undefined;
-    }
-
-    document.body.classList.add("malanghub-modal-open");
-
-    return () => {
-      document.body.classList.remove("malanghub-modal-open");
-    };
-  }, [open]);
-
-  if (!open) return null;
-
-  return (
-    <>
-      <div
-        className="modal fade show d-block malanghub-modal"
-        role="dialog"
-        aria-modal="true"
-        tabIndex={-1}
-      >
-        <div className="modal-dialog modal-lg modal-dialog-scrollable">
-          <div
-            className={
-              theme === "dark"
-                ? "modal-content bg-dark text-light"
-                : "modal-content"
-            }
-          >
-            <div className={danger ? "modal-header bg-danger" : "modal-header bg-primary"}>
-              <h5 className="modal-title" style={{ color: "#f8f9fa" }}>
-                {title}
-              </h5>
-              <button className="close" type="button" onClick={onClose}>
-                <span>&times;</span>
-              </button>
-            </div>
-            <div className="modal-body">{children}</div>
-            <div className="modal-footer">{footer}</div>
-          </div>
-        </div>
-      </div>
-      <div className="modal-backdrop fade show malanghub-modal-backdrop" onClick={onClose} />
-    </>
-  );
-};
+}) => (
+  <fieldset className="tw:m-0 tw:mb-4 tw:min-w-0 tw:border-0 tw:p-0">
+    <legend className={cx(labelClass, "tw:float-none tw:w-auto tw:p-0")}>
+      {label}
+    </legend>
+    {children}
+  </fieldset>
+);
 
 const RichTextEditor = ({
   value,
@@ -241,6 +135,7 @@ const RichTextEditor = ({
   onChange(value: string): void;
 }) => {
   const adapters = useAdapters();
+  const { theme } = useTheme();
   const editorIdRef = useRef(
     `malanghub-richtext-${Math.random().toString(36).slice(2)}`,
   );
@@ -248,7 +143,8 @@ const RichTextEditor = ({
   if (isNativeMobileApp() || !adapters.tinyApiKey) {
     return (
       <textarea
-        className="form-control malanghub-richtext-fallback"
+        aria-label="Konten"
+        className={cx(controlClass, "tw:min-h-80 tw:resize-y")}
         rows={14}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -257,165 +153,45 @@ const RichTextEditor = ({
   }
 
   return (
-    <Editor
-      key={editorIdRef.current}
-      id={editorIdRef.current}
-      apiKey={adapters.tinyApiKey}
-      value={value}
-      init={{
-        height: 500,
-        menubar: true,
-        plugins: [
-          "advlist autolink lists link image charmap print preview anchor",
-          "searchreplace visualblocks code fullscreen",
-          "insertdatetime media table paste code help wordcount",
-          "directionality",
-        ],
-        toolbar:
-          "ltr rtl | undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
-        file_picker_types: "file image media",
-        image_caption: true,
-        image_advtab: false,
-        image_description: false,
-        automatic_uploads: true,
-        image_dimensions: false,
-        image_title: false,
-        image_class_list: [
-          {
-            title: "Responsive",
-            value: "img-fluid rounded mx-auto my-2 d-block",
-          },
-        ],
-        images_upload_url: `${adapters.apiBaseUrl ?? ""}/api/upload`,
-      }}
-      onEditorChange={(text) => onChange(text)}
-    />
+    <div className="tw:overflow-hidden tw:rounded-lg tw:border tw:border-line">
+      <Editor
+        key={theme}
+        id={`${editorIdRef.current}-${theme}`}
+        apiKey={adapters.tinyApiKey}
+        value={value}
+        init={{
+          height: 500,
+          menubar: true,
+          skin: theme === "dark" ? "oxide-dark" : "oxide",
+          content_css: theme === "dark" ? "dark" : "default",
+          plugins: [
+            "advlist autolink lists link image charmap print preview anchor",
+            "searchreplace visualblocks code fullscreen",
+            "insertdatetime media table paste code help wordcount",
+            "directionality",
+          ],
+          toolbar:
+            "ltr rtl | undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help",
+          file_picker_types: "file image media",
+          image_caption: true,
+          image_advtab: false,
+          image_description: false,
+          automatic_uploads: true,
+          image_dimensions: false,
+          image_title: false,
+          image_class_list: [
+            {
+              title: "Responsive",
+              value: "img-fluid rounded mx-auto my-2 d-block",
+            },
+          ],
+          images_upload_url: `${adapters.apiBaseUrl ?? ""}/api/upload`,
+        }}
+        onEditorChange={(text) => onChange(text)}
+      />
+    </div>
   );
 };
-
-const ProfileHero = ({
-  user,
-  onEdit,
-  onLogout,
-  onDeleteAccount,
-}: {
-  user?: UserProfile;
-  onEdit(): void;
-  onLogout(): void | Promise<void>;
-  onDeleteAccount(): void;
-}) => {
-  const { Image } = useAdapters();
-
-  return (
-    <section id="author" className="w3l-author py-5">
-      <div className="container py-md-3">
-        <div className="row align-items-center">
-          <div className="col-md-3 col-sm-4 col-7 order-first">
-            <div className="embed-responsive embed-responsive-1by1">
-              <Image
-                src={user?.photo || DEFAULT_AVATAR_SRC}
-                alt=""
-                className="rounded-circle img-fluid embed-responsive-item"
-                objectFit="cover"
-                fill
-              />
-            </div>
-          </div>
-          <div className="col-md-9 col-sm-12 order-md-first mt-lg-0 mt-4">
-            <span className="category">{user?.motto}</span>
-            <h1 className="mb-4 title">
-              Halo, <span className="typed-text">{user?.name}</span>
-              <span className="cursor typing">&nbsp;</span>
-            </h1>
-            {user?.bio && (
-              <p dangerouslySetInnerHTML={{ __html: user.bio }} />
-            )}
-            <SocialLinks user={user} />
-            <div className="malanghub-profile-actions mt-4">
-              <button className="btn btn-primary" type="button" onClick={onEdit}>
-                <span className="fa fa-edit mr-2" />
-                Edit Profil
-              </button>
-              <button className="btn btn-outline-danger" type="button" onClick={onLogout}>
-                <span className="fa fa-sign-out-alt mr-2" />
-                Keluar
-              </button>
-              <button className="btn btn-outline-danger malanghub-delete-account-btn" type="button" onClick={onDeleteAccount}>
-                <span className="fa fa-trash mr-2" aria-hidden="true" />
-                Hapus Akun
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const SocialLinks = ({ user }: { user?: UserProfile }) => (
-  <ul className="author-icons mt-4">
-    {user?.facebook && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="facebook"
-          href={getSocialHref("facebook", user.facebook)}
-        >
-          <span className="fab fa-facebook" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user?.twitter && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="twitter"
-          href={getSocialHref("twitter", user.twitter)}
-        >
-          <span className="fab fa-twitter" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user?.instagram && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="instagram"
-          href={getSocialHref("instagram", user.instagram)}
-        >
-          <span className="fab fa-instagram" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user?.linkedin && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="linkedin"
-          href={getSocialHref("linkedin", user.linkedin)}
-        >
-          <span className="fab fa-linkedin" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user?.tiktok && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="tiktok"
-          href={getSocialHref("tiktok", user.tiktok)}
-        >
-          <span className="fab fa-tiktok" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-  </ul>
-);
 
 const EditProfileModal = ({
   user,
@@ -475,60 +251,60 @@ const EditProfileModal = ({
     });
   };
 
+  const field = (key: keyof typeof form) => ({
+    value: form[key],
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+      setForm({ ...form, [key]: event.target.value }),
+  });
+
   return (
     <Modal
       title="Edit Profil"
       open={open}
       onClose={onClose}
+      size="lg"
       footer={
         <>
-          <button className="btn btn-outline-primary" type="button" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Keluar
-          </button>
-          <button type="submit" form="form-update-profile" className="btn btn-primary" disabled={updateProfile.isPending}>
+          </Button>
+          <Button type="submit" form="form-update-profile" loading={updateProfile.isPending}>
             {updateProfile.isPending ? "Menyimpan..." : "Simpan"}
-          </button>
+          </Button>
         </>
       }
     >
       <form onSubmit={submit} id="form-update-profile">
-        <TextInput label="Nama *" value={form.name} onChange={(name) => setForm({ ...form, name })} required />
-        <div className="form-group">
-          <label htmlFor="profilePhoto">Update Foto Profil</label>
-          <div className="custom-file">
-            <input
-              type="file"
-              className="custom-file-input"
-              id="profilePhoto"
-              accept="image/*"
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                setPhoto(file);
-                setPhotoName(file?.name ?? "");
-              }}
-            />
-            <label htmlFor="profilePhoto" className="custom-file-label">
-              {photoName || "Pilih File"}
-            </label>
-          </div>
-          <small className="form-text text-muted">Max Size 1 MB</small>
-        </div>
-        <TextInput label="Motto" value={form.motto} onChange={(motto) => setForm({ ...form, motto })} />
-        <div className="form-group">
-          <label htmlFor="profileBio">Bio</label>
-          <textarea
-            id="profileBio"
-            className="form-control"
-            placeholder="Bio..."
-            value={form.bio}
-            onChange={(event) => setForm({ ...form, bio: event.target.value })}
+        <Input label="Nama *" placeholder="Nama" required {...field("name")} />
+        <FileInput
+          label="Update Foto Profil"
+          hint={photoName ? `${photoName} · Max Size 1 MB` : "Max Size 1 MB"}
+          accept="image/*"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            setPhoto(file);
+            setPhotoName(file?.name ?? "");
+          }}
+        />
+        <Input label="Motto" placeholder="Motto" {...field("motto")} />
+        <Textarea
+          label="Bio"
+          placeholder="Bio..."
+          value={form.bio}
+          onChange={(event) => setForm({ ...form, bio: event.target.value })}
+        />
+        <div className="tw:grid tw:gap-x-4 tw:sm:grid-cols-2">
+          <Input label="Instagram" placeholder="malanghub" {...field("instagram")} />
+          <Input label="Facebook" placeholder="https://www.facebook.com/malanghub" {...field("facebook")} />
+          <Input label="Twitter" placeholder="malanghub" {...field("twitter")} />
+          <Input label="Tiktok" placeholder="malanghub" {...field("tiktok")} />
+          <Input
+            label="Linkedin"
+            placeholder="https://linkedin.com/in/malanghub"
+            wrapperClassName="tw:sm:col-span-2"
+            {...field("linkedin")}
           />
         </div>
-        <TextInput label="Instagram" value={form.instagram} placeholder="malanghub" onChange={(instagram) => setForm({ ...form, instagram })} />
-        <TextInput label="Facebook" value={form.facebook} placeholder="https://www.facebook.com/malanghub" onChange={(facebook) => setForm({ ...form, facebook })} />
-        <TextInput label="Twitter" value={form.twitter} placeholder="malanghub" onChange={(twitter) => setForm({ ...form, twitter })} />
-        <TextInput label="Tiktok" value={form.tiktok} placeholder="malanghub" onChange={(tiktok) => setForm({ ...form, tiktok })} />
-        <TextInput label="Linkedin" value={form.linkedin} placeholder="https://linkedin.com/in/malanghub" onChange={(linkedin) => setForm({ ...form, linkedin })} />
       </form>
     </Modal>
   );
@@ -549,26 +325,29 @@ const DeleteAccountModal = ({
     title="Hapus Akun"
     open={open}
     onClose={onClose}
+    size="sm"
     danger
     footer={
       <>
-        <button className="btn btn-outline-secondary" type="button" onClick={onClose} disabled={isPending}>
+        <Button variant="secondary" onClick={onClose} disabled={isPending}>
           Batal
-        </button>
-        <button className="btn btn-danger" type="button" onClick={onConfirm} disabled={isPending}>
-          <span className="fa fa-trash mr-2" aria-hidden="true" />
+        </Button>
+        <Button variant="danger" onClick={onConfirm} loading={isPending}>
+          {!isPending && <span className="fa fa-trash" aria-hidden="true" />}
           {isPending ? "Menghapus..." : "Ya, Hapus Akun"}
-        </button>
+        </Button>
       </>
     }
   >
-    <div className="malanghub-delete-account-warning">
-      <div className="malanghub-delete-account-icon-wrap">
+    <div className="tw:flex tw:flex-col tw:items-center tw:px-2 tw:pt-2 tw:text-center">
+      <div className="tw:mb-5 tw:flex tw:size-16 tw:items-center tw:justify-center tw:rounded-full tw:bg-danger-soft tw:text-2xl tw:text-danger">
         <span className="fa fa-trash" aria-hidden="true" />
       </div>
-      <h5 className="malanghub-delete-account-title">Hapus Akun Permanen?</h5>
-      <p className="malanghub-delete-account-desc">
-        Tindakan ini <strong>tidak dapat dibatalkan</strong>. Semua data
+      <h3 className="tw:m-0 tw:mb-3 tw:font-heading tw:text-lg tw:font-bold tw:text-fg">
+        Hapus Akun Permanen?
+      </h3>
+      <p className="tw:max-w-sm tw:leading-relaxed tw:text-body">
+        Tindakan ini <strong className="tw:text-fg">tidak dapat dibatalkan</strong>. Semua data
         profil, artikel, dan aktivitas kamu akan dihapus selamanya dan tidak
         bisa dipulihkan.
       </p>
@@ -576,40 +355,13 @@ const DeleteAccountModal = ({
   </Modal>
 );
 
-const TextInput = ({
-  label,
-  value,
-  onChange,
-  placeholder,
-  required,
-}: {
-  label: string;
-  value?: string;
-  onChange(value: string): void;
-  placeholder?: string;
-  required?: boolean;
-}) => (
-  <div className="form-group">
-    <label>{label}</label>
-    <input
-      type="text"
-      className="form-control"
-      placeholder={placeholder ?? label.replace(" *", "")}
-      value={value ?? ""}
-      onChange={(event) => onChange(event.target.value)}
-      required={required}
-    />
-  </div>
-);
-
-const tableClass = (theme: string) =>
-  theme === "dark" ? "table table-striped table-dark" : "table table-striped";
-
-const cardClass = (theme: string) =>
-  theme === "dark" ? "card bg-dark" : "card";
-
-const headerClass = (theme: string) =>
-  theme === "dark" ? "card-header text-light" : "card-header";
+const tabClass = (active: boolean) =>
+  cx(
+    "tw:inline-flex tw:h-10 tw:items-center tw:gap-2 tw:rounded-lg tw:border-0 tw:px-4 tw:text-sm tw:font-semibold tw:transition-colors tw:cursor-pointer tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring",
+    active
+      ? "tw:bg-surface tw:text-brand tw:shadow-card"
+      : "tw:bg-transparent tw:text-body tw:hover:text-fg",
+  );
 
 const DashboardWorkbench = ({ user }: { user: UserProfile }) => {
   const admin = isAdmin(user);
@@ -621,68 +373,93 @@ const DashboardWorkbench = ({ user }: { user: UserProfile }) => {
     setActiveSection(admin ? "category" : "news");
   }, [admin]);
 
-  return (
-    <>
-      <header id="main-header" className="py-2">
-        <div className="container">
-          <div className="row">
-            <div className="col-md-6">
-              <h1>
-                <i className="fa fa-cog" aria-hidden="true" /> Dashboard
-              </h1>
-            </div>
-          </div>
-        </div>
-      </header>
+  const sections: Array<{ key: DashboardSection; label: string; icon: string }> = [
+    ...(admin
+      ? [
+          { key: "category" as const, label: "Kategori", icon: "fa-list-alt" },
+          { key: "tag" as const, label: "Tag", icon: "fa-tag" },
+        ]
+      : []),
+    { key: "news", label: "Berita", icon: "fa-newspaper-o" },
+  ];
 
-      <section id="actions" className="py-4 mb-4">
-        <div className="container">
-          <div className="row justify-content-center">
-            {admin && (
-              <DashboardAction label="Kategori" icon="fa-list-alt" onClick={() => setActiveSection("category")} />
-            )}
-            {admin && (
-              <DashboardAction label="Tag" icon="fa-tag" onClick={() => setActiveSection("tag")} />
-            )}
-            <DashboardAction label="Berita" icon="fa-newspaper-o" onClick={() => setActiveSection("news")} />
-          </div>
+  return (
+    <PageSection>
+      <div className="tw:mb-6 tw:flex tw:flex-col tw:gap-4 tw:sm:flex-row tw:sm:items-center tw:sm:justify-between">
+        <h2 className="tw:m-0 tw:flex tw:items-center tw:gap-3 tw:font-heading tw:text-2xl tw:font-bold tw:text-fg">
+          <span className="fa fa-cog tw:text-brand" aria-hidden="true" /> Dashboard
+        </h2>
+        <div
+          className="tw:inline-flex tw:gap-1 tw:self-start tw:rounded-xl tw:bg-surface-2 tw:p-1"
+          role="group"
+          aria-label="Bagian dashboard"
+        >
+          {sections.map((section) => (
+            <button
+              key={section.key}
+              type="button"
+              className={tabClass(activeSection === section.key)}
+              aria-pressed={activeSection === section.key}
+              onClick={() => setActiveSection(section.key)}
+            >
+              <span className={`fa ${section.icon}`} aria-hidden="true" />
+              {section.label}
+            </button>
+          ))}
         </div>
-      </section>
+      </div>
 
       {admin && activeSection === "category" && <CategoryManager />}
       {admin && activeSection === "tag" && <TagManager />}
       {activeSection === "news" && <NewsManager user={user} />}
-    </>
+    </PageSection>
   );
 };
 
-const DashboardAction = ({
-  label,
-  icon,
-  onClick,
+const ManagerLayout = ({
+  toolbar,
+  title,
+  table,
+  stats,
 }: {
-  label: string;
-  icon: string;
-  onClick(): void;
+  toolbar: React.ReactNode;
+  title: string;
+  table: React.ReactNode;
+  stats: React.ReactNode;
 }) => (
-  <div className="col">
-    <a
-      href="#"
-      className="port-item btn btn-primary btn-block"
-      onClick={(event) => {
-        event.preventDefault();
-        onClick();
-      }}
-    >
-      <i className={`fa ${icon}`} aria-hidden="true" /> {label}
-    </a>
-  </div>
+  <>
+    <div className="tw:mb-4 tw:flex tw:flex-wrap tw:gap-2">{toolbar}</div>
+    <div className="tw:grid tw:gap-6 tw:lg:grid-cols-4">
+      <Card className="tw:min-w-0 tw:overflow-hidden tw:lg:col-span-3">
+        <CardHeader title={title} />
+        {table}
+      </Card>
+      <div className="tw:flex tw:flex-col tw:gap-4">{stats}</div>
+    </div>
+  </>
+);
+
+const RowActions = ({ children }: { children: React.ReactNode }) => (
+  <div className="tw:flex tw:flex-wrap tw:justify-end tw:gap-2">{children}</div>
+);
+
+const TableMessage = ({
+  colSpan,
+  children,
+}: {
+  colSpan: number;
+  children: React.ReactNode;
+}) => (
+  <tr>
+    <td colSpan={colSpan} className="tw:py-8! tw:text-center tw:text-muted">
+      {children}
+    </td>
+  </tr>
 );
 
 const CategoryManager = () => {
   const { api, notify } = useMalanghubRuntime();
   const adapters = useAdapters();
-  const theme = useThemeSnapshot();
   const categories = useCategories(api);
   const createCategory = useCreateCategoryMutation(api);
   const updateCategory = useUpdateCategoryMutation(api);
@@ -711,66 +488,58 @@ const CategoryManager = () => {
 
   return (
     <>
-      <section id="category" className="collapse show mb-5">
-        <section id="actions" className="py-4 mb-1">
-          <div className="container">
-            <div className="row">
-              <div className="col-md-3">
-                <a href="#" className="btn btn-primary btn-block" onClick={(event) => { event.preventDefault(); setModal("addCategory"); }}>
-                  <i className="fa fa-plus" aria-hidden="true" /> Tambah Kategori
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-        <div className="container">
-          <div className="row">
-            <div className="col-md-9 mb-2">
-              <div className={cardClass(theme)}>
-                <div className={headerClass(theme)}>
-                  <h4>Kategori (Berita)</h4>
-                </div>
-                <div className="table-responsive">
-                  <table className={tableClass(theme)}>
-                    <thead className={theme === "dark" ? "thead-dark" : "thead-light"}>
-                      <tr>
-                        <th>ID</th>
-                        <th>Nama Kategori</th>
-                        <th>Dibuat</th>
-                        <th>Diperbaharui</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {categories.isLoading ? (
-                        <tr><td colSpan={5}><Spinner /></td></tr>
-                      ) : (
-                        categories.data?.map((category, index) => (
-                          <tr key={getId(category)}>
-                            <td>{index + 1}</td>
-                            <td>{category.name}</td>
-                            <td>{formatDate(category.created_at)}</td>
-                            <td>{formatDate(category.updated_at ?? category.created_at)}</td>
-                            <td>
-                              <button className="btn btn-primary m-1" onClick={() => { setSelected(category); setModal("editCategory"); }}>
-                                <i className="fa fa-edit" aria-hidden="true" /> Edit
-                              </button>
-                              <button className="btn btn-danger m-1" onClick={() => { setSelected(category); setModal("deleteCategory"); }}>
-                                <i className="fa fa-trash" aria-hidden="true" /> Hapus
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <CounterCard title="Kategori" count={categories.data?.length ?? 0} loading={categories.isLoading} />
-          </div>
-        </div>
-      </section>
+      <ManagerLayout
+        toolbar={
+          <Button onClick={() => setModal("addCategory")}>
+            <span className="fa fa-plus" aria-hidden="true" /> Tambah Kategori
+          </Button>
+        }
+        title="Kategori (Berita)"
+        table={
+          <Table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nama Kategori</th>
+                <th>Dibuat</th>
+                <th>Diperbaharui</th>
+                <th>
+                  <span className="tw:sr-only">Aksi</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories.isLoading ? (
+                <TableMessage colSpan={5}>
+                  <Spinner label="Memuat..." />
+                </TableMessage>
+              ) : (
+                categories.data?.map((category, index) => (
+                  <tr key={getId(category)}>
+                    <td>{index + 1}</td>
+                    <td className="tw:font-semibold tw:text-fg">{category.name}</td>
+                    <td>{formatDate(category.created_at)}</td>
+                    <td>{formatDate(category.updated_at ?? category.created_at)}</td>
+                    <td>
+                      <RowActions>
+                        <Button size="sm" variant="secondary" onClick={() => { setSelected(category); setModal("editCategory"); }}>
+                          <span className="fa fa-edit" aria-hidden="true" /> Edit
+                        </Button>
+                        <Button size="sm" variant="danger" onClick={() => { setSelected(category); setModal("deleteCategory"); }}>
+                          <span className="fa fa-trash" aria-hidden="true" /> Hapus
+                        </Button>
+                      </RowActions>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        }
+        stats={
+          <StatCard title="Kategori" icon="fa-list-alt" count={categories.data?.length ?? 0} loading={categories.isLoading} />
+        }
+      />
       <TaxonomyModal title="Tambah Kategori (Berita)" open={modal === "addCategory"} onClose={() => setModal(null)} onSubmit={(name) => mutate("create", name)} />
       <TaxonomyModal title="Edit Kategori (Berita)" open={modal === "editCategory"} initialName={selected?.name} onClose={() => setModal(null)} onSubmit={(name) => mutate("update", name, selected)} />
       <ConfirmModal title="Hapus Kategori (Berita)" message="Apakah anda yakin ingin menghapus kategori?" open={modal === "deleteCategory"} onClose={() => setModal(null)} onConfirm={() => mutate("delete", undefined, selected)} />
@@ -781,7 +550,6 @@ const CategoryManager = () => {
 const TagManager = () => {
   const { api, notify } = useMalanghubRuntime();
   const adapters = useAdapters();
-  const theme = useThemeSnapshot();
   const tags = useTags(api);
   const createTag = useCreateTagMutation(api);
   const updateTag = useUpdateTagMutation(api);
@@ -806,62 +574,58 @@ const TagManager = () => {
 
   return (
     <>
-      <section id="tag" className="collapse show mb-5">
-        <section id="actions" className="py-4 mb-1">
-          <div className="container">
-            <div className="row">
-              <div className="col-md-3">
-                <a href="#" className="btn btn-primary btn-block" onClick={(event) => { event.preventDefault(); setModal("addTag"); }}>
-                  <i className="fa fa-plus" aria-hidden="true" /> Tambah Tag
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-        <div className="container">
-          <div className="row">
-            <div className="col-md-9 mb-2">
-              <div className={cardClass(theme)}>
-                <div className={headerClass(theme)}>
-                  <h4>Tag (Berita)</h4>
-                </div>
-                <div className="table-responsive">
-                  <table className={tableClass(theme)}>
-                    <thead className={theme === "dark" ? "thead-dark" : "thead-light"}>
-                      <tr>
-                        <th>ID</th>
-                        <th>Nama Tag</th>
-                        <th>Dibuat</th>
-                        <th>Diperbaharui</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {tags.data?.map((tag, index) => (
-                        <tr key={getId(tag)}>
-                          <td>{index + 1}</td>
-                          <td>{tag.name}</td>
-                          <td>{formatDate(tag.created_at)}</td>
-                          <td>{formatDate(tag.updated_at ?? tag.created_at)}</td>
-                          <td>
-                            <button className="btn btn-primary m-1" onClick={() => { setSelected(tag); setModal("editTag"); }}>
-                              <i className="fa fa-edit" aria-hidden="true" /> Edit
-                            </button>
-                            <button className="btn btn-danger m-1" onClick={() => { setSelected(tag); setModal("deleteTag"); }}>
-                              <i className="fa fa-trash" aria-hidden="true" /> Hapus
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <CounterCard title="Tag" count={tags.data?.length ?? 0} loading={tags.isLoading} />
-          </div>
-        </div>
-      </section>
+      <ManagerLayout
+        toolbar={
+          <Button onClick={() => setModal("addTag")}>
+            <span className="fa fa-plus" aria-hidden="true" /> Tambah Tag
+          </Button>
+        }
+        title="Tag (Berita)"
+        table={
+          <Table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nama Tag</th>
+                <th>Dibuat</th>
+                <th>Diperbaharui</th>
+                <th>
+                  <span className="tw:sr-only">Aksi</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {tags.isLoading ? (
+                <TableMessage colSpan={5}>
+                  <Spinner label="Memuat..." />
+                </TableMessage>
+              ) : (
+                tags.data?.map((tag, index) => (
+                  <tr key={getId(tag)}>
+                    <td>{index + 1}</td>
+                    <td className="tw:font-semibold tw:text-fg">{tag.name}</td>
+                    <td>{formatDate(tag.created_at)}</td>
+                    <td>{formatDate(tag.updated_at ?? tag.created_at)}</td>
+                    <td>
+                      <RowActions>
+                        <Button size="sm" variant="secondary" onClick={() => { setSelected(tag); setModal("editTag"); }}>
+                          <span className="fa fa-edit" aria-hidden="true" /> Edit
+                        </Button>
+                        <Button size="sm" variant="danger" onClick={() => { setSelected(tag); setModal("deleteTag"); }}>
+                          <span className="fa fa-trash" aria-hidden="true" /> Hapus
+                        </Button>
+                      </RowActions>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </Table>
+        }
+        stats={
+          <StatCard title="Tag" icon="fa-tag" count={tags.data?.length ?? 0} loading={tags.isLoading} />
+        }
+      />
       <TaxonomyModal title="Tambah Tag (Berita)" open={modal === "addTag"} onClose={() => setModal(null)} onSubmit={(name) => mutate("create", name)} />
       <TaxonomyModal title="Edit Tag (Berita)" open={modal === "editTag"} initialName={selected?.name} onClose={() => setModal(null)} onSubmit={(name) => mutate("update", name, selected)} />
       <ConfirmModal title="Hapus Tag (Berita)" message="Apakah anda yakin ingin menghapus tag?" open={modal === "deleteTag"} onClose={() => setModal(null)} onConfirm={() => mutate("delete", undefined, selected)} />
@@ -869,29 +633,47 @@ const TagManager = () => {
   );
 };
 
-const CounterCard = ({
+const StatCard = ({
   title,
+  icon,
   count,
   loading,
+  active,
+  onClick,
 }: {
   title: string;
+  icon: string;
   count: number;
   loading?: boolean;
+  active?: boolean;
+  onClick?(): void;
 }) => (
-  <div className="col-md-3">
-    <div className="card text-center bg-primary text-light mb-3">
-      <div className="card-body">
-        <h3 style={{ color: "#f8f9fa" }}>{title}</h3>
-        <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-          <i className="fa fa-pencil-alt" aria-hidden="true" />{" "}
-          {loading ? <Spinner /> : count}
-        </h4>
-        <a href="#" className="port-item btn btn-outline-light btn-sm" onClick={(event) => event.preventDefault()}>
-          Lihat
-        </a>
+  <Card
+    className={cx(
+      "tw:flex tw:items-center tw:gap-4 tw:p-5",
+      active && "tw:border-brand tw:ring-2 tw:ring-brand-soft",
+    )}
+  >
+    <span
+      className="tw:flex tw:size-12 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-xl tw:text-brand"
+      aria-hidden="true"
+    >
+      <span className={`fa ${icon}`} />
+    </span>
+    <div className="tw:min-w-0 tw:flex-1">
+      <h3 className="tw:m-0 tw:truncate tw:text-sm tw:font-semibold tw:text-muted">
+        {title}
+      </h3>
+      <div className="tw:font-heading tw:text-3xl tw:font-bold tw:leading-tight tw:text-fg">
+        {loading ? <Spinner size="sm" /> : count}
       </div>
     </div>
-  </div>
+    {onClick && (
+      <Button size="sm" variant="ghost" onClick={onClick} aria-label={`Lihat ${title}`}>
+        Lihat
+      </Button>
+    )}
+  </Card>
 );
 
 const TaxonomyModal = ({
@@ -920,17 +702,24 @@ const TaxonomyModal = ({
       onClose={onClose}
       footer={
         <>
-          <button className="btn btn-outline-primary" type="button" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Keluar
-          </button>
-          <button type="submit" form={`form-${title}`} className="btn btn-primary">
+          </Button>
+          <Button type="submit" form={`form-${title}`}>
             Simpan
-          </button>
+          </Button>
         </>
       }
     >
       <form id={`form-${title}`} onSubmit={(event) => { event.preventDefault(); onSubmit(name); }}>
-        <TextInput label="Nama *" value={name} placeholder={title.includes("Tag") ? "Nama Tag" : "Nama Kategori"} onChange={setName} required />
+        <Input
+          label="Nama *"
+          wrapperClassName="tw:mb-0"
+          value={name}
+          placeholder={title.includes("Tag") ? "Nama Tag" : "Nama Kategori"}
+          onChange={(event) => setName(event.target.value)}
+          required
+        />
       </form>
     </Modal>
   );
@@ -953,25 +742,26 @@ const ConfirmModal = ({
     title={title}
     open={open}
     onClose={onClose}
+    size="sm"
     danger
     footer={
       <>
-        <button value="Submit" className="btn btn-danger" onClick={onConfirm}>
-          Ya
-        </button>
-        <button className="btn btn-primary" onClick={onClose}>
+        <Button variant="secondary" onClick={onClose}>
           Tidak
-        </button>
+        </Button>
+        <Button variant="danger" onClick={onConfirm}>
+          Ya
+        </Button>
       </>
     }
   >
-    <h4>{message}</h4>
+    <p className="tw:text-base tw:text-body">{message}</p>
   </Modal>
 );
 
 const NewsManager = ({ user }: { user: UserProfile }) => {
-  const { api, notify } = useMalanghubRuntime();
-  const theme = useThemeSnapshot();
+  const { api } = useMalanghubRuntime();
+  const { Link } = useAdapters();
   const admin = isAdmin(user);
   const myNews = useMyNews(api, true);
   const myDrafts = useMyDrafts(api, true);
@@ -979,7 +769,6 @@ const NewsManager = ({ user }: { user: UserProfile }) => {
   const [tableName, setTableName] = useState<NewsTableName>("Berita");
   const [modal, setModal] = useState<ModalKind | null>(null);
   const [selectedDraft, setSelectedDraft] = useState<News | null>(null);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const rows =
     tableName === "Berita"
@@ -993,97 +782,96 @@ const NewsManager = ({ user }: { user: UserProfile }) => {
       : tableName === "Antrian Berita"
         ? myDrafts.isLoading
         : allDrafts.isLoading;
+  const isDraftTable = tableName !== "Berita";
+  const columnCount = isDraftTable ? 7 : 5;
 
   return (
     <>
-      <section id="news" className="collapse show mb-5">
-        <section id="actions" className="py-4 mb-1">
-          <div className="container">
-            <div className="row">
-              <div className="col-md-3 mb-2">
-                <div className={`dropdown ${dropdownOpen ? "show" : ""}`}>
-                  <button
-                    className="btn btn-primary btn-block dropdown-toggle"
-                    type="button"
-                    aria-expanded={dropdownOpen}
-                    onClick={() => setDropdownOpen((value) => !value)}
-                  >
-                    Berita
-                  </button>
-                  <div className={`dropdown-menu ${dropdownOpen ? "show" : ""}`}>
-                    <a href="#" className="dropdown-item" onClick={(event) => { event.preventDefault(); setTableName("Berita"); setDropdownOpen(false); }}>
-                      Lihat Berita
-                    </a>
-                    <a href="#" className="dropdown-item" onClick={(event) => { event.preventDefault(); setModal("addNews"); setDropdownOpen(false); }}>
-                      Tambah Berita
-                    </a>
-                  </div>
-                </div>
-              </div>
-              <div className="col-md-3 mb-2">
-                <a href="#" className="btn btn-primary btn-block" onClick={(event) => { event.preventDefault(); setTableName("Antrian Berita"); }}>
-                  Antrian Berita
-                </a>
-              </div>
-              {admin && (
-                <div className="col-md-3">
-                  <a href="#" className="btn btn-primary btn-block" onClick={(event) => { event.preventDefault(); setTableName("Persetujuan Berita"); }}>
-                    Persetujuan Berita
-                  </a>
-                </div>
+      <ManagerLayout
+        toolbar={
+          <>
+            <Dropdown
+              label={
+                <>
+                  Berita <span className="fa fa-angle-down" aria-hidden="true" />
+                </>
+              }
+              buttonClassName={buttonClass({
+                variant: tableName === "Berita" ? "primary" : "secondary",
+              })}
+              items={[
+                { key: "view", label: "Lihat Berita", onSelect: () => setTableName("Berita") },
+                { key: "add", label: "Tambah Berita", onSelect: () => setModal("addNews") },
+              ]}
+              renderLink={({ href, className, children }) => (
+                <Link href={href} className={className}>
+                  {children}
+                </Link>
               )}
-            </div>
-          </div>
-        </section>
-        <div className="container">
-          <div className="row">
-            <div className="col-md-9 mb-2">
-              <div className={cardClass(theme)}>
-                <div className={headerClass(theme)}>
-                  <h4>{tableName}</h4>
-                </div>
-                <div className="table-responsive">
-                  <table className={tableClass(theme)}>
-                    <thead className={theme === "dark" ? "thead-dark" : "thead-light"}>
-                      <tr>
-                        <th>ID</th>
-                        <th>Judul</th>
-                        {(tableName === "Antrian Berita" || tableName === "Persetujuan Berita") && <th>Pesan Dari Admin</th>}
-                        {(tableName === "Antrian Berita" || tableName === "Persetujuan Berita") && <th>Status</th>}
-                        <th>Dibuat</th>
-                        <th>Diperbaharui</th>
-                        <th />
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {loading ? (
-                        <tr><td colSpan={7}><Spinner /></td></tr>
-                      ) : (
-                        rows.map((item, index) => (
-                          <NewsDashboardRow
-                            key={item._id}
-                            news={item}
-                            index={index}
-                            tableName={tableName}
-                            onEditDraft={() => { setSelectedDraft(item); setModal("editDraft"); }}
-                            onDeleteDraft={() => { setSelectedDraft(item); setModal("deleteDraft"); }}
-                            onApproveDraft={() => { setSelectedDraft(item); setModal("approveDraft"); }}
-                          />
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-            <div className="col-md-3">
-              <NewsCounter title="Berita" count={myNews.data?.length ?? 0} loading={myNews.isLoading} onClick={() => setTableName("Berita")} />
-              <NewsCounter title="Antrian Berita" count={myDrafts.data?.length ?? 0} loading={myDrafts.isLoading} onClick={() => setTableName("Antrian Berita")} />
-              {admin && <NewsCounter title="Persetujuan Berita" count={allDrafts.data?.length ?? 0} loading={allDrafts.isLoading} onClick={() => setTableName("Persetujuan Berita")} />}
-            </div>
-          </div>
-        </div>
-      </section>
+            />
+            <Button
+              variant={tableName === "Antrian Berita" ? "primary" : "secondary"}
+              onClick={() => setTableName("Antrian Berita")}
+            >
+              Antrian Berita
+            </Button>
+            {admin && (
+              <Button
+                variant={tableName === "Persetujuan Berita" ? "primary" : "secondary"}
+                onClick={() => setTableName("Persetujuan Berita")}
+              >
+                Persetujuan Berita
+              </Button>
+            )}
+          </>
+        }
+        title={tableName}
+        table={
+          <Table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Judul</th>
+                {isDraftTable && <th>Pesan Dari Admin</th>}
+                {isDraftTable && <th>Status</th>}
+                <th>Dibuat</th>
+                <th>Diperbaharui</th>
+                <th>
+                  <span className="tw:sr-only">Aksi</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <TableMessage colSpan={columnCount}>
+                  <Spinner label="Memuat..." />
+                </TableMessage>
+              ) : !rows.length ? (
+                <TableMessage colSpan={columnCount}>Belum ada data.</TableMessage>
+              ) : (
+                rows.map((item, index) => (
+                  <NewsDashboardRow
+                    key={item._id}
+                    news={item}
+                    index={index}
+                    tableName={tableName}
+                    onEditDraft={() => { setSelectedDraft(item); setModal("editDraft"); }}
+                    onDeleteDraft={() => { setSelectedDraft(item); setModal("deleteDraft"); }}
+                    onApproveDraft={() => { setSelectedDraft(item); setModal("approveDraft"); }}
+                  />
+                ))
+              )}
+            </tbody>
+          </Table>
+        }
+        stats={
+          <>
+            <StatCard title="Berita" icon="fa-newspaper-o" count={myNews.data?.length ?? 0} loading={myNews.isLoading} active={tableName === "Berita"} onClick={() => setTableName("Berita")} />
+            <StatCard title="Antrian Berita" icon="fa-hourglass-half" count={myDrafts.data?.length ?? 0} loading={myDrafts.isLoading} active={tableName === "Antrian Berita"} onClick={() => setTableName("Antrian Berita")} />
+            {admin && <StatCard title="Persetujuan Berita" icon="fa-check-square-o" count={allDrafts.data?.length ?? 0} loading={allDrafts.isLoading} active={tableName === "Persetujuan Berita"} onClick={() => setTableName("Persetujuan Berita")} />}
+          </>
+        }
+      />
       <DraftFormModal mode="add" open={modal === "addNews"} onClose={() => setModal(null)} />
       <DraftFormModal mode="edit" draft={selectedDraft} open={modal === "editDraft"} onClose={() => setModal(null)} />
       <DeleteDraftModal draft={selectedDraft} open={modal === "deleteDraft"} onClose={() => setModal(null)} />
@@ -1113,73 +901,64 @@ const NewsDashboardRow = ({
   return (
     <tr>
       <td>{index + 1}</td>
-      <td>{news.title}</td>
-      {isDraftTable && <td>{news.message || "Silahkan Tunggu Konfirmasi dari Admin"}</td>}
+      <td className="tw:min-w-48 tw:font-semibold tw:text-fg">{news.title}</td>
+      {isDraftTable && (
+        <td className="tw:min-w-48">
+          {news.message || "Silahkan Tunggu Konfirmasi dari Admin"}
+        </td>
+      )}
       {isDraftTable && (
         <td>
           {news.status === "process" ? (
-            <button className="btn btn-success btn-block">Sedang Diproses Admin</button>
+            <Badge tone="success" className="tw:whitespace-nowrap">
+              Sedang Diproses Admin
+            </Badge>
           ) : (
-            <button className="btn btn-danger btn-block">Admin Meminta Revisi</button>
+            <Badge tone="danger" className="tw:whitespace-nowrap">
+              Admin Meminta Revisi
+            </Badge>
           )}
         </td>
       )}
-      <td>{formatDate(news.created_at)}</td>
-      <td>{formatDate(news.updated_at ?? news.created_at)}</td>
+      <td className="tw:whitespace-nowrap">{formatDate(news.created_at)}</td>
+      <td className="tw:whitespace-nowrap">{formatDate(news.updated_at ?? news.created_at)}</td>
       <td>
-        <Link href={isDraftTable ? `/users/newsDrafts/${news.slug}` : `/news/${news.slug}`} className="btn btn-outline-primary m-1">
-          <i className="fa fa-search-plus" aria-hidden="true" />
-          {isDraftTable ? "Pratinjau" : "Lihat"}
-        </Link>
-        {tableName === "Antrian Berita" && (
-          <>
-            <button className="btn btn-primary m-1" onClick={onEditDraft}>
-              <i className="fa fa-edit" aria-hidden="true" /> Edit
-            </button>
-            <button className="btn btn-danger m-1" onClick={onDeleteDraft}>
-              <i className="fa fa-trash" aria-hidden="true" /> Hapus
-            </button>
-          </>
-        )}
-        {tableName === "Persetujuan Berita" && (
-          <>
-            <button className="btn btn-primary m-1" onClick={onApproveDraft}>
-              <i className="fa fa-edit" aria-hidden="true" /> Persetujuan
-            </button>
-            <button className="btn btn-danger m-1" onClick={onDeleteDraft}>
-              <i className="fa fa-trash" aria-hidden="true" /> Hapus
-            </button>
-          </>
-        )}
+        <RowActions>
+          <Link
+            href={isDraftTable ? `/users/newsDrafts/${news.slug}` : `/news/${news.slug}`}
+            className={buttonClass({ variant: "secondary", size: "sm" })}
+          >
+            <span className="fa fa-search-plus" aria-hidden="true" />
+            {isDraftTable ? "Pratinjau" : "Lihat"}
+          </Link>
+          {tableName === "Antrian Berita" && (
+            <>
+              <Button size="sm" onClick={onEditDraft}>
+                <span className="fa fa-edit" aria-hidden="true" /> Edit
+              </Button>
+              <Button size="sm" variant="danger" onClick={onDeleteDraft}>
+                <span className="fa fa-trash" aria-hidden="true" /> Hapus
+              </Button>
+            </>
+          )}
+          {tableName === "Persetujuan Berita" && (
+            <>
+              <Button size="sm" onClick={onApproveDraft}>
+                <span className="fa fa-edit" aria-hidden="true" /> Persetujuan
+              </Button>
+              <Button size="sm" variant="danger" onClick={onDeleteDraft}>
+                <span className="fa fa-trash" aria-hidden="true" /> Hapus
+              </Button>
+            </>
+          )}
+        </RowActions>
       </td>
     </tr>
   );
 };
 
-const NewsCounter = ({
-  title,
-  count,
-  loading,
-  onClick,
-}: {
-  title: string;
-  count: number;
-  loading?: boolean;
-  onClick(): void;
-}) => (
-  <div className="card text-center bg-primary text-light mb-3">
-    <div className="card-body">
-      <h3 style={{ color: "#f8f9fa" }}>{title}</h3>
-      <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-        <i className="fa fa-pencil-alt" aria-hidden="true" />{" "}
-        {loading ? <Spinner /> : count}
-      </h4>
-      <a href="#" className="btn btn-outline-light btn-sm" onClick={(event) => { event.preventDefault(); onClick(); }}>
-        Lihat
-      </a>
-    </div>
-  </div>
-);
+const tagChipClass =
+  "tw:mb-0 tw:rounded-full tw:border tw:border-line tw:bg-surface tw:py-1.5 tw:pr-3.5 tw:pl-3 tw:has-checked:border-brand tw:has-checked:bg-brand-soft";
 
 const DraftFormModal = ({
   mode,
@@ -1266,78 +1045,79 @@ const DraftFormModal = ({
     }
   };
 
+  const saving = createDraft.isPending || updateDraft.isPending;
+
   return (
     <Modal
       title={mode === "add" ? "Tambah Berita" : "Edit Berita"}
       open={open}
       onClose={onClose}
+      size="xl"
+      allowExternalPopups
       footer={
         <>
-          <button className="btn btn-outline-primary" type="button" onClick={onClose}>Keluar</button>
-          <button type="submit" form={`form-${mode}-news`} className="btn btn-primary" disabled={createDraft.isPending || updateDraft.isPending}>
-            {createDraft.isPending || updateDraft.isPending ? "Menyimpan..." : "Simpan"}
-          </button>
+          <Button variant="secondary" onClick={onClose}>Keluar</Button>
+          <Button type="submit" form={`form-${mode}-news`} loading={saving}>
+            {saving ? "Menyimpan..." : "Simpan"}
+          </Button>
         </>
       }
     >
       <form onSubmit={submit} id={`form-${mode}-news`}>
-        <TextInput label="Judul *" value={form.title} placeholder="Judul" onChange={(title) => setForm({ ...form, title })} required />
-        <div className="form-group">
-          <label>Kategori *</label>
-          <select className="form-control" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} required>
+        <Input
+          label="Judul *"
+          value={form.title}
+          placeholder="Judul"
+          onChange={(event) => setForm({ ...form, title: event.target.value })}
+          required
+        />
+        <div className="tw:grid tw:gap-x-4 tw:md:grid-cols-2">
+          <Select
+            label="Kategori *"
+            value={form.category}
+            onChange={(event) => setForm({ ...form, category: event.target.value })}
+            required
+          >
             <option value="default" disabled>Pilih Kategori</option>
             {categories.data?.map((category) => (
               <option key={getId(category)} value={getId(category)}>
                 {category.name}
               </option>
             ))}
-          </select>
+          </Select>
+          <FileInput
+            id={`${mode}NewsImage`}
+            label={mode === "add" ? "Gambar Utama Berita *" : "Gambar Utama Berita"}
+            hint={mainImageName ? `${mainImageName} · Max Size 1 MB` : "Max Size 1 MB"}
+            accept="image/*"
+            required={mode === "add"}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              setMainImage(file);
+              setMainImageName(file?.name ?? "");
+            }}
+          />
         </div>
-        <div className="form-group">
-          <label>{mode === "add" ? "Gambar Utama Berita *" : "Gambar Utama Berita"}</label>
-          <div className="custom-file">
-            <input
-              type="file"
-              className="custom-file-input"
-              id={`${mode}NewsImage`}
-              accept="image/*"
-              required={mode === "add"}
-              onChange={(event) => {
-                const file = event.target.files?.[0];
-                setMainImage(file);
-                setMainImageName(file?.name ?? "");
-              }}
-            />
-            <label htmlFor={`${mode}NewsImage`} className="custom-file-label">
-              {mainImageName || "Pilih File"}
-            </label>
-          </div>
-          <small className="form-text text-muted">Max Size 1 MB</small>
-        </div>
-        <div className="form-group">
-          <label>Konten *</label>
+        <FieldGroup label="Konten *">
           <RichTextEditor value={form.content} onChange={(content) => setForm({ ...form, content })} />
-        </div>
-        <div className="form-group">
-          <h4>Pilih tag (harus memilih salah satu atau lebih) *</h4>
-          {tagsQuery.data?.map((tag) => {
-            const id = getId(tag);
-            return (
-              <div key={`${mode}-${id}`} className="custom-control custom-switch custom-control-inline">
-                <input
-                  type="checkbox"
-                  className="custom-control-input"
+        </FieldGroup>
+        <FieldGroup label="Pilih tag (harus memilih salah satu atau lebih) *">
+          <div className="tw:flex tw:flex-wrap tw:gap-2">
+            {tagsQuery.data?.map((tag) => {
+              const id = getId(tag);
+              return (
+                <Checkbox
+                  key={`${mode}-${id}`}
                   id={`${mode}-${id}`}
+                  label={tag.name}
+                  wrapperClassName={tagChipClass}
                   checked={form.tags.includes(id)}
                   onChange={(event) => toggleTag(id, event.target.checked)}
                 />
-                <label className="custom-control-label" htmlFor={`${mode}-${id}`}>
-                  {tag.name}
-                </label>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </FieldGroup>
       </form>
     </Modal>
   );
@@ -1440,40 +1220,43 @@ const ApproveDraftModal = ({
       title="Persetujuan Berita"
       open={open}
       onClose={onClose}
+      size="xl"
+      allowExternalPopups
       footer={
         <>
-          <button className="btn btn-outline-primary" type="button" onClick={onClose}>Keluar</button>
-          <button type="submit" form="form-approve-news" className="btn btn-primary" disabled={approveDraft.isPending}>
+          <Button variant="secondary" onClick={onClose}>Keluar</Button>
+          <Button type="submit" form="form-approve-news" loading={approveDraft.isPending}>
             Simpan
-          </button>
+          </Button>
         </>
       }
     >
       <form onSubmit={submit} id="form-approve-news">
-        <TextInput label="Judul *" value={form.title} placeholder="Judul" onChange={(title) => setForm({ ...form, title })} required />
-        <div className="form-group">
-          <label>Konten *</label>
+        <Input
+          label="Judul *"
+          value={form.title}
+          placeholder="Judul"
+          onChange={(event) => setForm({ ...form, title: event.target.value })}
+          required
+        />
+        <FieldGroup label="Konten *">
           <RichTextEditor value={form.content} onChange={(content) => setForm({ ...form, content })} />
-        </div>
-        <div className="form-group">
-          <label>Pesan *</label>
-          <textarea className="form-control" value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} required />
-        </div>
-        <div className="form-group">
-          <h4>Persetujuan *</h4>
-          <div className="custom-control custom-switch custom-control-inline">
-            <input
-              type="checkbox"
-              className="custom-control-input"
-              id="approvement"
-              checked={form.approved}
-              onChange={(event) => setForm({ ...form, approved: event.target.checked })}
-            />
-            <label className="custom-control-label" htmlFor="approvement">
-              Setuju
-            </label>
-          </div>
-        </div>
+        </FieldGroup>
+        <Textarea
+          label="Pesan *"
+          value={form.message}
+          onChange={(event) => setForm({ ...form, message: event.target.value })}
+          required
+        />
+        <FieldGroup label="Persetujuan *">
+          <Checkbox
+            id="approvement"
+            label="Setuju"
+            wrapperClassName={tagChipClass}
+            checked={form.approved}
+            onChange={(event) => setForm({ ...form, approved: event.target.checked })}
+          />
+        </FieldGroup>
       </form>
     </Modal>
   );
@@ -1525,7 +1308,7 @@ export const DashboardPage = () => {
     });
   };
 
-  if (currentUser.isLoading) return <Spinner />;
+  if (currentUser.isLoading) return <LoadingState />;
 
   return (
     <>
@@ -1534,12 +1317,30 @@ export const DashboardPage = () => {
         description="Malanghub - Profil - Situs yang menyediakan informasi sekitar Malang Raya!"
         robots="noindex,nofollow"
       />
-      <Breadcrumbs label="Profil" />
-      <ProfileHero
+      <PageBreadcrumbs items={[{ label: "Beranda", href: "/" }, { label: "Profil" }]} />
+      <ProfileHeader
         user={currentUser.data}
-        onEdit={() => setProfileModalOpen(true)}
-        onLogout={onLogout}
-        onDeleteAccount={() => setDeleteModalOpen(true)}
+        greeting
+        actions={
+          <>
+            <Button onClick={() => setProfileModalOpen(true)}>
+              <span className="fa fa-edit" aria-hidden="true" />
+              Edit Profil
+            </Button>
+            <Button variant="secondary" onClick={() => void onLogout()}>
+              <span className="fa fa-sign-out" aria-hidden="true" />
+              Keluar
+            </Button>
+            <Button
+              variant="ghost"
+              className="tw:text-danger! tw:hover:bg-danger-soft!"
+              onClick={() => setDeleteModalOpen(true)}
+            >
+              <span className="fa fa-trash" aria-hidden="true" />
+              Hapus Akun
+            </Button>
+          </>
+        }
       />
       {currentUser.data && <DashboardWorkbench user={currentUser.data} />}
       <EditProfileModal user={currentUser.data} open={profileModalOpen} onClose={() => setProfileModalOpen(false)} />
@@ -1565,210 +1366,10 @@ const DraftContent = ({ html }: { html: string }) => {
   return <div ref={contentRef} dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
-const DraftArticleView = ({ news }: { news: News }) => {
-  const { Link, Image } = useAdapters();
-  const newsTags = getNewsTags(news);
-
-  return (
-    <div className="w3l-searchblock w3l-homeblock1 py-5">
-      <div className="container py-lg-4 py-md-3">
-        <div className="row">
-          <div className="col-lg-8 most-recent">
-            <div className="pb-5 w3l-homeblock1 text-center">
-              <div className="container mt-md-3">
-                <h3 className="blog-desc-big text-center mb-4">{news.title}</h3>
-                <div className="blog-post-align">
-                  <div className="blog-post-img embed-responsive embed-responsive-1by1">
-                    <Link href={getAuthorHref(news)}>
-                      <Image
-                        src={news.user?.photo || DEFAULT_AVATAR_SRC}
-                        alt={news.user?.name ?? "Penulis"}
-                        className="rounded-circle img-fluid embed-responsive-item"
-                        objectFit="cover"
-                        fill
-                      />
-                    </Link>
-                  </div>
-                  <div className="blog-post-info">
-                    <div className="author align-items-center mb-1">
-                      <Link href={getAuthorHref(news)}>{news.user?.name ?? "Penulis"}</Link>{" "}
-                      di <Link href={getCategoryHref(news)}>{getCategoryName(news)}</Link>
-                    </div>
-                    <ul className="blog-meta">
-                      <li className="meta-item blog-lesson">
-                        <span className="meta-value">{formatDateTime(news.created_at)}</span>
-                      </li>
-                      <li className="meta-item blog-students">
-                        <span className="meta-value">{readingTime(news)}</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <section className="blog-post-main w3l-homeblock1">
-              <div className="blog-content-inf pb-5">
-                <div className="container pb-lg-4">
-                  <div className="single-post-image">
-                    <div className="post-content embed-responsive embed-responsive-4by3">
-                      <Image
-                        src={news.mainImage || "/malanghub-meta.png"}
-                        alt={news.title}
-                        className="radius-image img-fluid pb-5 embed-responsive-item"
-                        objectFit="cover"
-                        fill
-                      />
-                    </div>
-                  </div>
-                  <div className="single-post-content text-justify">
-                    <DraftContent html={news.content} />
-
-                    <div className="d-grid left-right mt-5 pb-md-5">
-                      <div className="buttons-singles tags">
-                        <h4>Tags :</h4>
-                        {newsTags.map((tag) => (
-                          <Link key={tag._id ?? tag.slug} href={`/newsTags/${tag.slug}`}>
-                            {tag.name}
-                          </Link>
-                        ))}
-                      </div>
-                      <div className="buttons-singles">
-                        <h4>Share :</h4>
-                        <a href="#blog-share">
-                          <span className="fa fa-facebook" aria-hidden="true" />
-                        </a>
-                        <a href="#blog-share">
-                          <span className="fa fa-twitter" aria-hidden="true" />
-                        </a>
-                      </div>
-                    </div>
-
-                    <div className="author-card mt-5">
-                      <div className="row align-items-center">
-                        <div className="col-sm-3 col-6">
-                          <div className="embed-responsive embed-responsive-1by1">
-                            <Image
-                              src={news.user?.photo || DEFAULT_AVATAR_SRC}
-                              alt={news.user?.name ?? "Penulis"}
-                              className="rounded-circle img-fluid embed-responsive-item"
-                              objectFit="cover"
-                              fill
-                            />
-                          </div>
-                        </div>
-                        <div className="col-sm-9 mt-sm-0 mt-3">
-                          <h3 className="mb-3 title">
-                            {news.user?.name ?? "Penulis"}
-                          </h3>
-                          {news.user?.bio && <p>{news.user.bio}</p>}
-                          <ul className="author-icons mt-4">
-                            {news.user?.facebook && (
-                              <li>
-                                <a
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="facebook"
-                                  href={getSocialHref(
-                                    "facebook",
-                                    news.user.facebook,
-                                  )}
-                                >
-                                  <span className="fab fa-facebook" aria-hidden="true" />
-                                </a>
-                              </li>
-                            )}
-                            {news.user?.twitter && (
-                              <li>
-                                <a
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="twitter"
-                                  href={getSocialHref(
-                                    "twitter",
-                                    news.user.twitter,
-                                  )}
-                                >
-                                  <span className="fab fa-twitter" aria-hidden="true" />
-                                </a>
-                              </li>
-                            )}
-                            {news.user?.instagram && (
-                              <li>
-                                <a
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="instagram"
-                                  href={getSocialHref(
-                                    "instagram",
-                                    news.user.instagram,
-                                  )}
-                                >
-                                  <span className="fab fa-instagram" aria-hidden="true" />
-                                </a>
-                              </li>
-                            )}
-                            {news.user?.linkedin && (
-                              <li>
-                                <a
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="linkedin"
-                                  href={getSocialHref(
-                                    "linkedin",
-                                    news.user.linkedin,
-                                  )}
-                                >
-                                  <span className="fab fa-linkedin" aria-hidden="true" />
-                                </a>
-                              </li>
-                            )}
-                            {news.user?.tiktok && (
-                              <li>
-                                <a
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="tiktok"
-                                  href={getSocialHref(
-                                    "tiktok",
-                                    news.user.tiktok,
-                                  )}
-                                >
-                                  <span className="fab fa-tiktok" aria-hidden="true" />
-                                </a>
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="row mt-5">
-                    <div className="col">
-                      <Link href="/users" className="btn btn-outline-primary btn-block">
-                        Kembali
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </div>
-          <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-            <div className="pos-sticky">
-              <h3 className="section-title-left">Mungkin Anda Tertarik </h3>
-              <h1>Halaman Pratinjau Tidak Dapat Menampilkan Berita Terkait</h1>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const DraftPreviewPage = ({ slug }: { slug?: string }) => {
   const { api, authStorage, authVersion } = useMalanghubRuntime();
   const adapters = useAdapters();
-  const { Meta } = adapters;
+  const { Meta, Link } = adapters;
   const [hasToken, setHasToken] = useState(false);
   const draft = useDraftDetail(api, slug);
 
@@ -1779,8 +1380,14 @@ export const DraftPreviewPage = ({ slug }: { slug?: string }) => {
     });
   }, [adapters, authStorage, authVersion]);
 
-  if (!hasToken || draft.isLoading) return <Spinner />;
-  if (!draft.data) return <h1 className="malanghub-empty">Draft tidak ditemukan</h1>;
+  if (!hasToken || draft.isLoading) return <LoadingState />;
+  if (!draft.data) {
+    return (
+      <Container className="tw:py-10">
+        <EmptyState>Draft tidak ditemukan</EmptyState>
+      </Container>
+    );
+  }
 
   return (
     <>
@@ -1789,12 +1396,38 @@ export const DraftPreviewPage = ({ slug }: { slug?: string }) => {
         description={excerpt(draft.data.content)}
         robots="noindex,nofollow"
       />
-      <DraftBreadcrumbs label={draft.data.title} />
-      <DraftArticleView news={draft.data} />
-      <div
-        className="display-ad"
-        style={{ margin: "8px auto", display: "block", textAlign: "center" }}
+      <PageBreadcrumbs
+        items={[
+          { label: "Beranda", href: "/" },
+          { label: "Antrian Berita" },
+          { label: draft.data.title },
+        ]}
       />
+      <ArticleView
+        news={draft.data}
+        content={<DraftContent html={draft.data.content} />}
+        tagsLabel="Tags :"
+        shareLabel="Share :"
+        shareLinks={[
+          { icon: "fa-facebook", label: "Facebook", href: "#blog-share" },
+          { icon: "fa-twitter", label: "Twitter", href: "#blog-share" },
+        ]}
+        footer={
+          <Link
+            href="/users"
+            className={buttonClass({ variant: "secondary", block: true, className: "tw:mt-10" })}
+          >
+            Kembali
+          </Link>
+        }
+        asideTitle="Mungkin Anda Tertarik"
+        aside={
+          <p className="tw:rounded-xl tw:border tw:border-dashed tw:border-line-strong tw:p-5 tw:text-sm tw:text-muted">
+            Halaman Pratinjau Tidak Dapat Menampilkan Berita Terkait
+          </p>
+        }
+      />
+      <div className="display-ad tw:mx-auto tw:my-2 tw:block tw:text-center" />
     </>
   );
 };

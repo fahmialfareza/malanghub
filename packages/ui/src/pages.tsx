@@ -1,16 +1,11 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   type AuthResponse,
   type News,
   type NewsListParams,
   type PaginatedResponse,
-  type UserProfile,
-  useAllDrafts,
   useCategories,
   useCategoryDetail,
-  useCurrentUser,
-  useMyDrafts,
-  useMyNews,
   useNewsDetail,
   useNewsList,
   useNewsSearch,
@@ -21,11 +16,31 @@ import {
   useTags,
   useTagDetail,
   useTrendingNews,
-  useUpdateProfileMutation,
   useUserProfile,
 } from "@malanghub/core";
 import { useAdapters } from "./adapters";
 import { useMalanghubRuntime } from "./providers";
+import {
+  Button,
+  Card,
+  Input,
+  Select,
+  Textarea,
+  buttonClass,
+  cardClass,
+  cx,
+} from "./primitives";
+import {
+  ArticleView,
+  EmptyState,
+  LoadingState,
+  PageBreadcrumbs,
+  PageSection,
+  ProfileHeader,
+  SectionTitle,
+  TwoColumnLayout,
+  linkClass,
+} from "./content";
 import {
   createSlug,
   excerpt,
@@ -33,12 +48,10 @@ import {
   getAuthorHref,
   getCategoryHref,
   getCategoryName,
-  getSocialHref,
   readingTime,
   siteUrl,
 } from "./utils";
 
-const DEFAULT_AVATAR_SRC = "/assets/images/author.jpg";
 const MALANGHUB_ADDRESS =
   "Perum. Bumi Madinah Blok C3, Jalan Ngasri, Mulyoagung, Dau, Malang, Jawa Timur 65151";
 const MALANGHUB_MAPS_PLACE_URL =
@@ -50,67 +63,14 @@ const MALANGHUB_MAPS_NAVIGATION_URL =
     MALANGHUB_ADDRESS,
   )}`;
 
-const Spinner = () => (
-  <div className="malanghub-loading" aria-live="polite">
-    Loading...
-  </div>
-);
-
-const EmptyState = ({ children }: { children: React.ReactNode }) => (
-  <h1 className="malanghub-empty">{children}</h1>
-);
-
-const getNewsTags = (news: News) =>
-  (news.tags ?? []).filter(
-    (tag): tag is Exclude<(typeof news.tags)[number], string> =>
-      typeof tag !== "string",
-  );
-
-const formatDateTime = (value?: string | Date) => {
-  if (!value) return "";
-  return new Intl.DateTimeFormat("id-ID", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }).format(new Date(value));
-};
-
-const Breadcrumbs = ({
-  items,
-}: {
-  items: Array<{ label: string; href?: string }>;
-}) => {
-  const { Link } = useAdapters();
-
-  return (
-    <nav id="breadcrumbs" className="breadcrumbs">
-      <div className="container page-wrapper">
-        {items.map((item, index) => (
-          <React.Fragment key={`${item.label}-${index}`}>
-            {index > 0 && " / "}
-            {item.href ? (
-              <Link href={item.href}>{item.label}</Link>
-            ) : (
-              <span className="breadcrumb_last" aria-current="page">
-                {item.label}
-              </span>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </nav>
-  );
-};
+const titleLinkClass =
+  "tw:font-heading tw:font-bold tw:leading-snug tw:text-fg tw:no-underline tw:transition-colors tw:hover:text-brand";
 
 const NewsImage = ({ news }: { news: News }) => {
   const { Image } = useAdapters();
   return (
     <Image
-      className="card-img-bottom d-block radius-image embed-responsive-item"
+      className="tw:absolute tw:inset-0 tw:size-full tw:object-cover tw:transition-transform tw:duration-300 tw:group-hover:scale-105"
       objectFit="cover"
       src={news.mainImage || "/malanghub-meta.png"}
       alt={news.title}
@@ -123,41 +83,92 @@ const NewsMeta = ({ news }: { news: News }) => {
   const { Link } = useAdapters();
 
   return (
-    <>
-      <div className="author align-items-center mt-3 mb-1">
-        <Link href={getAuthorHref(news)}>{news.user?.name ?? "Penulis"}</Link>{" "}
-        di <Link href={getCategoryHref(news)}>{getCategoryName(news)}</Link>
+    <div className="tw:mt-3 tw:text-sm">
+      <div className="tw:text-body">
+        <Link href={getAuthorHref(news)} className={linkClass}>
+          {news.user?.name ?? "Penulis"}
+        </Link>{" "}
+        di{" "}
+        <Link href={getCategoryHref(news)} className={linkClass}>
+          {getCategoryName(news)}
+        </Link>
       </div>
-      <ul className="blog-meta">
-        <li className="meta-item blog-lesson">
-          <span className="meta-value">{formatDate(news.created_at)}</span>
-        </li>
-        <li className="meta-item blog-students">
-          <span className="meta-value">{readingTime(news)}</span>
-        </li>
-      </ul>
-    </>
+      <div className="tw:mt-1 tw:flex tw:flex-wrap tw:items-center tw:gap-x-3 tw:gap-y-1 tw:text-muted">
+        <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+          <span className="fa fa-calendar-o" aria-hidden="true" />
+          {formatDate(news.created_at)}
+        </span>
+        <span className="tw:inline-flex tw:items-center tw:gap-1.5">
+          <span className="fa fa-clock-o" aria-hidden="true" />
+          {readingTime(news)}
+        </span>
+      </div>
+    </div>
   );
 };
 
-const NewsCard = ({ news }: { news: News }) => {
+const NewsCard = ({ news, featured }: { news: News; featured?: boolean }) => {
   const { Link } = useAdapters();
 
   return (
-    <div className="card">
-      <div className="card-header p-0 position-relative embed-responsive embed-responsive-1by1">
-        <Link href={`/news/${news.slug}`}>
-          <NewsImage news={news} />
-        </Link>
-      </div>
-      <div className="card-body p-0 blog-details">
-        <Link href={`/news/${news.slug}`} className="blog-desc">
+    <article
+      className={cx(
+        cardClass,
+        "tw:group tw:flex tw:h-full tw:flex-col tw:overflow-hidden tw:transition-shadow tw:hover:shadow-pop",
+      )}
+    >
+      <Link
+        href={`/news/${news.slug}`}
+        className={cx(
+          "tw:relative tw:block tw:overflow-hidden tw:bg-surface-2",
+          featured ? "tw:aspect-video" : "tw:aspect-[4/3]",
+        )}
+      >
+        <NewsImage news={news} />
+      </Link>
+      <div className="tw:flex tw:flex-1 tw:flex-col tw:p-5">
+        <Link
+          href={`/news/${news.slug}`}
+          className={cx(
+            titleLinkClass,
+            featured ? "tw:text-2xl" : "tw:text-lg",
+          )}
+        >
           {news.title}
         </Link>
-        <div className="text-truncate">{excerpt(news.content, 120)}</div>
+        <p className="tw:mt-2 tw:line-clamp-2 tw:text-[0.95rem] tw:leading-6 tw:text-muted">
+          {excerpt(news.content, 120)}
+        </p>
+        <div className="tw:mt-auto">
+          <NewsMeta news={news} />
+        </div>
+      </div>
+    </article>
+  );
+};
+
+/** Compact horizontal item: thumbnail + title + meta. */
+const NewsListItem = ({ news }: { news: News }) => {
+  const { Link } = useAdapters();
+
+  return (
+    <article className="tw:group tw:flex tw:gap-4">
+      <Link
+        href={`/news/${news.slug}`}
+        className="tw:relative tw:block tw:aspect-square tw:w-24 tw:shrink-0 tw:overflow-hidden tw:rounded-xl tw:bg-surface-2 tw:sm:w-32"
+      >
+        <NewsImage news={news} />
+      </Link>
+      <div className="tw:min-w-0 tw:self-center">
+        <Link
+          href={`/news/${news.slug}`}
+          className={cx(titleLinkClass, "tw:line-clamp-3 tw:text-base tw:sm:text-lg")}
+        >
+          {news.title}
+        </Link>
         <NewsMeta news={news} />
       </div>
-    </div>
+    </article>
   );
 };
 
@@ -186,6 +197,73 @@ function buildPageList(
   return result;
 }
 
+const pageButtonClass = (active?: boolean) =>
+  cx(
+    "tw:flex tw:h-10 tw:min-w-10 tw:items-center tw:justify-center tw:rounded-lg tw:border tw:px-3 tw:text-sm tw:font-semibold tw:transition-colors tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring tw:disabled:pointer-events-none tw:disabled:opacity-45",
+    active
+      ? "tw:border-brand tw:bg-brand tw:text-brand-fg"
+      : "tw:border-line tw:bg-surface tw:text-body tw:hover:border-brand tw:hover:text-brand",
+  );
+
+const Pagination = ({
+  page,
+  pageCount,
+  onPageChange,
+}: {
+  page: number;
+  pageCount: number;
+  onPageChange(page: number): void;
+}) => (
+  <nav aria-label="Navigasi halaman" className="tw:mt-10">
+    <ul className="tw:m-0 tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-1.5 tw:p-0 tw:list-none">
+      <li>
+        <button
+          type="button"
+          className={pageButtonClass()}
+          aria-label="Halaman sebelumnya"
+          disabled={page <= 1}
+          onClick={() => onPageChange(page - 1)}
+        >
+          <span className="fa fa-angle-left" aria-hidden="true" />
+        </button>
+      </li>
+      {buildPageList(page, pageCount).map((item, index) =>
+        item === "..." ? (
+          <li
+            key={`ellipsis-${index}`}
+            className="tw:px-1.5 tw:text-muted"
+            aria-hidden="true"
+          >
+            ...
+          </li>
+        ) : (
+          <li key={item}>
+            <button
+              type="button"
+              className={pageButtonClass(page === item)}
+              aria-current={page === item ? "page" : undefined}
+              onClick={() => onPageChange(item)}
+            >
+              {item}
+            </button>
+          </li>
+        ),
+      )}
+      <li>
+        <button
+          type="button"
+          className={pageButtonClass()}
+          aria-label="Halaman berikutnya"
+          disabled={page >= pageCount}
+          onClick={() => onPageChange(page + 1)}
+        >
+          <span className="fa fa-angle-right" aria-hidden="true" />
+        </button>
+      </li>
+    </ul>
+  </nav>
+);
+
 const NewsGrid = ({
   response,
   onPageChange,
@@ -203,74 +281,22 @@ const NewsGrid = ({
   if (!news.length) return <EmptyState>Belum Ada Berita</EmptyState>;
 
   return (
-    <div className="row">
-      {news.map((item, index) => (
-        <div
-          key={item._id}
-          className={
-            index === 0
-              ? "col-md-12 item"
-              : "col-lg-6 col-md-6 item mt-5 pt-lg-3"
-          }
-        >
-          <NewsCard news={item} />
-        </div>
-      ))}
+    <>
+      <div className="tw:grid tw:gap-6 tw:sm:grid-cols-2">
+        {news.map((item, index) => (
+          <div key={item._id} className={index === 0 ? "tw:sm:col-span-2" : ""}>
+            <NewsCard news={item} featured={index === 0} />
+          </div>
+        ))}
+      </div>
       {onPageChange && pageCount > 1 && (
-        <div className="pagination-wrapper mt-5">
-          <ul className="page-pagination">
-            <li>
-              <a
-                href={`#page-${Math.max(page - 1, 1)}`}
-                className="page-numbers"
-                aria-disabled={page <= 1}
-                onClick={(event) => {
-                  event.preventDefault();
-                  if (page > 1) onPageChange(page - 1);
-                }}
-              >
-                {"<"}
-              </a>
-            </li>
-            {buildPageList(page, pageCount).map((item, index) =>
-              item === "..." ? (
-                <li key={`ellipsis-${index}`}>
-                  <span className="page-numbers page-numbers-break">
-                    {"..."}
-                  </span>
-                </li>
-              ) : (
-                <li key={item}>
-                  <a
-                    href={`#page-${item}`}
-                    className={`page-numbers${page === item ? " active" : ""}`}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      onPageChange(item);
-                    }}
-                  >
-                    {item}
-                  </a>
-                </li>
-              ),
-            )}
-            <li>
-              <a
-                href={`#page-${Math.min(page + 1, pageCount)}`}
-                className="page-numbers"
-                aria-disabled={page >= pageCount}
-                onClick={(event) => {
-                  event.preventDefault();
-                  if (page < pageCount) onPageChange(page + 1);
-                }}
-              >
-                {">"}
-              </a>
-            </li>
-          </ul>
-        </div>
+        <Pagination
+          page={page}
+          pageCount={pageCount}
+          onPageChange={onPageChange}
+        />
       )}
-    </div>
+    </>
   );
 };
 
@@ -282,35 +308,25 @@ const HomeNews = ({ news }: { news: News[] }) => {
   const [featured, ...rest] = news;
 
   return (
-    <div className="row">
-      <div className="col-lg-5 col-md-6 item">
+    <div className="tw:grid tw:gap-8 tw:md:grid-cols-12">
+      <div className="tw:md:col-span-6 tw:lg:col-span-5">
         <NewsCard news={featured} />
-        <Link href="/news" className="btn btn-style btn-outline mt-4">
+        <Link
+          href="/news"
+          className={buttonClass({
+            variant: "secondary",
+            block: true,
+            className: "tw:mt-4",
+          })}
+        >
           Semua Berita
+          <span className="fa fa-arrow-right" aria-hidden="true" />
         </Link>
       </div>
-      <div className="col-lg-7 col-md-6 mt-md-0 mt-5">
-        <div className="list-view list-view1">
-          {rest.map((item, index) => (
-            <div
-              key={item._id}
-              className={`grids5-info ${index > 0 ? "mt-5" : ""}`}
-            >
-              <Link
-                href={`/news/${item.slug}`}
-                className="d-block zoom embed-responsive embed-responsive-1by1"
-              >
-                <NewsImage news={item} />
-              </Link>
-              <div className="blog-info align-self">
-                <Link href={`/news/${item.slug}`} className="blog-desc1">
-                  {item.title}
-                </Link>
-                <NewsMeta news={item} />
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="tw:flex tw:flex-col tw:gap-6 tw:md:col-span-6 tw:lg:col-span-7">
+        {rest.map((item) => (
+          <NewsListItem key={item._id} news={item} />
+        ))}
       </div>
     </div>
   );
@@ -322,19 +338,27 @@ const TrendingList = ({ news }: { news: News[] }) => {
   if (!news.length) return <EmptyState>Belum Ada Berita</EmptyState>;
 
   return (
-    <>
+    <ol className={cx(cardClass, "tw:m-0 tw:divide-y tw:divide-line tw:p-0 tw:list-none")}>
       {news.map((item, index) => (
-        <div key={item._id} className="grids5-info">
-          <h4>{index + 1}.</h4>
-          <div className="blog-info">
-            <Link href={`/news/${item.slug}`} className="blog-desc1">
+        <li key={item._id} className="tw:flex tw:gap-4 tw:p-5">
+          <span
+            aria-hidden="true"
+            className="tw:flex tw:size-9 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-full tw:bg-brand-soft tw:font-heading tw:text-base tw:font-bold tw:text-brand"
+          >
+            {index + 1}
+          </span>
+          <div className="tw:min-w-0">
+            <Link
+              href={`/news/${item.slug}`}
+              className={cx(titleLinkClass, "tw:text-base")}
+            >
               {item.title}
             </Link>
             <NewsMeta news={item} />
           </div>
-        </div>
+        </li>
       ))}
-    </>
+    </ol>
   );
 };
 
@@ -347,22 +371,22 @@ const TwoColumnNewsLayout = ({
   children: React.ReactNode;
   trending?: News[];
 }) => (
-  <div className="w3l-searchblock w3l-homeblock1 py-5">
-    <div className="container py-lg-4 py-md-3">
-      <div className="row">
-        <div className="col-lg-8 most-recent">
-          <h3 className="section-title-left">{title}</h3>
+  <PageSection>
+    <TwoColumnLayout
+      main={
+        <>
+          <SectionTitle>{title}</SectionTitle>
           {children}
-        </div>
-        <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-          <div className="pos-sticky">
-            <h3 className="section-title-left">Trending</h3>
-            <TrendingList news={trending ?? []} />
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+        </>
+      }
+      aside={
+        <>
+          <SectionTitle className="tw:text-xl">Trending</SectionTitle>
+          <TrendingList news={trending ?? []} />
+        </>
+      }
+    />
+  </PageSection>
 );
 
 export const HomePage = () => {
@@ -379,28 +403,31 @@ export const HomePage = () => {
         canonical={`${siteUrl}/`}
         image={`${siteUrl}/malanghub-meta.png`}
       />
-      <div className="w3l-homeblock1 py-5">
-        <div className="container pt-lg-5 pt-md-4">
-          <div className="row">
-            <div className="col-lg-9">
-              <h3 className="section-title-left">Berita Terbaru</h3>
+      <PageSection className="tw:sm:pt-14">
+        <TwoColumnLayout
+          wideMain
+          main={
+            <>
+              <SectionTitle>Berita Terbaru</SectionTitle>
               {recent.isLoading ? (
-                <Spinner />
+                <LoadingState />
               ) : (
                 <HomeNews news={recent.data?.data ?? []} />
               )}
-            </div>
-            <div className="col-lg-3 trending mt-lg-0 mt-5">
-              <h3 className="section-title-left">Trending</h3>
+            </>
+          }
+          aside={
+            <>
+              <SectionTitle className="tw:text-xl">Trending</SectionTitle>
               {trending.isLoading ? (
-                <Spinner />
+                <LoadingState />
               ) : (
                 <TrendingList news={trending.data?.data ?? []} />
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </>
+          }
+        />
+      </PageSection>
     </>
   );
 };
@@ -419,12 +446,12 @@ export const NewsListPage = () => {
         description="Malanghub - Semua Berita - Situs yang menyediakan informasi sekitar Malang Raya!"
         canonical={`${siteUrl}/news`}
       />
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[{ label: "Beranda", href: "/" }, { label: "Semua Berita" }]}
       />
       <TwoColumnNewsLayout title="Semua Berita" trending={trending.data?.data}>
         {news.isLoading ? (
-          <Spinner />
+          <LoadingState />
         ) : (
           <NewsGrid response={news.data} onPageChange={setPage} />
         )}
@@ -466,7 +493,7 @@ const TaxonomyPage = ({
         description={`Malanghub - ${titlePrefix} - ${entity?.name ?? ""}`}
         canonical={`${siteUrl}/${routePrefix}/${entity?.slug ?? slug ?? ""}`}
       />
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[
           { label: "Beranda", href: "/" },
           { label: titlePrefix, href: "/news" },
@@ -478,7 +505,7 @@ const TaxonomyPage = ({
         trending={trending.data?.data}
       >
         {isLoading ? (
-          <Spinner />
+          <LoadingState />
         ) : (
           <NewsGrid response={news.data} onPageChange={setPage} />
         )}
@@ -508,7 +535,7 @@ export const SearchPage = ({ search }: { search?: string }) => {
         title={`Malanghub - Pencarian - ${search ?? ""}`}
         description={`Hasil pencarian Malanghub untuk ${search ?? ""}`}
       />
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[
           { label: "Beranda", href: "/" },
           { label: `Pencarian: ${search ?? ""}` },
@@ -519,7 +546,7 @@ export const SearchPage = ({ search }: { search?: string }) => {
         trending={trending.data?.data}
       >
         {news.isLoading ? (
-          <Spinner />
+          <LoadingState />
         ) : (
           <NewsGrid response={news.data} onPageChange={setPage} />
         )}
@@ -530,15 +557,20 @@ export const SearchPage = ({ search }: { search?: string }) => {
 
 export const NewsDetailPage = ({ slug }: { slug?: string }) => {
   const { api } = useMalanghubRuntime();
-  const { Link, Image, Meta } = useAdapters();
+  const { Meta } = useAdapters();
   const news = useNewsDetail(api, slug);
   const related = useRelatedNews(api, news.data);
 
-  if (news.isLoading) return <Spinner />;
-  if (!news.data) return <EmptyState>Berita tidak ditemukan</EmptyState>;
+  if (news.isLoading) return <LoadingState />;
+  if (!news.data) {
+    return (
+      <PageSection>
+        <EmptyState>Berita tidak ditemukan</EmptyState>
+      </PageSection>
+    );
+  }
 
   const currentNews = news.data;
-  const newsTags = getNewsTags(currentNews);
 
   return (
     <>
@@ -548,264 +580,77 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
         canonical={`${siteUrl}/news/${currentNews.slug}`}
         image={currentNews.mainImage}
       />
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[
           { label: "Beranda", href: "/" },
           { label: "Berita", href: "/news" },
           { label: currentNews.title },
         ]}
       />
-      <div className="w3l-searchblock w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <div className="row">
-            <div className="col-lg-8 most-recent">
-              <div className="pb-5 w3l-homeblock1 text-center">
-                <div className="container mt-md-3">
-                  <h3 className="blog-desc-big text-center mb-4">
-                    {currentNews.title}
-                  </h3>
-                  <div className="blog-post-align">
-                    <div className="blog-post-img embed-responsive embed-responsive-1by1">
-                      <Link href={getAuthorHref(currentNews)}>
-                        <Image
-                          src={currentNews.user?.photo || DEFAULT_AVATAR_SRC}
-                          className="rounded-circle img-fluid embed-responsive-item"
-                          alt={currentNews.user?.name ?? "Penulis"}
-                          objectFit="cover"
-                          fill
-                        />
-                      </Link>
-                    </div>
-                    <div className="blog-post-info">
-                      <div className="author align-items-center mb-1">
-                        <Link href={getAuthorHref(currentNews)}>
-                          {currentNews.user?.name ?? "Penulis"}
-                        </Link>{" "}
-                        di{" "}
-                        <Link href={getCategoryHref(currentNews)}>
-                          {getCategoryName(currentNews)}
-                        </Link>
-                      </div>
-                      <ul className="blog-meta">
-                        <li className="meta-item blog-lesson">
-                          <span className="meta-value">
-                            {formatDateTime(currentNews.created_at)}
-                          </span>
-                        </li>
-                        <li className="meta-item blog-students">
-                          <span className="meta-value">
-                            {readingTime(currentNews)}
-                          </span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <section className="blog-post-main w3l-homeblock1">
-                <div className="blog-content-inf pb-5">
-                  <div className="container pb-lg-4">
-                    <div className="single-post-image">
-                      <div className="post-content embed-responsive embed-responsive-4by3">
-                        <Image
-                          src={currentNews.mainImage || "/malanghub-meta.png"}
-                          alt={currentNews.title}
-                          className="radius-image img-fluid pb-5 embed-responsive-item"
-                          objectFit="cover"
-                          fill
-                        />
-                      </div>
-                    </div>
-
-                    <div className="single-post-content text-justify">
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: currentNews.content,
-                        }}
-                      />
-
-                      <div className="d-grid left-right mt-5 pb-md-5">
-                        <div className="buttons-singles tags">
-                          <h4>Tag :</h4>
-                          {newsTags.map((tag) => (
-                            <Link
-                              key={tag._id ?? tag.slug}
-                              href={`/newsTags/${tag.slug}`}
-                            >
-                              {tag.name}
-                            </Link>
-                          ))}
-                        </div>
-                        <div className="buttons-singles">
-                          <h4>Bagikan :</h4>
-                          <a
-                            target="_blank"
-                            rel="noreferrer"
-                            href={`https://www.facebook.com/share.php?u=${siteUrl}/news/${currentNews.slug}`}
-                          >
-                            <span
-                              className="fa fa-facebook"
-                              aria-hidden="true"
-                            />
-                          </a>
-                          <a
-                            target="_blank"
-                            rel="noreferrer"
-                            href={`https://twitter.com/intent/tweet?text=${siteUrl}/news/${currentNews.slug}`}
-                          >
-                            <span
-                              className="fa fa-twitter"
-                              aria-hidden="true"
-                            />
-                          </a>
-                        </div>
-                      </div>
-
-                      <div className="author-card mt-5">
-                        <div className="row align-items-center">
-                          <div className="col-sm-3 col-6">
-                            <div className="embed-responsive embed-responsive-1by1">
-                              <Image
-                                src={
-                                  currentNews.user?.photo || DEFAULT_AVATAR_SRC
-                                }
-                                alt={currentNews.user?.name ?? "Penulis"}
-                                className="rounded-circle img-fluid embed-responsive-item"
-                                objectFit="cover"
-                                fill
-                              />
-                            </div>
-                          </div>
-                          <div className="col-sm-9 mt-sm-0 mt-3">
-                            <h3 className="mb-3 title">
-                              {currentNews.user?.name ?? "Penulis"}
-                            </h3>
-                            {currentNews.user?.bio && (
-                              <p>{currentNews.user.bio}</p>
-                            )}
-                            <ul className="author-icons mt-4">
-                              {currentNews.user?.facebook && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="facebook"
-                                    href={getSocialHref(
-                                      "facebook",
-                                      currentNews.user.facebook,
-                                    )}
-                                  >
-                                    <span
-                                      className="fab fa-facebook"
-                                      aria-hidden="true"
-                                    />
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews.user?.twitter && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="twitter"
-                                    href={getSocialHref(
-                                      "twitter",
-                                      currentNews.user.twitter,
-                                    )}
-                                  >
-                                    <span
-                                      className="fab fa-twitter"
-                                      aria-hidden="true"
-                                    />
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews.user?.instagram && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="instagram"
-                                    href={getSocialHref(
-                                      "instagram",
-                                      currentNews.user.instagram,
-                                    )}
-                                  >
-                                    <span
-                                      className="fab fa-instagram"
-                                      aria-hidden="true"
-                                    />
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews.user?.linkedin && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="linkedin"
-                                    href={getSocialHref(
-                                      "linkedin",
-                                      currentNews.user.linkedin,
-                                    )}
-                                  >
-                                    <span
-                                      className="fab fa-linkedin"
-                                      aria-hidden="true"
-                                    />
-                                  </a>
-                                </li>
-                              )}
-                              {currentNews.user?.tiktok && (
-                                <li>
-                                  <a
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="tiktok"
-                                    href={getSocialHref(
-                                      "tiktok",
-                                      currentNews.user.tiktok,
-                                    )}
-                                  >
-                                    <span
-                                      className="fab fa-tiktok"
-                                      aria-hidden="true"
-                                    />
-                                  </a>
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>
-            <div className="col-lg-4 trending mt-lg-0 mt-5 mb-lg-5">
-              <div className="pos-sticky">
-                <h3 className="section-title-left">Mungkin Anda Tertarik </h3>
-                {related.isLoading ? (
-                  <Spinner />
-                ) : (
-                  <TrendingList news={related.data?.data ?? []} />
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ArticleView
+        news={currentNews}
+        content={
+          <div dangerouslySetInnerHTML={{ __html: currentNews.content }} />
+        }
+        tagsLabel="Tag :"
+        shareLabel="Bagikan :"
+        shareLinks={[
+          {
+            icon: "fa-facebook",
+            label: "Bagikan ke Facebook",
+            href: `https://www.facebook.com/share.php?u=${siteUrl}/news/${currentNews.slug}`,
+            external: true,
+          },
+          {
+            icon: "fa-twitter",
+            label: "Bagikan ke Twitter",
+            href: `https://twitter.com/intent/tweet?text=${siteUrl}/news/${currentNews.slug}`,
+            external: true,
+          },
+        ]}
+        asideTitle="Mungkin Anda Tertarik"
+        aside={
+          related.isLoading ? (
+            <LoadingState />
+          ) : (
+            <TrendingList news={related.data?.data ?? []} />
+          )
+        }
+      />
     </>
   );
 };
 
-const AuthCard = ({ children }: { children: React.ReactNode }) => (
-  <section className="w3l-contact-2 py-5">
-    <div className="container py-lg-5 py-md-4">{children}</div>
-  </section>
+const AuthCard = ({
+  title,
+  providers,
+  children,
+}: {
+  title: string;
+  providers: React.ReactNode;
+  children: React.ReactNode;
+}) => (
+  <PageSection>
+    <Card className="tw:mx-auto tw:max-w-md tw:p-6 tw:sm:p-8">
+      <h1 className="tw:m-0 tw:mb-6 tw:text-center tw:font-heading tw:text-2xl tw:font-bold tw:text-fg">
+        {title}
+      </h1>
+      <div className="tw:flex tw:w-full tw:flex-col tw:gap-3">{providers}</div>
+      <div
+        className="tw:my-6 tw:flex tw:items-center tw:gap-3 tw:text-xs tw:font-semibold tw:uppercase tw:tracking-wide tw:text-muted"
+        aria-hidden="true"
+      >
+        <span className="tw:h-px tw:flex-1 tw:bg-line" />
+        atau
+        <span className="tw:h-px tw:flex-1 tw:bg-line" />
+      </div>
+      {children}
+    </Card>
+  </PageSection>
 );
+
+const providerButtonClass =
+  "tw:inline-flex tw:h-11 tw:w-full tw:items-center tw:justify-center tw:gap-2 tw:rounded-lg tw:border tw:px-4 tw:text-[0.95rem] tw:font-semibold tw:transition-colors tw:cursor-pointer tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring tw:disabled:cursor-not-allowed tw:disabled:opacity-60 tw:aria-disabled:pointer-events-none tw:aria-disabled:opacity-60";
 
 const AppleAuthButton = ({
   label,
@@ -820,8 +665,7 @@ const AppleAuthButton = ({
 
   if (!adapters.appleAuthAvailable || !adapters.requestAppleAuth) return null;
 
-  const onAppleAuth = async (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
+  const onAppleAuth = async () => {
     setLoading(true);
     try {
       const auth = await adapters.requestAppleAuth!();
@@ -841,15 +685,20 @@ const AppleAuthButton = ({
   };
 
   return (
-    <a
-      href="#apple"
-      onClick={onAppleAuth}
-      className="btn btn-dark btn-block btn-lg text-light malanghub-apple-signin-btn"
-      aria-disabled={loading}
+    <button
+      type="button"
+      onClick={() => void onAppleAuth()}
+      className={cx(
+        providerButtonClass,
+        "tw:border-transparent tw:bg-fg tw:text-bg tw:hover:opacity-90",
+      )}
+      disabled={loading}
     >
-      <i className="fa fa-apple" />{" "}
-      {loading ? "Memproses..." : `${label} dengan`} <b>Apple</b>
-    </a>
+      <span className="fa fa-apple tw:text-lg" aria-hidden="true" />
+      <span>
+        {loading ? "Memproses..." : `${label} dengan`} <b>Apple</b>
+      </span>
+    </button>
   );
 };
 
@@ -880,9 +729,7 @@ const GoogleAuthButton = ({
     return "Google login gagal";
   };
 
-  const onGoogleAuth = async (event: React.MouseEvent<HTMLAnchorElement>) => {
-    event.preventDefault();
-
+  const onGoogleAuth = async () => {
     if (!available) {
       notify("Google login belum dikonfigurasi.", "danger");
       return;
@@ -912,19 +759,23 @@ const GoogleAuthButton = ({
 
   return (
     <>
-      <a
-        href="#google"
-        onClick={onGoogleAuth}
-        className={`btn btn-danger btn-block btn-lg text-light ${
-          !available ? "disabled" : ""
-        }`}
-        aria-disabled={!available || loading}
+      <button
+        type="button"
+        onClick={() => void onGoogleAuth()}
+        className={cx(
+          providerButtonClass,
+          "tw:border-line-strong tw:bg-surface tw:text-fg tw:hover:bg-surface-2",
+        )}
+        aria-disabled={!available || undefined}
+        disabled={loading}
       >
-        <i className="fa fa-google" />{" "}
-        {loading ? "Memproses..." : `${label} dengan`} <b>Google</b>
-      </a>
+        <span className="fa fa-google tw:text-lg tw:text-danger" aria-hidden="true" />
+        <span>
+          {loading ? "Memproses..." : `${label} dengan`} <b>Google</b>
+        </span>
+      </button>
       {!available && (
-        <div className="malanghub-native-note mt-3">
+        <div className="tw:rounded-lg tw:border-l-4 tw:border-brand tw:bg-brand-soft tw:px-3 tw:py-2.5 tw:text-sm tw:text-body">
           {adapters.googleAuthUnavailableMessage ??
             "Isi Google client ID untuk mengaktifkan Google login."}
         </div>
@@ -932,6 +783,12 @@ const GoogleAuthButton = ({
     </>
   );
 };
+
+const AuthSwitch = ({ children }: { children: React.ReactNode }) => (
+  <p className="tw:mt-6 tw:text-center tw:text-sm tw:font-semibold tw:text-body">
+    {children}
+  </p>
+);
 
 export const SignInPage = () => {
   const { api, authStorage, refreshAuth, notify } = useMalanghubRuntime();
@@ -965,57 +822,58 @@ export const SignInPage = () => {
 
   return (
     <>
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[{ label: "Beranda", href: "/" }, { label: "Masuk" }]}
       />
-      <AuthCard>
-        <h3 className="section-title-left">Masuk</h3>
-        <div className="contact-grids d-grid">
-          <div className="contact-left m-auto">
-            <div className="malanghub-auth-providers">
-              <AppleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
-              <GoogleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
-            </div>
-          </div>
-          <div className="contact-right">
-            <form onSubmit={submit} className="signin-form">
-              <div className="input-grids">
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email*"
-                  className="contact-input"
-                  value={form.email}
-                  onChange={(event) =>
-                    setForm({ ...form, email: event.target.value })
-                  }
-                  required
-                />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password*"
-                  className="contact-input"
-                  value={form.password}
-                  onChange={(event) =>
-                    setForm({ ...form, password: event.target.value })
-                  }
-                  required
-                />
-              </div>
-              <button
-                className="btn btn-style btn-outline"
-                type="submit"
-                disabled={signIn.isPending}
-              >
-                Masuk
-              </button>
-              <p className="malanghub-auth-switch mt-4">
-                Belum punya akun? <Link href="/signup">Daftar sekarang</Link>
-              </p>
-            </form>
-          </div>
-        </div>
+      <AuthCard
+        title="Masuk"
+        providers={
+          <>
+            <AppleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
+            <GoogleAuthButton label="Masuk" onSuccess={onAuthSuccess} />
+          </>
+        }
+      >
+        <form onSubmit={submit}>
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            placeholder="Email*"
+            value={form.email}
+            onChange={(event) =>
+              setForm({ ...form, email: event.target.value })
+            }
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            autoComplete="current-password"
+            placeholder="Password*"
+            value={form.password}
+            onChange={(event) =>
+              setForm({ ...form, password: event.target.value })
+            }
+            required
+          />
+          <Button
+            type="submit"
+            block
+            className="tw:mt-2"
+            loading={signIn.isPending}
+          >
+            Masuk
+          </Button>
+          <AuthSwitch>
+            Belum punya akun?{" "}
+            <Link href="/signup" className={linkClass}>
+              Daftar sekarang
+            </Link>
+          </AuthSwitch>
+        </form>
       </AuthCard>
     </>
   );
@@ -1062,469 +920,90 @@ export const SignUpPage = () => {
 
   return (
     <>
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[{ label: "Beranda", href: "/" }, { label: "Daftar" }]}
       />
-      <AuthCard>
-        <h3 className="section-title-left">Daftar</h3>
-        <div className="contact-grids d-grid">
-          <div className="contact-left m-auto">
-            <div className="malanghub-auth-providers">
-              <AppleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
-              <GoogleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
-            </div>
-          </div>
-          <div className="contact-right">
-            <form onSubmit={submit} className="signin-form">
-              <div className="input-grids">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Nama*"
-                  className="contact-input"
-                  value={form.name}
-                  onChange={(event) =>
-                    setForm({ ...form, name: event.target.value })
-                  }
-                  required
-                />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email*"
-                  className="contact-input"
-                  value={form.email}
-                  onChange={(event) =>
-                    setForm({ ...form, email: event.target.value })
-                  }
-                  required
-                />
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password*"
-                  className="contact-input"
-                  value={form.password}
-                  onChange={(event) =>
-                    setForm({ ...form, password: event.target.value })
-                  }
-                  required
-                />
-                <input
-                  type="password"
-                  name="passwordConfirmation"
-                  placeholder="Konfirmasi Password*"
-                  className="contact-input"
-                  value={form.passwordConfirmation}
-                  onChange={(event) =>
-                    setForm({
-                      ...form,
-                      passwordConfirmation: event.target.value,
-                    })
-                  }
-                  required
-                />
-              </div>
-              <button
-                className="btn btn-style btn-outline"
-                type="submit"
-                disabled={signUp.isPending}
-              >
-                Daftar
-              </button>
-              <p className="malanghub-auth-switch mt-4">
-                Sudah punya akun? <Link href="/signin">Masuk</Link>
-              </p>
-            </form>
-          </div>
-        </div>
+      <AuthCard
+        title="Daftar"
+        providers={
+          <>
+            <AppleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
+            <GoogleAuthButton label="Daftar" onSuccess={onAuthSuccess} />
+          </>
+        }
+      >
+        <form onSubmit={submit}>
+          <Input
+            label="Nama"
+            type="text"
+            name="name"
+            autoComplete="name"
+            placeholder="Nama*"
+            value={form.name}
+            onChange={(event) => setForm({ ...form, name: event.target.value })}
+            required
+          />
+          <Input
+            label="Email"
+            type="email"
+            name="email"
+            autoComplete="email"
+            placeholder="Email*"
+            value={form.email}
+            onChange={(event) =>
+              setForm({ ...form, email: event.target.value })
+            }
+            required
+          />
+          <Input
+            label="Password"
+            type="password"
+            name="password"
+            autoComplete="new-password"
+            placeholder="Password*"
+            value={form.password}
+            onChange={(event) =>
+              setForm({ ...form, password: event.target.value })
+            }
+            required
+          />
+          <Input
+            label="Konfirmasi Password"
+            type="password"
+            name="passwordConfirmation"
+            autoComplete="new-password"
+            placeholder="Konfirmasi Password*"
+            value={form.passwordConfirmation}
+            onChange={(event) =>
+              setForm({
+                ...form,
+                passwordConfirmation: event.target.value,
+              })
+            }
+            required
+          />
+          <Button
+            type="submit"
+            block
+            className="tw:mt-2"
+            loading={signUp.isPending}
+          >
+            Daftar
+          </Button>
+          <AuthSwitch>
+            Sudah punya akun?{" "}
+            <Link href="/signin" className={linkClass}>
+              Masuk
+            </Link>
+          </AuthSwitch>
+        </form>
       </AuthCard>
-    </>
-  );
-};
-
-const AuthorSocialLinks = ({ user }: { user: UserProfile }) => (
-  <ul className="author-icons mt-4">
-    {user.facebook && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="facebook"
-          href={getSocialHref("facebook", user.facebook)}
-        >
-          <span className="fab fa-facebook" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user.twitter && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="twitter"
-          href={getSocialHref("twitter", user.twitter)}
-        >
-          <span className="fab fa-twitter" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user.instagram && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="instagram"
-          href={getSocialHref("instagram", user.instagram)}
-        >
-          <span className="fab fa-instagram" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user.linkedin && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="linkedin"
-          href={getSocialHref("linkedin", user.linkedin)}
-        >
-          <span className="fab fa-linkedin" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-    {user.tiktok && (
-      <li>
-        <a
-          target="_blank"
-          rel="noreferrer"
-          className="tiktok"
-          href={getSocialHref("tiktok", user.tiktok)}
-        >
-          <span className="fab fa-tiktok" aria-hidden="true" />
-        </a>
-      </li>
-    )}
-  </ul>
-);
-
-type DashboardTab = "berita" | "antrian" | "persetujuan";
-
-const LegacyDashboardPage = () => {
-  const { api, authStorage, authVersion, notify } = useMalanghubRuntime();
-  const adapters = useAdapters();
-  const [hasToken, setHasToken] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [tab, setTab] = useState<DashboardTab>("berita");
-  const [profile, setProfile] = useState({ name: "", motto: "", bio: "" });
-  const currentUser = useCurrentUser(api, hasToken);
-  const myNews = useMyNews(api, hasToken);
-  const myDrafts = useMyDrafts(api, hasToken);
-  const isAdmin = Boolean(currentUser.data?.role?.includes("admin"));
-  const allDrafts = useAllDrafts(api, hasToken && isAdmin);
-  const updateProfile = useUpdateProfileMutation(api);
-
-  useEffect(() => {
-    void Promise.resolve(authStorage.getToken()).then((token) => {
-      setHasToken(Boolean(token));
-      if (!token) adapters.navigate("/signin");
-    });
-  }, [adapters, authStorage, authVersion]);
-
-  useEffect(() => {
-    if (!currentUser.data) return;
-    setProfile({
-      name: currentUser.data.name ?? "",
-      motto: currentUser.data.motto ?? "",
-      bio: currentUser.data.bio ?? "",
-    });
-  }, [currentUser.data]);
-
-  const saveProfile = (event: React.FormEvent) => {
-    event.preventDefault();
-    updateProfile.mutate(profile, {
-      onSuccess: () => {
-        notify("Profil diperbarui", "success");
-        setEditOpen(false);
-      },
-      onError: (error) =>
-        notify(
-          error instanceof Error ? error.message : "Gagal memperbarui profil",
-          "danger",
-        ),
-    });
-  };
-
-  if (currentUser.isLoading) return <Spinner />;
-
-  if (currentUser.isError) {
-    return (
-      <EmptyState>
-        Gagal memuat profil.{" "}
-        <button
-          className="btn btn-style btn-outline mt-2"
-          onClick={() => void currentUser.refetch()}
-        >
-          Coba Lagi
-        </button>
-      </EmptyState>
-    );
-  }
-
-  const user = currentUser.data;
-
-  return (
-    <>
-      <Breadcrumbs
-        items={[{ label: "Beranda", href: "/" }, { label: "Profil" }]}
-      />
-      <section id="author" className="w3l-author py-5">
-        <div className="container py-md-3">
-          <div className="row align-items-center">
-            <div className="col-md-3 col-sm-4 col-7 order-first">
-              <div className="embed-responsive embed-responsive-1by1">
-                <adapters.Image
-                  src={user?.photo || DEFAULT_AVATAR_SRC}
-                  alt={user?.name ?? "Profil"}
-                  className="rounded-circle img-fluid embed-responsive-item"
-                  objectFit="cover"
-                  fill
-                />
-              </div>
-            </div>
-            <div className="col-md-9 col-sm-12 order-md-first mt-lg-0 mt-4">
-              {user?.motto && <span className="category">{user.motto}</span>}
-              <h1 className="mb-4 title">
-                Halo, <span className="typed-text">{user?.name}</span>
-                <span className="cursor typing">&nbsp;</span>
-              </h1>
-              {user?.bio && (
-                <p dangerouslySetInnerHTML={{ __html: user.bio }} />
-              )}
-              {user && <AuthorSocialLinks user={user} />}
-              <button
-                className="btn btn-primary btn-block my-2"
-                onClick={() => setEditOpen((v) => !v)}
-              >
-                <i className="fa fa-edit" aria-hidden="true" /> Edit Profil
-              </button>
-            </div>
-          </div>
-          {editOpen && (
-            <form
-              className="malanghub-profile-form mt-4"
-              onSubmit={saveProfile}
-            >
-              <input
-                value={profile.name}
-                placeholder="Nama"
-                onChange={(event) =>
-                  setProfile({ ...profile, name: event.target.value })
-                }
-              />
-              <input
-                value={profile.motto}
-                placeholder="Motto"
-                onChange={(event) =>
-                  setProfile({ ...profile, motto: event.target.value })
-                }
-              />
-              <textarea
-                value={profile.bio}
-                placeholder="Bio"
-                onChange={(event) =>
-                  setProfile({ ...profile, bio: event.target.value })
-                }
-              />
-              <div className="malanghub-profile-form-actions">
-                <button
-                  className="btn btn-style btn-primary"
-                  type="submit"
-                  disabled={updateProfile.isPending}
-                >
-                  Simpan Profil
-                </button>
-                <button
-                  className="btn btn-style btn-outline"
-                  type="button"
-                  onClick={() => setEditOpen(false)}
-                >
-                  Batal
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
-      </section>
-
-      <header id="main-header" className="py-2">
-        <div className="container">
-          <h1>
-            <i className="fa fa-cog" aria-hidden="true" /> Dashboard
-          </h1>
-        </div>
-      </header>
-
-      <section className="w3l-homeblock1 py-4 mb-5">
-        <div className="container">
-          <div className="row mb-3">
-            <div className="col-md-3 mb-2">
-              <button
-                className={`btn btn-block ${tab === "berita" ? "btn-primary" : "btn-outline-primary"}`}
-                onClick={() => setTab("berita")}
-              >
-                Berita
-              </button>
-            </div>
-            <div className="col-md-3 mb-2">
-              <button
-                className={`btn btn-block ${tab === "antrian" ? "btn-primary" : "btn-outline-primary"}`}
-                onClick={() => setTab("antrian")}
-              >
-                Antrian Berita
-              </button>
-            </div>
-            {isAdmin && (
-              <div className="col-md-3 mb-2">
-                <button
-                  className={`btn btn-block ${tab === "persetujuan" ? "btn-primary" : "btn-outline-primary"}`}
-                  onClick={() => setTab("persetujuan")}
-                >
-                  Persetujuan Berita
-                </button>
-              </div>
-            )}
-            <div className="col-md-3 mb-2">
-              <adapters.Link
-                href="/users/newsDrafts/new"
-                className="btn btn-success btn-block"
-              >
-                <i className="fa fa-plus" aria-hidden="true" /> Tulis Draft
-              </adapters.Link>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-9 mb-4">
-              <div className="card malanghub-dashboard-card">
-                <div className="card-header">
-                  <h4>
-                    {tab === "berita"
-                      ? "Berita Saya"
-                      : tab === "antrian"
-                        ? "Antrian Berita"
-                        : "Persetujuan Berita"}
-                  </h4>
-                </div>
-                <div className="table-responsive">
-                  <table className="table malanghub-dashboard-table">
-                    <thead>
-                      <tr>
-                        <th>No</th>
-                        <th>Judul</th>
-                        {tab !== "berita" && <th>Status</th>}
-                        <th>Dibuat</th>
-                        <th>Diperbaharui</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(() => {
-                        const rows =
-                          tab === "berita"
-                            ? (myNews.data ?? [])
-                            : tab === "antrian"
-                              ? (myDrafts.data ?? [])
-                              : (allDrafts.data ?? []);
-                        if (!rows.length) {
-                          return (
-                            <tr>
-                              <td colSpan={tab !== "berita" ? 5 : 4}>
-                                Belum ada data.
-                              </td>
-                            </tr>
-                          );
-                        }
-                        return rows.map((item, index) => (
-                          <tr key={item._id}>
-                            <td>{index + 1}</td>
-                            <td>
-                              <adapters.Link href={`/news/${item.slug}`}>
-                                {item.title}
-                              </adapters.Link>
-                            </td>
-                            {tab !== "berita" && (
-                              <td>{item.approved ? "Terbit" : "Pending"}</td>
-                            )}
-                            <td>{formatDate(item.created_at)}</td>
-                            <td>{formatDate(item.updated_at)}</td>
-                          </tr>
-                        ));
-                      })()}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-md-3">
-              <div className="card text-center bg-primary text-light mb-3">
-                <div className="card-body">
-                  <h3 style={{ color: "#f8f9fa" }}>Berita</h3>
-                  <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                    <i className="fa fa-pencil-alt" aria-hidden="true" />{" "}
-                    {myNews.data?.length ?? 0}
-                  </h4>
-                  <button
-                    className="btn btn-outline-light btn-sm"
-                    onClick={() => setTab("berita")}
-                  >
-                    Lihat
-                  </button>
-                </div>
-              </div>
-              <div className="card text-center bg-primary text-light mb-3">
-                <div className="card-body">
-                  <h3 style={{ color: "#f8f9fa" }}>Antrian</h3>
-                  <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                    <i className="fa fa-pencil-alt" aria-hidden="true" />{" "}
-                    {myDrafts.data?.length ?? 0}
-                  </h4>
-                  <button
-                    className="btn btn-outline-light btn-sm"
-                    onClick={() => setTab("antrian")}
-                  >
-                    Lihat
-                  </button>
-                </div>
-              </div>
-              {isAdmin && (
-                <div className="card text-center bg-primary text-light mb-3">
-                  <div className="card-body">
-                    <h3 style={{ color: "#f8f9fa" }}>Persetujuan</h3>
-                    <h4 className="display-4 mb-2" style={{ color: "#f8f9fa" }}>
-                      <i className="fa fa-pencil-alt" aria-hidden="true" />{" "}
-                      {allDrafts.data?.length ?? 0}
-                    </h4>
-                    <button
-                      className="btn btn-outline-light btn-sm"
-                      onClick={() => setTab("persetujuan")}
-                    >
-                      Lihat
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
     </>
   );
 };
 
 export const UserProfilePage = ({ id }: { id?: string }) => {
   const { api } = useMalanghubRuntime();
-  const adapters = useAdapters();
   const [page, setPage] = useState(1);
   const userQuery = useUserProfile(api, id);
   const profileNews = useNewsList(api, { page, user: id, limit: 5 });
@@ -1545,89 +1024,58 @@ export const UserProfilePage = ({ id }: { id?: string }) => {
 
   return (
     <>
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[
           { label: "Beranda", href: "/" },
           { label: "Pengguna" },
           { label: user?.name ?? id ?? "" },
         ]}
       />
-      <section id="author" className="w3l-author py-5">
-        <div className="container py-md-3">
-          {userQuery.isLoading ? (
-            <Spinner />
-          ) : userQuery.isError ? (
-            <EmptyState>
-              Pengguna tidak ditemukan.{" "}
-              <button
-                className="btn btn-style btn-outline mt-2"
-                onClick={() => void userQuery.refetch()}
-              >
-                Coba Lagi
-              </button>
-            </EmptyState>
-          ) : (
-            <div className="row align-items-center">
-              <div className="col-md-3 col-sm-4 col-7 order-first">
-                <div className="embed-responsive embed-responsive-1by1">
-                  <adapters.Image
-                    src={user?.photo || DEFAULT_AVATAR_SRC}
-                    alt={user?.name ?? "Pengguna"}
-                    className="rounded-circle img-fluid embed-responsive-item"
-                    objectFit="cover"
-                    fill
-                  />
-                </div>
-              </div>
-              <div className="col-md-9 col-sm-12 order-md-first mt-lg-0 mt-4">
-                {user?.motto && <span className="category">{user.motto}</span>}
-                <h1 className="mb-4 title">
-                  <span className="typed-text">{user?.name}</span>
-                  <span className="cursor typing">&nbsp;</span>
-                </h1>
-                {user?.bio && (
-                  <p dangerouslySetInnerHTML={{ __html: user.bio }} />
-                )}
-                {user && <AuthorSocialLinks user={user} />}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
+      {userQuery.isLoading ? (
+        <LoadingState />
+      ) : userQuery.isError ? (
+        <PageSection>
+          <EmptyState>
+            Pengguna tidak ditemukan.
+            <Button
+              variant="secondary"
+              onClick={() => void userQuery.refetch()}
+            >
+              Coba Lagi
+            </Button>
+          </EmptyState>
+        </PageSection>
+      ) : (
+        <ProfileHeader user={user} />
+      )}
 
-      <div className="w3l-authorblock2 w3l-homeblock1 mb-5 pb-5">
-        <div className="container">
-          <div className="item mt-4">
-            <div className="row mt-5 pt-md-5 img-block-mobile">
-              <div className="col-lg-9 most-recent">
-                <h3 className="section-title-left">
-                  Berita dari {user?.name ?? "Pengguna"}
-                </h3>
-                {profileNews.isLoading ? (
-                  <Spinner />
-                ) : (
-                  <NewsGrid
-                    response={profileNews.data}
-                    onPageChange={setPage}
-                  />
-                )}
-              </div>
-              <div className="col-lg-3 trending mb-5 mt-lg-0 mt-5">
-                <div className="pos-sticky">
-                  <h3 className="section-title-left">
-                    Trending oleh {user?.name ?? "Pengguna"}
-                  </h3>
-                  {trendingByUser.isLoading ? (
-                    <Spinner />
-                  ) : (
-                    <TrendingList news={trendingByUser.data?.data ?? []} />
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <PageSection>
+        <TwoColumnLayout
+          wideMain
+          main={
+            <>
+              <SectionTitle>Berita dari {user?.name ?? "Pengguna"}</SectionTitle>
+              {profileNews.isLoading ? (
+                <LoadingState />
+              ) : (
+                <NewsGrid response={profileNews.data} onPageChange={setPage} />
+              )}
+            </>
+          }
+          aside={
+            <>
+              <SectionTitle className="tw:text-xl">
+                Trending oleh {user?.name ?? "Pengguna"}
+              </SectionTitle>
+              {trendingByUser.isLoading ? (
+                <LoadingState />
+              ) : (
+                <TrendingList news={trendingByUser.data?.data ?? []} />
+              )}
+            </>
+          }
+        />
+      </PageSection>
     </>
   );
 };
@@ -1640,13 +1088,13 @@ export const StaticPage = ({
   children: React.ReactNode;
 }) => (
   <>
-    <Breadcrumbs items={[{ label: "Beranda", href: "/" }, { label: title }]} />
-    <section className="w3l-contact-2 py-5">
-      <div className="container py-lg-5 py-md-4">
-        <h3 className="section-title-left">{title}</h3>
-        <div className="malanghub-static-content">{children}</div>
+    <PageBreadcrumbs items={[{ label: "Beranda", href: "/" }, { label: title }]} />
+    <PageSection>
+      <SectionTitle as="h1">{title}</SectionTitle>
+      <div className="tw:max-w-3xl tw:leading-relaxed tw:text-body">
+        {children}
       </div>
-    </section>
+    </PageSection>
   </>
 );
 
@@ -1667,7 +1115,15 @@ const STORE_BADGE: Record<string, [string, string]> = {
   Linux: ["Get it from the", "Snap Store"],
 };
 
-const DownloadCard = ({ item }: { item: DownloadLink }) => {
+const StoreBadge = ({
+  item,
+  onClick,
+  className,
+}: {
+  item: DownloadLink;
+  onClick?: () => void;
+  className?: string;
+}) => {
   const isExternal = Boolean(item.href && /^(https?:)?\/\//.test(item.href));
   const [badgeTop, badgeBottom] = STORE_BADGE[item.platform] ?? [
     "Unduh dari",
@@ -1675,40 +1131,65 @@ const DownloadCard = ({ item }: { item: DownloadLink }) => {
   ];
 
   return (
-    <article
-      className={`malanghub-download-card${item.href ? "" : " is-disabled"}`}
+    <a
+      className={cx(
+        "tw:inline-flex tw:min-w-36 tw:items-center tw:gap-2.5 tw:rounded-lg tw:bg-fg tw:px-4 tw:py-2 tw:text-bg tw:no-underline tw:transition-opacity tw:hover:text-bg tw:hover:opacity-90 tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring",
+        className,
+      )}
+      href={item.href}
+      target={isExternal ? "_blank" : undefined}
+      rel={isExternal ? "noreferrer" : undefined}
+      onClick={onClick}
     >
-      <div className="malanghub-download-card-icon">
-        <span className={`fa ${item.icon}`} aria-hidden="true" />
-      </div>
-      <div className="malanghub-download-card-body">
-        <h4>{item.platform}</h4>
-        <p>{item.description}</p>
-        {item.href ? (
-          <a
-            className="malanghub-store-badge"
-            href={item.href}
-            target={isExternal ? "_blank" : undefined}
-            rel={isExternal ? "noreferrer" : undefined}
-          >
-            <span
-              className={`malanghub-store-badge-icon fa ${item.icon}`}
-              aria-hidden="true"
-            />
-            <span className="malanghub-store-badge-text">
-              <span className="malanghub-store-badge-top">{badgeTop}</span>
-              <span className="malanghub-store-badge-bottom">{badgeBottom}</span>
-            </span>
-          </a>
-        ) : (
-          <span className="malanghub-download-status">
-            {item.status ?? "Segera hadir"}
-          </span>
-        )}
-      </div>
-    </article>
+      <span
+        className={`fa ${item.icon} tw:shrink-0 tw:text-2xl tw:leading-none`}
+        aria-hidden="true"
+      />
+      <span className="tw:flex tw:flex-col tw:text-left">
+        <span className="tw:text-[0.65rem] tw:font-normal tw:leading-tight tw:opacity-85">
+          {badgeTop}
+        </span>
+        <span className="tw:whitespace-nowrap tw:text-base tw:font-bold tw:leading-tight">
+          {badgeBottom}
+        </span>
+      </span>
+    </a>
   );
 };
+
+const DownloadCard = ({ item }: { item: DownloadLink }) => (
+  <article
+    className={cx(
+      cardClass,
+      "tw:flex tw:items-start tw:gap-4 tw:p-5 tw:sm:p-6",
+      !item.href && "tw:opacity-75 tw:shadow-none",
+    )}
+  >
+    <div
+      className={cx(
+        "tw:flex tw:size-14 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl",
+        item.href ? "tw:bg-brand-soft tw:text-brand" : "tw:bg-surface-2 tw:text-muted",
+      )}
+    >
+      <span className={`fa ${item.icon} tw:text-3xl tw:leading-none`} aria-hidden="true" />
+    </div>
+    <div className="tw:min-w-0">
+      <h3 className="tw:m-0 tw:mb-2 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+        {item.platform}
+      </h3>
+      <p className="tw:mb-4 tw:text-[0.95rem] tw:leading-6 tw:text-body">
+        {item.description}
+      </p>
+      {item.href ? (
+        <StoreBadge item={item} />
+      ) : (
+        <span className="tw:inline-flex tw:min-h-10 tw:items-center tw:rounded-lg tw:border tw:border-line-strong tw:px-3.5 tw:text-sm tw:font-bold tw:text-muted">
+          {item.status ?? "Segera hadir"}
+        </span>
+      )}
+    </div>
+  </article>
+);
 
 export const DownloadPage = ({ links }: { links: DownloadLink[] }) => {
   const { Meta, Link } = useAdapters();
@@ -1723,48 +1204,44 @@ export const DownloadPage = ({ links }: { links: DownloadLink[] }) => {
         canonical={`${siteUrl}/download`}
         image={`${siteUrl}/malanghub-meta.png`}
       />
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[{ label: "Beranda", href: "/" }, { label: "Download" }]}
       />
-      <section className="malanghub-download-page py-5">
-        <div className="container py-lg-5 py-md-4">
-          <div className="row align-items-start">
-            <div className="col-lg-4 mb-5 mb-lg-0">
-              <div className="malanghub-download-intro">
-                <span className="malanghub-download-kicker">Aplikasi Native</span>
-                <h3 className="section-title-left">Download Malanghub</h3>
-                <p>
-                  Baca berita, kelola draft, dan masuk ke akun Malanghub dari
-                  aplikasi desktop maupun mobile.
-                </p>
-                <Link href="/contact" className="malanghub-download-help">
-                  Butuh bantuan instalasi?
-                </Link>
-              </div>
-            </div>
+      <PageSection>
+        <div className="tw:grid tw:items-start tw:gap-10 tw:lg:grid-cols-3">
+          <div className="tw:lg:sticky tw:lg:top-24">
+            <span className="tw:mb-3 tw:inline-flex tw:text-xs tw:font-extrabold tw:uppercase tw:tracking-wider tw:text-brand">
+              Aplikasi Native
+            </span>
+            <SectionTitle as="h1">Download Malanghub</SectionTitle>
+            <p className="tw:mb-5 tw:text-base tw:leading-7 tw:text-body">
+              Baca berita, kelola draft, dan masuk ke akun Malanghub dari
+              aplikasi desktop maupun mobile.
+            </p>
+            <Link href="/contact" className={linkClass}>
+              Butuh bantuan instalasi?
+            </Link>
+          </div>
 
-            <div className="col-lg-8">
-              <div className="malanghub-download-section">
-                <h4>Mobile</h4>
-                <div className="malanghub-download-grid">
-                  {mobileLinks.map((item) => (
+          <div className="tw:flex tw:flex-col tw:gap-10 tw:lg:col-span-2">
+            {[
+              { title: "Mobile", items: mobileLinks },
+              { title: "Desktop", items: desktopLinks },
+            ].map((section) => (
+              <section key={section.title}>
+                <h2 className="tw:m-0 tw:mb-4 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+                  {section.title}
+                </h2>
+                <div className="tw:grid tw:gap-4 tw:md:grid-cols-2">
+                  {section.items.map((item) => (
                     <DownloadCard key={item.platform} item={item} />
                   ))}
                 </div>
-              </div>
-
-              <div className="malanghub-download-section mt-5">
-                <h4>Desktop</h4>
-                <div className="malanghub-download-grid">
-                  {desktopLinks.map((item) => (
-                    <DownloadCard key={item.platform} item={item} />
-                  ))}
-                </div>
-              </div>
-            </div>
+              </section>
+            ))}
           </div>
         </div>
-      </section>
+      </PageSection>
     </>
   );
 };
@@ -1806,47 +1283,63 @@ export const AppDownloadBanner = ({
 
   if (!visible || !match) return null;
 
-  const [badgeTop, badgeBottom] = STORE_BADGE[match.platform] ?? [
-    "Unduh dari",
-    match.platform,
-  ];
-  const isExternal = /^(https?:)?\/\//.test(match.href!);
-
   return (
-    <div className="malanghub-download-banner">
-      <div className="malanghub-download-banner-icon">
-        <span className={`fa ${match.icon}`} aria-hidden="true" />
-      </div>
-      <div className="malanghub-download-banner-body">
-        <strong>Download Malanghub</strong>
-        <span>{match.description}</span>
-      </div>
-      <a
-        className="malanghub-store-badge malanghub-download-banner-badge"
-        href={match.href}
-        target={isExternal ? "_blank" : undefined}
-        rel={isExternal ? "noreferrer" : undefined}
-        onClick={dismiss}
+    <div
+      role="region"
+      aria-label="Download aplikasi Malanghub"
+      className="tw:sticky tw:inset-x-0 tw:top-0 tw:z-[10020] tw:flex tw:items-center tw:gap-3 tw:border-b tw:border-line tw:bg-surface tw:px-4 tw:py-3 tw:shadow-card tw:sm:px-5"
+    >
+      <div
+        className="tw:hidden tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-brand tw:sm:flex"
+        aria-hidden="true"
       >
-        <span
-          className={`malanghub-store-badge-icon fa ${match.icon}`}
-          aria-hidden="true"
-        />
-        <span className="malanghub-store-badge-text">
-          <span className="malanghub-store-badge-top">{badgeTop}</span>
-          <span className="malanghub-store-badge-bottom">{badgeBottom}</span>
+        <span className={`fa ${match.icon} tw:text-2xl`} />
+      </div>
+      <div className="tw:flex tw:min-w-0 tw:flex-1 tw:flex-col">
+        <strong className="tw:text-[0.95rem] tw:font-bold tw:leading-snug tw:text-fg">
+          Download Malanghub
+        </strong>
+        <span className="tw:hidden tw:truncate tw:text-sm tw:text-muted tw:sm:block">
+          {match.description}
         </span>
-      </a>
+      </div>
+      <StoreBadge item={match} onClick={dismiss} className="tw:shrink-0" />
       <button
-        className="malanghub-download-banner-close"
+        type="button"
+        className="tw:flex tw:size-9 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-2xl tw:leading-none tw:text-muted tw:transition-colors tw:hover:bg-surface-2 tw:hover:text-fg tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring"
         onClick={dismiss}
         aria-label="Tutup"
       >
-        &times;
+        <span aria-hidden="true">&times;</span>
       </button>
     </div>
   );
 };
+
+const ContactItem = ({
+  icon,
+  title,
+  children,
+}: {
+  icon: string;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <div className="tw:flex tw:gap-4">
+    <span
+      className="tw:flex tw:size-11 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-xl tw:bg-brand-soft tw:text-lg tw:text-brand"
+      aria-hidden="true"
+    >
+      <span className={`fa ${icon}`} />
+    </span>
+    <div className="tw:min-w-0 tw:[&_p]:text-body">
+      <h3 className="tw:m-0 tw:mb-1 tw:font-heading tw:text-base tw:font-bold tw:text-fg">
+        {title}
+      </h3>
+      {children}
+    </div>
+  </div>
+);
 
 export const ContactPage = () => {
   const { Meta } = useAdapters();
@@ -1859,115 +1352,95 @@ export const ContactPage = () => {
         canonical={`${siteUrl}/contact`}
         image={`${siteUrl}/malanghub-meta.png`}
       />
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[{ label: "Beranda", href: "/" }, { label: "Kontak" }]}
       />
-      <section className="w3l-contact-2 py-5">
-        <div className="container py-lg-5 py-md-4">
-          <h3 className="section-title-left">Tinggalkan pesan untuk kami </h3>
-          <div className="contact-grids d-grid">
-            <div className="contact-left">
-              <h3 className="mb-3">Kontak Kami</h3>
-              <p className="text-justify">
+      <PageSection>
+        <SectionTitle as="h1">Tinggalkan pesan untuk kami</SectionTitle>
+        <div className="tw:grid tw:gap-8 tw:lg:grid-cols-2">
+          <Card className="tw:p-6 tw:sm:p-8">
+            <h2 className="tw:m-0 tw:mb-3 tw:font-heading tw:text-xl tw:font-bold tw:text-fg">
+              Kontak Kami
+            </h2>
+            <div className="tw:space-y-3">
+              <p>
                 Semuanya dimulai dengan Halo! Kami di sini menjawab apa pun
                 pertanyaan yang mungkin Anda miliki dan memberikan solusi
                 efektif untuk Anda tentang layanan Malanghub.
               </p>
-
-              <p className="text-justify">
+              <p>
                 Kami memiliki pusat dukungan khusus untuk semua dukungan Anda.
                 Kami biasanya akan menghubungi Anda dalam waktu 12-24 jam.
               </p>
-              <div className="cont-details">
-                <div className="cont-top margin-up">
-                  <div className="cont-left text-center">
-                    <span className="fa fa-map-marker" />
-                  </div>
-                  <div className="cont-right">
-                    <h6>Alamat</h6>
-                    <p>Perum. Bumi Madinah Blok C3</p>
-                    <p>
-                      Jalan Ngasri, Mulyoagung, Dau, Malang, Jawa Timur 65151
-                    </p>
-                    <p>
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={MALANGHUB_MAPS_NAVIGATION_URL}
-                      >
-                        Buka Navigasi Google Maps
-                      </a>
-                    </p>
-                  </div>
-                </div>
-                <div className="cont-top margin-up">
-                  <div className="cont-left text-center">
-                    <span className="fa fa-phone" />
-                  </div>
-                  <div className="cont-right">
-                    <h6>Whatsapp Kami</h6>
-                    <p>
-                      <i className="fa fa-whatsapp" />{" "}
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href="https://wa.me/62895424785888"
-                      >
-                        0895424785888
-                      </a>
-                    </p>
-                  </div>
-                </div>
-                <div className="cont-top margin-up">
-                  <div className="cont-left text-center">
-                    <span className="fa fa-envelope-o" />
-                  </div>
-                  <div className="cont-right">
-                    <h6>Email Kami</h6>
-                    <p>
-                      <a href="mailto:admin@malanghub.com" className="mail">
-                        admin@malanghub.com
-                      </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
-            <div className="contact-right">
-              <div className="malanghub-map-embed">
-                <div className="embed-responsive embed-responsive-1by1">
-                  <iframe
-                    title="Lokasi Malanghub"
-                    className="embed-responsive-item"
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.6257545166436!2d112.56973751477908!3d-7.934097594284932!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7883c600d082fd%3A0x3f1caf9c821540c1!2sPerum.%20Bumi%20Madinah%20Blok%20C%202!5e0!3m2!1sen!2sid!4v1614682193710!5m2!1sen!2sid"
-                    style={{ border: 0, borderRadius: 10 }}
-                    allowFullScreen
-                    loading="lazy"
-                  />
-                </div>
-                <a
-                  className="malanghub-map-hitarea malanghub-map-hitarea-link"
-                  target="_blank"
-                  rel="noreferrer"
-                  href={MALANGHUB_MAPS_PLACE_URL}
-                  aria-label="Buka lokasi di Google Maps"
-                >
-                  Buka lokasi di Google Maps
-                </a>
-                <a
-                  className="malanghub-map-hitarea malanghub-map-hitarea-navigation"
-                  target="_blank"
-                  rel="noreferrer"
-                  href={MALANGHUB_MAPS_NAVIGATION_URL}
-                  aria-label="Buka navigasi Google Maps"
-                >
-                  Buka navigasi Google Maps
-                </a>
-              </div>
+            <div className="tw:mt-8 tw:flex tw:flex-col tw:gap-6">
+              <ContactItem icon="fa-map-marker" title="Alamat">
+                <p>Perum. Bumi Madinah Blok C3</p>
+                <p>Jalan Ngasri, Mulyoagung, Dau, Malang, Jawa Timur 65151</p>
+                <p className="tw:mt-1">
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href={MALANGHUB_MAPS_NAVIGATION_URL}
+                    className={linkClass}
+                  >
+                    Buka Navigasi Google Maps
+                  </a>
+                </p>
+              </ContactItem>
+              <ContactItem icon="fa-phone" title="Whatsapp Kami">
+                <p className="tw:flex tw:items-center tw:gap-2">
+                  <span className="fa fa-whatsapp tw:text-success" aria-hidden="true" />
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href="https://wa.me/62895424785888"
+                    className={linkClass}
+                  >
+                    0895424785888
+                  </a>
+                </p>
+              </ContactItem>
+              <ContactItem icon="fa-envelope-o" title="Email Kami">
+                <p>
+                  <a href="mailto:admin@malanghub.com" className={linkClass}>
+                    admin@malanghub.com
+                  </a>
+                </p>
+              </ContactItem>
             </div>
+          </Card>
+          <div className="malanghub-map-embed tw:overflow-hidden tw:rounded-xl tw:border tw:border-line tw:shadow-card">
+            <div className="tw:relative tw:aspect-square tw:bg-surface-2">
+              <iframe
+                title="Lokasi Malanghub"
+                className="tw:absolute tw:inset-0 tw:size-full tw:border-0"
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3951.6257545166436!2d112.56973751477908!3d-7.934097594284932!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7883c600d082fd%3A0x3f1caf9c821540c1!2sPerum.%20Bumi%20Madinah%20Blok%20C%202!5e0!3m2!1sen!2sid!4v1614682193710!5m2!1sen!2sid"
+                allowFullScreen
+                loading="lazy"
+              />
+            </div>
+            <a
+              className="malanghub-map-hitarea malanghub-map-hitarea-link"
+              target="_blank"
+              rel="noreferrer"
+              href={MALANGHUB_MAPS_PLACE_URL}
+              aria-label="Buka lokasi di Google Maps"
+            >
+              Buka lokasi di Google Maps
+            </a>
+            <a
+              className="malanghub-map-hitarea malanghub-map-hitarea-navigation"
+              target="_blank"
+              rel="noreferrer"
+              href={MALANGHUB_MAPS_NAVIGATION_URL}
+              aria-label="Buka navigasi Google Maps"
+            >
+              Buka navigasi Google Maps
+            </a>
           </div>
         </div>
-      </section>
+      </PageSection>
     </>
   );
 };
@@ -1999,6 +1472,63 @@ const privacySections = [
   "Hubungi Kami",
 ];
 
+const bulletListClass =
+  "tw:m-0 tw:space-y-1.5 tw:pl-5 tw:text-base tw:leading-7 tw:text-body tw:[&>li]:list-disc";
+
+const LegalSection = ({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <Card className="tw:p-6">
+    <h2 className="tw:m-0 tw:mb-3 tw:font-heading tw:text-lg tw:font-bold tw:text-fg">
+      {title}
+    </h2>
+    <div className="tw:space-y-3">{children}</div>
+  </Card>
+);
+
+const SidebarCard = ({
+  icon,
+  title,
+  children,
+}: {
+  icon: string;
+  title: string;
+  children: React.ReactNode;
+}) => (
+  <Card className="tw:p-6">
+    <h2 className="tw:m-0 tw:mb-3 tw:flex tw:items-center tw:gap-2 tw:text-base tw:font-bold tw:text-fg">
+      <span className={`fa ${icon} tw:text-brand`} aria-hidden="true" />
+      {title}
+    </h2>
+    {children}
+  </Card>
+);
+
+const RelatedLinks = ({
+  links,
+}: {
+  links: Array<{ href: string; label: string }>;
+}) => {
+  const { Link } = useAdapters();
+
+  return (
+    <ul className="tw:m-0 tw:space-y-1.5 tw:p-0 tw:text-sm tw:list-none">
+      {links.map((link) => (
+        <li key={link.href} className="tw:flex tw:items-center tw:gap-2">
+          <span className="fa fa-angle-right tw:text-muted" aria-hidden="true" />
+          <Link href={link.href} className={linkClass}>
+            {link.label}
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+};
+
 const LegalPageShell = ({
   title,
   description,
@@ -2022,41 +1552,38 @@ const LegalPageShell = ({
         canonical={`${siteUrl}/${title === "Kebijakan Privasi" ? "privacy" : "terms"}`}
         image={`${siteUrl}/malanghub-meta.png`}
       />
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[{ label: "Beranda", href: "/" }, { label: title }]}
       />
 
-      <div className="w3l-searchblock w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <div className="row">
-            <div className="col-lg-8 most-recent">
-              <h3 className="section-title-left mb-1">{title}</h3>
-              <p className="text-muted mb-4" style={{ fontSize: "0.9rem" }}>
-                <span className="fa fa-calendar mr-2" />
+      <PageSection>
+        <TwoColumnLayout
+          main={
+            <>
+              <SectionTitle as="h1" className="tw:mb-2">
+                {title}
+              </SectionTitle>
+              <p className="tw:mb-6 tw:flex tw:items-center tw:gap-2 tw:text-sm tw:text-muted">
+                <span className="fa fa-calendar" aria-hidden="true" />
                 Terakhir diperbarui: Mei 2026
               </p>
-              {children}
-            </div>
-
-            <div className="col-lg-4 mt-5 mt-lg-0">
-              <div className="card p-4 mb-4">
-                <h6 className="font-weight-bold mb-3">
-                  <span className="fa fa-list mr-2" />
-                  Daftar Isi
-                </h6>
-                <ol className="pl-4 mb-0" style={{ fontSize: "0.9rem" }}>
+              <div className="tw:flex tw:flex-col tw:gap-4">{children}</div>
+            </>
+          }
+          aside={
+            <div className="tw:flex tw:flex-col tw:gap-4">
+              <SidebarCard icon="fa-list" title="Daftar Isi">
+                <ol className="tw:m-0 tw:space-y-1 tw:pl-5 tw:text-sm tw:text-body tw:[&>li]:list-decimal">
                   {sections.map((section) => (
-                    <li key={section} className="mb-1">
-                      {section}
-                    </li>
+                    <li key={section}>{section}</li>
                   ))}
                 </ol>
-              </div>
+              </SidebarCard>
               {sidebar}
             </div>
-          </div>
-        </div>
-      </div>
+          }
+        />
+      </PageSection>
     </>
   );
 };
@@ -2071,67 +1598,52 @@ export const TermsPage = () => {
       sections={termsSections}
       sidebar={
         <>
-          <div className="card p-4 mb-4">
-            <h6 className="font-weight-bold mb-3">
-              <span className="fa fa-file-text-o mr-2" />
-              Dokumen Terkait
-            </h6>
-            <ul className="list-unstyled mb-0" style={{ fontSize: "0.9rem" }}>
-              <li>
-                <span className="fa fa-angle-right mr-2" />
-                <Link href="/privacy">Kebijakan Privasi</Link>
-              </li>
-              <li>
-                <span className="fa fa-angle-right mr-2" />
-                <Link href="/contact">Hubungi Kami</Link>
-              </li>
-            </ul>
-          </div>
-          <div className="card p-4">
-            <h6 className="font-weight-bold mb-3">
-              <span className="fa fa-envelope-o mr-2" />
-              Ada Pertanyaan?
-            </h6>
-            <p style={{ fontSize: "0.9rem" }} className="mb-3">
+          <SidebarCard icon="fa-file-text-o" title="Dokumen Terkait">
+            <RelatedLinks
+              links={[
+                { href: "/privacy", label: "Kebijakan Privasi" },
+                { href: "/contact", label: "Hubungi Kami" },
+              ]}
+            />
+          </SidebarCard>
+          <SidebarCard icon="fa-envelope-o" title="Ada Pertanyaan?">
+            <p className="tw:mb-4 tw:text-sm tw:leading-6">
               Hubungi tim Malanghub jika Anda memiliki pertanyaan seputar syarat
               penggunaan layanan kami.
             </p>
-            <Link href="/contact" className="btn btn-style btn-primary btn-sm">
+            <Link href="/contact" className={buttonClass({ size: "sm" })}>
               Hubungi Kami
             </Link>
-          </div>
+          </SidebarCard>
         </>
       }
     >
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">1. Penerimaan Syarat</h5>
+      <LegalSection title="1. Penerimaan Syarat">
         <p>
           Dengan mengakses dan menggunakan situs web Malanghub
           (www.malanghub.com), Anda menyatakan telah membaca, memahami, dan
           menyetujui Syarat dan Ketentuan ini. Jika Anda tidak menyetujui
           syarat-syarat ini, mohon untuk tidak menggunakan layanan kami.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">2. Tentang Malanghub</h5>
+      </LegalSection>
+      <LegalSection title="2. Tentang Malanghub">
         <p>
           Malanghub adalah portal berita dan informasi yang menyediakan konten
           seputar Malang Raya, meliputi Kota Malang, Kabupaten Malang, dan Kota
           Batu, Jawa Timur, Indonesia. Malanghub dikelola secara nirlaba untuk
           kepentingan masyarakat Malang Raya.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">3. Penggunaan Konten</h5>
+      </LegalSection>
+      <LegalSection title="3. Penggunaan Konten">
         <p>
           Seluruh konten yang tersedia di Malanghub, termasuk namun tidak
           terbatas pada artikel berita, foto, dan grafis, dilindungi oleh hak
           cipta.
         </p>
-        <p className="mb-1">
-          <strong>Anda diperbolehkan untuk:</strong>
+        <p>
+          <strong className="tw:text-fg">Anda diperbolehkan untuk:</strong>
         </p>
-        <ul className="pl-4 mb-3">
+        <ul className={bulletListClass}>
           <li>
             Membaca dan berbagi konten untuk keperluan pribadi dan
             non-komersial.
@@ -2141,10 +1653,10 @@ export const TermsPage = () => {
             artikel asli.
           </li>
         </ul>
-        <p className="mb-1">
-          <strong>Anda tidak diperbolehkan untuk:</strong>
+        <p>
+          <strong className="tw:text-fg">Anda tidak diperbolehkan untuk:</strong>
         </p>
-        <ul className="pl-4">
+        <ul className={bulletListClass}>
           <li>
             Menyalin, mendistribusikan, atau mereproduksi konten secara
             keseluruhan tanpa izin tertulis.
@@ -2153,84 +1665,79 @@ export const TermsPage = () => {
             Menggunakan konten untuk keperluan komersial tanpa seizin Malanghub.
           </li>
         </ul>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">4. Akun Pengguna</h5>
+      </LegalSection>
+      <LegalSection title="4. Akun Pengguna">
         <p>
           Untuk menggunakan fitur tertentu seperti menulis berita, Anda perlu
           mendaftarkan akun. Anda bertanggung jawab untuk:
         </p>
-        <ul className="pl-4">
+        <ul className={bulletListClass}>
           <li>Menjaga kerahasiaan kata sandi akun Anda.</li>
           <li>Memastikan informasi yang diberikan akurat dan terkini.</li>
           <li>Seluruh aktivitas yang terjadi melalui akun Anda.</li>
         </ul>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">5. Konten yang Dikirimkan Pengguna</h5>
+      </LegalSection>
+      <LegalSection title="5. Konten yang Dikirimkan Pengguna">
         <p>
           Dengan mengirimkan konten ke Malanghub, Anda memberikan Malanghub hak
           non-eksklusif untuk menerbitkan, mengedit, dan mendistribusikan konten
           tersebut. Malanghub berhak menolak atau menghapus konten yang:
         </p>
-        <ul className="pl-4">
+        <ul className={bulletListClass}>
           <li>
             Mengandung ujaran kebencian, SARA, atau konten yang melanggar hukum.
           </li>
           <li>Bersifat spam atau menyesatkan.</li>
           <li>Melanggar hak cipta pihak ketiga.</li>
         </ul>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">6. Penafian (Disclaimer)</h5>
+      </LegalSection>
+      <LegalSection title="6. Penafian (Disclaimer)">
         <p>
           Malanghub berupaya menyajikan informasi yang akurat dan terpercaya.
           Namun, kami tidak menjamin keakuratan, kelengkapan, atau ketepatan
           waktu dari seluruh konten. Penggunaan informasi di situs ini
           sepenuhnya merupakan tanggung jawab Anda.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">7. Batasan Tanggung Jawab</h5>
+      </LegalSection>
+      <LegalSection title="7. Batasan Tanggung Jawab">
         <p>
           Malanghub tidak bertanggung jawab atas kerugian langsung maupun tidak
           langsung yang timbul akibat penggunaan atau ketidakmampuan menggunakan
           layanan ini, termasuk kerugian akibat kesalahan informasi atau
           gangguan teknis.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">8. Tautan ke Situs Pihak Ketiga</h5>
+      </LegalSection>
+      <LegalSection title="8. Tautan ke Situs Pihak Ketiga">
         <p>
           Malanghub dapat memuat tautan ke situs web pihak ketiga. Malanghub
           tidak bertanggung jawab atas konten, kebijakan privasi, atau praktik
           situs pihak ketiga tersebut.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">9. Perubahan Syarat dan Ketentuan</h5>
+      </LegalSection>
+      <LegalSection title="9. Perubahan Syarat dan Ketentuan">
         <p>
           Malanghub berhak mengubah Syarat dan Ketentuan ini sewaktu-waktu.
           Perubahan akan berlaku segera setelah diterbitkan di halaman ini.
           Penggunaan layanan kami secara berkelanjutan setelah perubahan
           diterbitkan berarti Anda menerima syarat yang baru.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">10. Hukum yang Berlaku</h5>
-        <p className="mb-0">
+      </LegalSection>
+      <LegalSection title="10. Hukum yang Berlaku">
+        <p>
           Syarat dan Ketentuan ini diatur oleh hukum yang berlaku di Republik
           Indonesia.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">11. Hubungi Kami</h5>
-        <p className="mb-0">
+      </LegalSection>
+      <LegalSection title="11. Hubungi Kami">
+        <p>
           Jika Anda memiliki pertanyaan mengenai Syarat dan Ketentuan ini,
           silakan hubungi kami melalui halaman{" "}
-          <Link href="/contact">Kontak</Link>.
+          <Link href="/contact" className={linkClass}>
+            Kontak
+          </Link>
+          .
         </p>
-      </div>
+      </LegalSection>
     </LegalPageShell>
   );
 };
@@ -2245,160 +1752,151 @@ export const PrivacyPage = () => {
       sections={privacySections}
       sidebar={
         <>
-          <div className="card p-4 mb-4">
-            <h6 className="font-weight-bold mb-3">
-              <span className="fa fa-file-text-o mr-2" />
-              Dokumen Terkait
-            </h6>
-            <ul className="list-unstyled mb-0" style={{ fontSize: "0.9rem" }}>
-              <li>
-                <span className="fa fa-angle-right mr-2" />
-                <Link href="/terms">Syarat dan Ketentuan</Link>
-              </li>
-              <li>
-                <span className="fa fa-angle-right mr-2" />
-                <Link href="/contact">Hubungi Kami</Link>
-              </li>
-            </ul>
-          </div>
-          <div className="card p-4">
-            <h6 className="font-weight-bold mb-3">
-              <span className="fa fa-shield mr-2" />
-              Komitmen Kami
-            </h6>
-            <p style={{ fontSize: "0.9rem" }} className="mb-0">
+          <SidebarCard icon="fa-file-text-o" title="Dokumen Terkait">
+            <RelatedLinks
+              links={[
+                { href: "/terms", label: "Syarat dan Ketentuan" },
+                { href: "/contact", label: "Hubungi Kami" },
+              ]}
+            />
+          </SidebarCard>
+          <SidebarCard icon="fa-shield" title="Komitmen Kami">
+            <p className="tw:text-sm tw:leading-6">
               Malanghub berkomitmen menjaga privasi dan keamanan data pengguna
               sesuai dengan peraturan yang berlaku di Indonesia.
             </p>
-          </div>
+          </SidebarCard>
         </>
       }
     >
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">1. Pendahuluan</h5>
-        <p className="mb-0">
+      <LegalSection title="1. Pendahuluan">
+        <p>
           Malanghub berkomitmen untuk melindungi privasi pengguna. Kebijakan
           Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan
           melindungi informasi pribadi Anda saat menggunakan layanan di
           www.malanghub.com.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">2. Data yang Kami Kumpulkan</h5>
+      </LegalSection>
+      <LegalSection title="2. Data yang Kami Kumpulkan">
         <p>Kami dapat mengumpulkan data berikut:</p>
-        <ul className="pl-4 mb-0">
+        <ul className={bulletListClass}>
           <li>
-            <strong>Data akun:</strong> Nama, alamat email, dan kata sandi
-            terenkripsi saat Anda mendaftar.
+            <strong className="tw:text-fg">Data akun:</strong> Nama, alamat
+            email, dan kata sandi terenkripsi saat Anda mendaftar.
           </li>
           <li>
-            <strong>Data profil:</strong> Foto profil, bio, motto, dan tautan
-            media sosial yang Anda isi secara sukarela.
+            <strong className="tw:text-fg">Data profil:</strong> Foto profil,
+            bio, motto, dan tautan media sosial yang Anda isi secara sukarela.
           </li>
           <li>
-            <strong>Data penggunaan:</strong> Halaman yang dikunjungi, artikel
-            yang dibaca, dan interaksi di situs.
+            <strong className="tw:text-fg">Data penggunaan:</strong> Halaman
+            yang dikunjungi, artikel yang dibaca, dan interaksi di situs.
           </li>
           <li>
-            <strong>Data teknis:</strong> Alamat IP, jenis browser, dan
-            perangkat yang digunakan, dikumpulkan secara otomatis.
+            <strong className="tw:text-fg">Data teknis:</strong> Alamat IP,
+            jenis browser, dan perangkat yang digunakan, dikumpulkan secara
+            otomatis.
           </li>
         </ul>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">3. Cara Kami Menggunakan Data</h5>
+      </LegalSection>
+      <LegalSection title="3. Cara Kami Menggunakan Data">
         <p>Data yang dikumpulkan digunakan untuk:</p>
-        <ul className="pl-4 mb-0">
+        <ul className={bulletListClass}>
           <li>Menyediakan dan meningkatkan layanan Malanghub.</li>
           <li>Mengelola akun dan autentikasi pengguna.</li>
           <li>Menampilkan konten yang relevan.</li>
           <li>Menganalisis trafik dan performa situs.</li>
           <li>Mencegah penyalahgunaan dan menjaga keamanan platform.</li>
         </ul>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">4. Layanan Pihak Ketiga</h5>
+      </LegalSection>
+      <LegalSection title="4. Layanan Pihak Ketiga">
         <p>
           Malanghub menggunakan layanan pihak ketiga berikut yang memiliki
           kebijakan privasi masing-masing:
         </p>
-        <ul className="pl-4 mb-0">
+        <ul className={bulletListClass}>
           <li>
-            <strong>Google Analytics & Google OAuth:</strong> Untuk analitik dan
-            masuk dengan akun Google.
+            <strong className="tw:text-fg">
+              Google Analytics & Google OAuth:
+            </strong>{" "}
+            Untuk analitik dan masuk dengan akun Google.
           </li>
           <li>
-            <strong>Cloudflare:</strong> Untuk keamanan, CDN, dan analitik web.
+            <strong className="tw:text-fg">Cloudflare:</strong> Untuk keamanan,
+            CDN, dan analitik web.
           </li>
           <li>
-            <strong>Cloudinary:</strong> Untuk penyimpanan dan pengelolaan
-            gambar.
+            <strong className="tw:text-fg">Cloudinary:</strong> Untuk
+            penyimpanan dan pengelolaan gambar.
           </li>
           <li>
-            <strong>Sentry:</strong> Untuk pemantauan dan pelaporan error
-            teknis.
+            <strong className="tw:text-fg">Sentry:</strong> Untuk pemantauan
+            dan pelaporan error teknis.
           </li>
           <li>
-            <strong>Google Reader Revenue Manager:</strong> Untuk fitur
-            publikasi berita.
+            <strong className="tw:text-fg">
+              Google Reader Revenue Manager:
+            </strong>{" "}
+            Untuk fitur publikasi berita.
           </li>
         </ul>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">5. Cookie</h5>
-        <p className="mb-0">
+      </LegalSection>
+      <LegalSection title="5. Cookie">
+        <p>
           Malanghub menggunakan cookie untuk menjaga sesi login dan meningkatkan
           pengalaman pengguna. Anda dapat menonaktifkan cookie melalui
           pengaturan browser, namun beberapa fitur situs mungkin tidak berfungsi
           dengan baik.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">6. Keamanan Data</h5>
-        <p className="mb-0">
+      </LegalSection>
+      <LegalSection title="6. Keamanan Data">
+        <p>
           Kami menerapkan langkah-langkah keamanan teknis yang wajar untuk
           melindungi data Anda, termasuk enkripsi kata sandi dan koneksi HTTPS.
           Namun, tidak ada sistem yang sepenuhnya aman, dan kami tidak dapat
           menjamin keamanan absolut.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">7. Hak Pengguna</h5>
+      </LegalSection>
+      <LegalSection title="7. Hak Pengguna">
         <p>Anda memiliki hak untuk:</p>
-        <ul className="pl-4 mb-3">
+        <ul className={bulletListClass}>
           <li>Mengakses dan memperbarui data profil Anda kapan saja.</li>
           <li>Meminta penghapusan akun dan data pribadi Anda.</li>
           <li>Menarik persetujuan penggunaan data Anda.</li>
         </ul>
-        <p className="mb-0">
+        <p>
           Untuk menggunakan hak-hak ini, silakan hubungi kami melalui halaman{" "}
-          <Link href="/contact">Kontak</Link>.
+          <Link href="/contact" className={linkClass}>
+            Kontak
+          </Link>
+          .
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">8. Data Anak-Anak</h5>
-        <p className="mb-0">
+      </LegalSection>
+      <LegalSection title="8. Data Anak-Anak">
+        <p>
           Layanan Malanghub tidak ditujukan bagi anak-anak di bawah usia 13
           tahun. Kami tidak secara sengaja mengumpulkan data pribadi dari
           anak-anak.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">9. Perubahan Kebijakan Privasi</h5>
-        <p className="mb-0">
+      </LegalSection>
+      <LegalSection title="9. Perubahan Kebijakan Privasi">
+        <p>
           Kami dapat memperbarui Kebijakan Privasi ini sewaktu-waktu. Perubahan
           akan diberitahukan melalui halaman ini dengan memperbarui tanggal di
           bagian atas. Penggunaan layanan secara berkelanjutan setelah perubahan
           berarti Anda menerima kebijakan yang baru.
         </p>
-      </div>
-      <div className="card mb-4 p-4">
-        <h5 className="font-weight-bold">10. Hubungi Kami</h5>
-        <p className="mb-0">
+      </LegalSection>
+      <LegalSection title="10. Hubungi Kami">
+        <p>
           Jika Anda memiliki pertanyaan mengenai Kebijakan Privasi ini, silakan
-          hubungi kami melalui halaman <Link href="/contact">Kontak</Link>.
+          hubungi kami melalui halaman{" "}
+          <Link href="/contact" className={linkClass}>
+            Kontak
+          </Link>
+          .
         </p>
-      </div>
+      </LegalSection>
     </LegalPageShell>
   );
 };
@@ -2443,25 +1941,32 @@ export const NativeDraftEditorPage = () => {
 
   return (
     <>
-      <Breadcrumbs
+      <PageBreadcrumbs
         items={[
           { label: "Dashboard", href: "/users" },
           { label: "Tulis Draft" },
         ]}
       />
-      <section className="w3l-homeblock1 py-5">
-        <div className="container py-lg-4 py-md-3">
-          <h3 className="section-title-left">Tulis Draft</h3>
-          <form className="malanghub-profile-form" onSubmit={submit}>
-            <input
+      <PageSection>
+        <SectionTitle as="h1">Tulis Draft</SectionTitle>
+        <Card className="tw:max-w-3xl tw:p-6">
+          <form onSubmit={submit}>
+            <Input
+              label="Judul"
               value={form.title}
               placeholder="Judul"
               onChange={(event) =>
                 setForm({ ...form, title: event.target.value })
               }
             />
-            <input value={createSlug(form.title)} placeholder="Slug" readOnly />
-            <select
+            <Input
+              label="Slug"
+              value={createSlug(form.title)}
+              placeholder="Slug"
+              readOnly
+            />
+            <Select
+              label="Kategori"
               value={form.category}
               onChange={(event) =>
                 setForm({ ...form, category: event.target.value })
@@ -2473,9 +1978,11 @@ export const NativeDraftEditorPage = () => {
                   {category.name}
                 </option>
               ))}
-            </select>
-            <select
+            </Select>
+            <Select
+              label="Tag"
               multiple
+              className="tw:min-h-32"
               value={form.tags}
               onChange={(event) =>
                 setForm({
@@ -2491,8 +1998,9 @@ export const NativeDraftEditorPage = () => {
                   {tag.name}
                 </option>
               ))}
-            </select>
-            <textarea
+            </Select>
+            <Textarea
+              label="Konten"
               rows={12}
               value={form.content}
               placeholder="Konten berita"
@@ -2500,12 +2008,10 @@ export const NativeDraftEditorPage = () => {
                 setForm({ ...form, content: event.target.value })
               }
             />
-            <button className="btn btn-style btn-primary" type="submit">
-              Simpan Draft
-            </button>
+            <Button type="submit">Simpan Draft</Button>
           </form>
-        </div>
-      </section>
+        </Card>
+      </PageSection>
     </>
   );
 };

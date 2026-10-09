@@ -78,7 +78,7 @@ const nativeGestureIgnoreSelector = [
   "textarea",
   "[contenteditable='true']",
   "[role='button']",
-  ".modal",
+  "[role='dialog']",
   ".tox",
 ].join(",");
 

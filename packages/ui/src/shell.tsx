@@ -1,10 +1,61 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useCategories, useCurrentUser } from "@malanghub/core";
 import { useAdapters } from "./adapters";
 import { useMalanghubRuntime } from "./providers";
+import {
+  Button,
+  Collapse,
+  Container,
+  Dropdown,
+  Input,
+  Modal,
+  cx,
+  useTheme,
+} from "./primitives";
+import { Avatar } from "./content";
 
 const BRAND_LOGO_SRC = "/logo.png";
-const DEFAULT_AVATAR_SRC = "/assets/images/author.jpg";
+
+const focusRing =
+  "tw:focus-visible:outline-none tw:focus-visible:ring-4 tw:focus-visible:ring-ring";
+
+const navLinkClass = (active: boolean) =>
+  cx(
+    "tw:inline-flex tw:h-10 tw:items-center tw:gap-1.5 tw:rounded-lg tw:border-0 tw:bg-transparent tw:px-3 tw:text-[0.95rem] tw:font-semibold tw:no-underline tw:transition-colors tw:cursor-pointer",
+    focusRing,
+    active
+      ? "tw:bg-brand-soft tw:text-brand tw:hover:text-brand"
+      : "tw:text-body tw:hover:bg-surface-2 tw:hover:text-fg",
+  );
+
+const mobileLinkClass = (active: boolean) =>
+  cx(navLinkClass(active), "tw:flex tw:w-full tw:justify-between");
+
+const iconButtonClass = cx(
+  "tw:inline-flex tw:size-10 tw:shrink-0 tw:items-center tw:justify-center tw:rounded-lg tw:border-0 tw:bg-transparent tw:text-lg tw:text-body tw:transition-colors tw:cursor-pointer tw:hover:bg-surface-2 tw:hover:text-fg",
+  focusRing,
+);
+
+const ThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+  const dark = theme === "dark";
+  const label = dark ? "Aktifkan mode terang" : "Aktifkan mode gelap";
+
+  return (
+    <button
+      type="button"
+      className={iconButtonClass}
+      onClick={() => setTheme(dark ? "light" : "dark")}
+      aria-label={label}
+      title={label}
+    >
+      <span
+        className={cx("fa", dark ? "fa-sun-o tw:text-warning" : "fa-moon-o")}
+        aria-hidden="true"
+      />
+    </button>
+  );
+};
 
 const Header = () => {
   const { api, authStorage, authVersion, refreshAuth, signOut, notify } =
@@ -13,12 +64,9 @@ const Header = () => {
   const { Link, Image } = adapters;
   const currentPath = adapters.useCurrentPath();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [categoryOpen, setCategoryOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [theme, setTheme] = useState<string | null>(null);
   const [hasToken, setHasToken] = useState(false);
-  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const categories = useCategories(api);
   const currentUser = useCurrentUser(api, hasToken);
@@ -29,30 +77,11 @@ const Header = () => {
     });
   }, [authStorage, authVersion]);
 
-  useEffect(() => {
-    const storedTheme =
-      typeof window !== "undefined" ? window.localStorage.getItem("theme") : null;
-    setTheme(storedTheme ?? "light");
-  }, []);
-
-  useEffect(() => {
-    if (!theme || typeof document === "undefined") return;
-    document.documentElement.setAttribute("data-theme", theme);
-    window.localStorage.setItem("theme", theme);
-  }, [theme]);
-
-  useEffect(() => {
-    if (searchOpen) {
-      searchInputRef.current?.focus();
-    }
-  }, [searchOpen]);
-
   const isActive = (href: string) =>
     href === "/" ? currentPath === "/" : currentPath.startsWith(href);
 
   const closeMenus = () => {
     setMenuOpen(false);
-    setCategoryOpen(false);
   };
 
   const onSearch = (event: React.FormEvent) => {
@@ -74,240 +103,262 @@ const Header = () => {
   };
 
   const user = currentUser.data;
-  const guestHeader = (
-    <>
-      <li className={isActive("/signup") ? "nav-item active" : "nav-item"}>
-        <Link href="/signup" className="nav-link" onClick={closeMenus}>
-          Daftar
-        </Link>
-      </li>
-      <li className={isActive("/signin") ? "nav-item active" : "nav-item"}>
-        <Link href="/signin" className="nav-link" onClick={closeMenus}>
-          Masuk
-        </Link>
-      </li>
-    </>
-  );
+  const newsActive = isActive("/news");
+  const categoryLinks = [
+    { key: "all", label: "Semua Berita", href: "/news" },
+    ...(categories.data ?? []).map((category) => ({
+      key: category._id,
+      label: category.name,
+      href: `/newsCategories/${category.slug}`,
+    })),
+  ];
 
-  const logoutLink = (
-    <li className="nav-item">
-      <a href="/signin" className="nav-link" onClick={onLogout}>
+  const authLinks = (mobile: boolean) => {
+    const linkClass = mobile ? mobileLinkClass : navLinkClass;
+    return user ? (
+      <a href="/signin" className={linkClass(false)} onClick={onLogout}>
         Keluar
       </a>
-    </li>
-  );
-
-  const authHeader = user ? (
-    <div className="header-author d-flex ml-lg-4 pl-2 mt-lg-0 mt-3">
-      <Link href="/users" className="img-circle img-circle-sm" onClick={closeMenus}>
-        <Image
-          src={user.photo || DEFAULT_AVATAR_SRC}
-          className="img-fluid"
-          alt={user.name}
-          objectFit="cover"
-          width={400}
-          height={400}
-        />
-      </Link>
-      <div className="align-self ml-3">
-        <Link href="/users" onClick={closeMenus}>
-          <h5>{user.name}</h5>
+    ) : (
+      <>
+        <Link
+          href="/signup"
+          className={linkClass(isActive("/signup"))}
+          onClick={closeMenus}
+        >
+          Daftar
         </Link>
-        <span>{user.role?.includes("admin") ? "Admin" : "Pengguna"}</span>
-      </div>
-    </div>
+        <Link
+          href="/signin"
+          className={linkClass(isActive("/signin"))}
+          onClick={closeMenus}
+        >
+          Masuk
+        </Link>
+      </>
+    );
+  };
+
+  const userBadge = user ? (
+    <Link
+      href="/users"
+      onClick={closeMenus}
+      className={cx(
+        "tw:flex tw:min-w-0 tw:items-center tw:gap-3 tw:rounded-lg tw:p-1 tw:no-underline tw:transition-colors tw:hover:bg-surface-2",
+        focusRing,
+      )}
+    >
+      <Avatar src={user.photo} alt={user.name} className="tw:size-9" />
+      <span className="tw:flex tw:min-w-0 tw:flex-col tw:leading-tight">
+        <span className="tw:truncate tw:text-sm tw:font-bold tw:text-fg">
+          {user.name}
+        </span>
+        <span className="tw:text-xs tw:font-normal tw:text-muted">
+          {user.role?.includes("admin") ? "Admin" : "Pengguna"}
+        </span>
+      </span>
+    </Link>
   ) : null;
 
   return (
-    <header className="w3l-header">
-      <nav className="navbar navbar-expand-lg navbar-light fill px-lg-0 py-0 px-3">
-        <div className="container">
-          <Link href="/" className="navbar-brand" onClick={closeMenus}>
-            <span aria-hidden>
-              <Image src={BRAND_LOGO_SRC} height={35} alt="" />
-            </span>
+    <header className="malanghub-header tw:sticky tw:top-0 tw:z-[1030] tw:border-b tw:border-line tw:bg-surface/90 tw:shadow-card tw:backdrop-blur-lg">
+      <Container className="tw:flex tw:h-16 tw:items-center tw:gap-2">
+        <Link
+          href="/"
+          className={cx(
+            "tw:mr-auto tw:flex tw:shrink-0 tw:items-center tw:rounded-lg",
+            focusRing,
+          )}
+          onClick={closeMenus}
+        >
+          <Image
+            src={BRAND_LOGO_SRC}
+            height={35}
+            alt=""
+            className="tw:h-9 tw:w-auto tw:max-w-[52vw] tw:object-contain"
+          />
+          <span className="tw:sr-only">Malanghub</span>
+        </Link>
+
+        <nav
+          aria-label="Navigasi utama"
+          className="malanghub-header-nav tw:hidden tw:items-center tw:gap-1 tw:lg:flex"
+        >
+          <Link href="/" className={navLinkClass(isActive("/"))}>
+            Beranda
           </Link>
+          <Dropdown
+            label={
+              <>
+                Berita <span className="fa fa-angle-down" aria-hidden="true" />
+              </>
+            }
+            buttonClassName={navLinkClass(newsActive)}
+            items={categoryLinks}
+            renderLink={({ href, className, children }) => (
+              <Link href={href} className={className}>
+                {children}
+              </Link>
+            )}
+          />
+          <Link href="/contact" className={navLinkClass(isActive("/contact"))}>
+            Kontak
+          </Link>
+          {authLinks(false)}
+        </nav>
+
+        <div className="tw:flex tw:items-center tw:gap-1">
           <button
-            className={`navbar-toggler ${menuOpen ? "" : "collapsed"}`}
             type="button"
-            aria-controls="navbarSupportedContent"
+            className={cx(iconButtonClass, "malanghub-header-nav")}
+            onClick={() => setSearchOpen(true)}
+            aria-label="Cari berita"
+            title="Cari berita"
+          >
+            <span className="fa fa-search" aria-hidden="true" />
+          </button>
+          <ThemeToggle />
+          {userBadge && (
+            <div className="malanghub-header-nav tw:ml-2 tw:hidden tw:max-w-52 tw:lg:block">
+              {userBadge}
+            </div>
+          )}
+          <button
+            type="button"
+            className={cx(iconButtonClass, "malanghub-header-nav tw:lg:hidden")}
+            aria-controls="malanghub-mobile-menu"
             aria-expanded={menuOpen}
-            aria-label="Toggle navigation"
+            aria-label={menuOpen ? "Tutup menu" : "Buka menu"}
             onClick={() => setMenuOpen((value) => !value)}
           >
-            <span className="fa icon-expand fa-bars" />
-            <span className="fa icon-close fa-times" />
+            <span
+              className={cx("fa", menuOpen ? "fa-times" : "fa-bars")}
+              aria-hidden="true"
+            />
           </button>
-
-          <div
-            className={`collapse navbar-collapse ${menuOpen ? "show" : ""}`}
-            id="navbarSupportedContent"
-          >
-            <ul className="navbar-nav ml-auto">
-              <li className={isActive("/") ? "nav-item active" : "nav-item"}>
-                <Link href="/" className="nav-link" onClick={closeMenus}>
-                  Beranda
-                </Link>
-              </li>
-              <li
-                className={
-                  isActive("/news")
-                    ? "nav-item dropdown active"
-                    : "nav-item dropdown"
-                }
-              >
-                <a
-                  className="nav-link dropdown-toggle"
-                  href="#"
-                  role="button"
-                  aria-expanded={categoryOpen}
-                  onClick={(event) => {
-                    event.preventDefault();
-                    setCategoryOpen((value) => !value);
-                  }}
-                >
-                  Berita <span className="fa fa-angle-down" />
-                </a>
-                <div className={`dropdown-menu ${categoryOpen ? "show" : ""}`}>
-                  <Link href="/news" className="dropdown-item" onClick={closeMenus}>
-                    Semua Berita
-                  </Link>
-                  {categories.data?.map((category) => (
-                    <Link
-                      key={category._id}
-                      href={`/newsCategories/${category.slug}`}
-                      className="dropdown-item"
-                      onClick={closeMenus}
-                    >
-                      {category.name}
-                    </Link>
-                  ))}
-                </div>
-              </li>
-              <li className={isActive("/contact") ? "nav-item active" : "nav-item"}>
-                <Link href="/contact" className="nav-link" onClick={closeMenus}>
-                  Kontak
-                </Link>
-              </li>
-              {user ? logoutLink : guestHeader}
-            </ul>
-
-            <div className="search-right mt-lg-0 mt-2">
-              <a
-                href="#search"
-                title="search"
-                onClick={(event) => {
-                  event.preventDefault();
-                  setSearchOpen(true);
-                }}
-              >
-                <span className="fa fa-search" aria-hidden="true" />
-              </a>
-              <div
-                id="search"
-                className={`pop-overlay ${searchOpen ? "open" : ""}`}
-                onClick={(event) => {
-                  if (event.target === event.currentTarget) {
-                    setSearchOpen(false);
-                  }
-                }}
-                style={{
-                  display: searchOpen ? "block" : "none",
-                  visibility: searchOpen ? "visible" : "hidden",
-                  opacity: searchOpen ? 1 : 0,
-                }}
-              >
-                <div className="popup">
-                  <h3 className="hny-title two">Cari disini</h3>
-                  <form className="search-box" onSubmit={onSearch}>
-                    <input
-                      ref={searchInputRef}
-                      type="search"
-                      placeholder="Cari Berita...."
-                      name="search"
-                      value={search}
-                      onChange={(event) => setSearch(event.target.value)}
-                      required
-                    />
-                    <button type="submit" className="btn">
-                      Cari
-                    </button>
-                  </form>
-                  <a
-                    className="close"
-                    href="#close"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      setSearchOpen(false);
-                    }}
-                    aria-label="Close search"
-                  >
-                    x
-                  </a>
-                </div>
-              </div>
-            </div>
-
-            {authHeader}
-          </div>
-
-          <div className="mobile-position">
-            <nav className="navigation" aria-label="Theme">
-              <div className="theme-switch-wrapper">
-                <label className="theme-switch" htmlFor="checkbox">
-                  <input
-                    type="checkbox"
-                    id="checkbox"
-                    checked={theme === "dark"}
-                    onChange={(event) =>
-                      setTheme(event.target.checked ? "dark" : "light")
-                    }
-                  />
-                  <div className="mode-container">
-                    <i className="gg-sun" />
-                    <i className="gg-moon" />
-                  </div>
-                </label>
-              </div>
-            </nav>
-          </div>
         </div>
-      </nav>
+      </Container>
+
+      {menuOpen && (
+        <div
+          id="malanghub-mobile-menu"
+          className="malanghub-header-nav tw:max-h-[calc(100dvh-4rem)] tw:overflow-y-auto tw:border-t tw:border-line tw:bg-surface tw:lg:hidden"
+        >
+          <Container className="tw:flex tw:flex-col tw:gap-1 tw:py-3">
+            {userBadge && (
+              <div className="tw:mb-2 tw:border-b tw:border-line tw:pb-3">
+                {userBadge}
+              </div>
+            )}
+            <Link
+              href="/"
+              className={mobileLinkClass(isActive("/"))}
+              onClick={closeMenus}
+            >
+              Beranda
+            </Link>
+            <Collapse
+              title="Berita"
+              defaultOpen={newsActive}
+              buttonClassName={mobileLinkClass(newsActive)}
+              panelClassName="tw:ml-3 tw:flex tw:flex-col tw:gap-0.5 tw:border-l tw:border-line tw:py-1 tw:pl-2"
+            >
+              {categoryLinks.map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  className={mobileLinkClass(currentPath === item.href)}
+                  onClick={closeMenus}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </Collapse>
+            <Link
+              href="/contact"
+              className={mobileLinkClass(isActive("/contact"))}
+              onClick={closeMenus}
+            >
+              Kontak
+            </Link>
+            {authLinks(true)}
+          </Container>
+        </div>
+      )}
+
+      <Modal
+        open={searchOpen}
+        onClose={() => setSearchOpen(false)}
+        title="Cari disini"
+      >
+        <form
+          role="search"
+          className="tw:flex tw:items-start tw:gap-2"
+          onSubmit={onSearch}
+        >
+          <Input
+            type="search"
+            name="search"
+            aria-label="Cari Berita"
+            placeholder="Cari Berita...."
+            wrapperClassName="tw:mb-0 tw:flex-1"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            autoFocus
+            data-autofocus
+            required
+          />
+          <Button type="submit" className="tw:h-11">
+            <span className="fa fa-search" aria-hidden="true" />
+            Cari
+          </Button>
+        </form>
+      </Modal>
     </header>
   );
 };
+
+const footerLinkClass =
+  "tw:font-semibold tw:text-muted tw:no-underline tw:transition-colors tw:hover:text-brand";
 
 const Footer = () => {
   const { Link } = useAdapters();
 
   return (
-    <footer className="w3l-footer-16">
-      <div className="footer-content py-lg-5 py-4 text-center">
-        <div className="container">
-          <div className="copy-right">
-            <h6>
-              © <span>{new Date().getFullYear()}</span> Malanghub. Made with{" "}
-              <span className="fa fa-heart" aria-hidden="true" />, Designed by{" "}
-              <a href="https://w3layouts.com">W3layouts</a>
-            </h6>
-            <p className="mt-2" style={{ fontSize: "0.85rem" }}>
-              <Link href="/terms" style={{ color: "inherit", marginRight: "1rem" }}>
-                Syarat dan Ketentuan
-              </Link>
-              <Link href="/privacy" style={{ color: "inherit" }}>
-                Kebijakan Privasi
-              </Link>
-            </p>
-          </div>
+    <footer className="tw:mt-12 tw:border-t tw:border-line tw:bg-surface">
+      <Container className="tw:flex tw:flex-col tw:items-center tw:gap-4 tw:py-8 tw:text-center tw:text-sm tw:md:flex-row tw:md:justify-between tw:md:text-left">
+        <p className="tw:m-0 tw:text-sm tw:leading-6 tw:text-muted">
+          © <span>{new Date().getFullYear()}</span> Malanghub. Made with{" "}
+          <span className="fa fa-heart tw:text-danger" aria-hidden="true" />
+          <span className="tw:sr-only">love</span>, Designed by{" "}
+          <a href="https://w3layouts.com" className={footerLinkClass}>
+            W3layouts
+          </a>
+        </p>
+        <nav
+          aria-label="Tautan footer"
+          className="tw:flex tw:flex-wrap tw:items-center tw:justify-center tw:gap-x-5 tw:gap-y-2"
+        >
+          <Link href="/terms" className={footerLinkClass}>
+            Syarat dan Ketentuan
+          </Link>
+          <Link href="/privacy" className={footerLinkClass}>
+            Kebijakan Privasi
+          </Link>
           <button
+            type="button"
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            id="movetop"
-            title="Go to top"
+            className={cx(
+              "tw:inline-flex tw:size-9 tw:items-center tw:justify-center tw:rounded-full tw:border tw:border-line tw:bg-surface tw:text-base tw:text-body tw:transition-colors tw:cursor-pointer tw:hover:border-brand tw:hover:text-brand",
+              focusRing,
+            )}
+            title="Kembali ke atas"
+            aria-label="Kembali ke atas"
           >
-            <span className="fa fa-angle-up" />
+            <span className="fa fa-angle-up" aria-hidden="true" />
           </button>
-        </div>
-      </div>
+        </nav>
+      </Container>
     </footer>
   );
 };
