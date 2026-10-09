@@ -13,6 +13,7 @@ import {
   controlClass,
   cx,
   useTheme,
+  ThemeIcon,
 } from "@malanghub/ui";
 import { getNewsCategories } from "../../redux/actions/newsCategoryActions";
 import { loadUser, logout } from "../../redux/actions/userActions";
@@ -51,7 +52,7 @@ const navLinkClass = (active: boolean) =>
     "inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-[0.95rem] font-semibold no-underline transition-colors",
     active
       ? "bg-brand-soft text-brand"
-      : "text-body hover:bg-surface-2 hover:text-fg"
+      : "text-body hover:bg-surface-2 hover:text-fg",
   );
 
 const iconButtonClass =
@@ -87,7 +88,6 @@ const Header = ({
       loadUser();
     }
   }, [isAuthenticated]);
-
 
   useEffect(() => {
     const closeMenu = () => setMenuOpen(false);
@@ -149,41 +149,42 @@ const Header = ({
     />
   );
 
-  const accountArea = userLoading && !user ? (
-    <Spinner size="sm" />
-  ) : user ? (
-    <div className="flex items-center gap-3">
-      <Link
-        href="/users"
-        className="flex items-center gap-2.5 rounded-lg py-1 pr-2 no-underline hover:bg-surface-2"
-      >
-        {avatar}
-        <span className="flex flex-col leading-tight">
-          <span className="max-w-36 truncate text-sm font-semibold text-fg">
-            {user.name}
+  const accountArea =
+    userLoading && !user ? (
+      <Spinner size="sm" />
+    ) : user ? (
+      <div className="flex items-center gap-3">
+        <Link
+          href="/users"
+          className="flex items-center gap-2.5 rounded-lg py-1 pr-2 no-underline hover:bg-surface-2"
+        >
+          {avatar}
+          <span className="flex flex-col leading-tight">
+            <span className="max-w-36 truncate text-sm font-semibold text-fg">
+              {user.name}
+            </span>
+            <span className="text-xs font-normal text-muted">
+              {user?.role?.includes("admin") ? "Admin" : "Pengguna"}
+            </span>
           </span>
-          <span className="text-xs font-normal text-muted">
-            {user?.role?.includes("admin") ? "Admin" : "Pengguna"}
-          </span>
-        </span>
-      </Link>
-      <Button variant="ghost" size="sm" onClick={onLogout}>
-        Keluar
-      </Button>
-    </div>
-  ) : (
-    <div className="flex items-center gap-2">
-      <Link
-        href="/signup"
-        className={buttonClass({ variant: "ghost", size: "sm" })}
-      >
-        Daftar
-      </Link>
-      <Link href="/signin" className={buttonClass({ size: "sm" })}>
-        Masuk
-      </Link>
-    </div>
-  );
+        </Link>
+        <Button variant="ghost" size="sm" onClick={onLogout}>
+          Keluar
+        </Button>
+      </div>
+    ) : (
+      <div className="flex items-center gap-2">
+        <Link
+          href="/signup"
+          className={buttonClass({ variant: "ghost", size: "sm" })}
+        >
+          Daftar
+        </Link>
+        <Link href="/signin" className={buttonClass({ size: "sm" })}>
+          Masuk
+        </Link>
+      </div>
+    );
 
   const themeToggle = (
     <button
@@ -193,10 +194,7 @@ const Header = ({
       aria-label={isDark ? "Gunakan mode terang" : "Gunakan mode gelap"}
       title={isDark ? "Mode terang" : "Mode gelap"}
     >
-      <span
-        aria-hidden
-        className={cx("fa", isDark ? "fa-sun-o" : "fa-moon-o")}
-      />
+      <ThemeIcon theme={isDark ? "dark" : "light"} />
     </button>
   );
 
@@ -240,7 +238,7 @@ const Header = ({
               renderLink={renderLink}
               buttonClassName={cx(
                 navLinkClass(activeLink === "news"),
-                "border-0 bg-transparent"
+                "border-0 bg-transparent",
               )}
             />
           )}
@@ -308,9 +306,7 @@ const Header = ({
             >
               Kontak
             </Link>
-            <div className="mt-3 border-t border-line pt-4">
-              {accountArea}
-            </div>
+            <div className="mt-3 border-t border-line pt-4">{accountArea}</div>
           </Container>
         </div>
       )}

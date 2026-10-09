@@ -9,6 +9,7 @@ import {
   Dropdown,
   Input,
   Modal,
+  ThemeIcon,
   cx,
   useTheme,
 } from "./primitives";
@@ -49,10 +50,7 @@ const ThemeToggle = () => {
       aria-label={label}
       title={label}
     >
-      <span
-        className={cx("fa", dark ? "fa-sun-o text-warning" : "fa-moon-o")}
-        aria-hidden="true"
-      />
+      <ThemeIcon theme={theme} />
     </button>
   );
 };
@@ -150,9 +148,7 @@ const Header = () => {
     >
       <Avatar src={user.photo} alt={user.name} className="size-9" />
       <span className="flex min-w-0 flex-col leading-tight">
-        <span className="truncate text-sm font-bold text-fg">
-          {user.name}
-        </span>
+        <span className="truncate text-sm font-bold text-fg">{user.name}</span>
         <span className="text-xs font-normal text-muted">
           {user.role?.includes("admin") ? "Admin" : "Pengguna"}
         </span>
@@ -246,9 +242,7 @@ const Header = () => {
         >
           <Container className="flex flex-col gap-1 py-3">
             {userBadge && (
-              <div className="mb-2 border-b border-line pb-3">
-                {userBadge}
-              </div>
+              <div className="mb-2 border-b border-line pb-3">{userBadge}</div>
             )}
             <Link
               href="/"
@@ -366,7 +360,7 @@ const Footer = () => {
 export const AppShell = ({ children }: { children: React.ReactNode }) => {
   const description = useMemo(
     () => "Situs yang menyediakan informasi sekitar Malang Raya!",
-    []
+    [],
   );
   const { Meta } = useAdapters();
 

@@ -1287,7 +1287,7 @@ export const AppDownloadBanner = ({
     <div
       role="region"
       aria-label="Download aplikasi Malanghub"
-      className="sticky inset-x-0 top-0 z-[10020] flex items-center gap-3 border-b border-line bg-surface px-4 py-3 shadow-card sm:px-5"
+      className="relative z-[1035] flex items-center gap-3 border-b border-line bg-surface px-4 py-3 shadow-card sm:px-5"
     >
       <div
         className="hidden size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand sm:flex"

@@ -67,7 +67,7 @@ const AllNewsDraftTableItem = ({
         <Moment format="MMMM Do, YYYY">{draft.created_at}</Moment>
       </td>
       <td>
-        <div className="flex justify-end gap-2">
+        <div className="ml-auto flex max-w-[15rem] flex-wrap justify-end gap-2">
           <Link
             href={`/users/newsDrafts/${draft.slug}`}
             className={buttonClass({ variant: "ghost", size: "sm" })}

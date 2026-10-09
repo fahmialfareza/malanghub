@@ -6,3 +6,4 @@ export * from "./Field";
 export * from "./Surface";
 export * from "./Overlay";
 export * from "./Breadcrumbs";
+export * from "./ThemeIcon";

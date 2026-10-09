@@ -206,11 +206,11 @@ const EditNewsDraft = ({
               skin: theme === "dark" ? "oxide-dark" : "oxide",
               content_css: theme === "dark" ? "dark" : "default",
               plugins: [
-                "advlist autolink lists link image charmap print preview anchor",
+                "advlist autolink lists link image charmap preview anchor",
                 "searchreplace visualblocks code fullscreen",
-                "insertdatetime media table paste code help wordcount",
+                "insertdatetime media table code help wordcount",
                 "directionality",
-              ],
+              ].join(" "),
               toolbar:
                 "ltr rtl | undo redo | formatselect | bold italic backcolor | \
              alignleft aligncenter alignright alignjustify | \

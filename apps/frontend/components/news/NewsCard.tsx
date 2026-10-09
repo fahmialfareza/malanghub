@@ -39,10 +39,7 @@ export const CategoryBadge = ({
       href={`/newsCategories/${slug}`}
       className={badgeClass(
         "brand",
-        cx(
-          "transition-colors hover:bg-brand hover:text-brand-fg",
-          className,
-        ),
+        cx("transition-colors hover:bg-brand hover:text-brand-fg", className),
       )}
     >
       {name}
@@ -68,24 +65,30 @@ export const NewsMeta = ({
       className,
     )}
   >
-    {news.user && news.user._id ? (
-      <Link
-        href={`/users/${news.user._id}`}
-        className="font-semibold text-body no-underline hover:text-brand"
-      >
-        {news.user.name ?? "Penulis"}
-      </Link>
-    ) : (
-      <span className="font-semibold text-body">
-        {news.user?.name ?? "Penulis"}
+    {/* Separators stay attached to the preceding item so a wrapped row never
+        starts with a dangling dot. */}
+    <span className="inline-flex items-center gap-2 whitespace-nowrap">
+      {news.user && news.user._id ? (
+        <Link
+          href={`/users/${news.user._id}`}
+          className="font-semibold text-body no-underline hover:text-brand"
+        >
+          {news.user.name ?? "Penulis"}
+        </Link>
+      ) : (
+        <span className="font-semibold text-body">
+          {news.user?.name ?? "Penulis"}
+        </span>
+      )}
+      <span aria-hidden className="text-line-strong">
+        &middot;
       </span>
-    )}
-    <span aria-hidden className="text-line-strong">
-      &middot;
     </span>
-    <Moment format={dateFormat}>{news.created_at}</Moment>
-    <span aria-hidden className="text-line-strong">
-      &middot;
+    <span className="inline-flex items-center gap-2 whitespace-nowrap">
+      <Moment format={dateFormat}>{news.created_at}</Moment>
+      <span aria-hidden className="text-line-strong">
+        &middot;
+      </span>
     </span>
     <span className="inline-flex items-center gap-1">
       <span className="fa fa-clock-o" aria-hidden="true"></span>
@@ -126,10 +129,7 @@ export const NewsCard = ({
       <article className={cx("flex gap-4", className)}>
         <Link
           href={href}
-          className={cx(
-            imageLinkClass,
-            "aspect-square w-24 shrink-0 sm:w-28",
-          )}
+          className={cx(imageLinkClass, "aspect-square w-24 shrink-0 sm:w-28")}
           aria-hidden
           tabIndex={-1}
         >

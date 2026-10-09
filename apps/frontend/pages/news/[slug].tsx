@@ -290,15 +290,15 @@ const SingleNews = ({
                   aria-hidden
                   tabIndex={-1}
                 >
-                  {currentNews?.user?.photo && (
-                    <Image
-                      src={currentNews.user.photo}
-                      alt=""
-                      className="object-cover"
-                      sizes="44px"
-                      fill
-                    />
-                  )}
+                  <Image
+                    src={
+                      currentNews?.user?.photo || "/assets/images/author.jpg"
+                    }
+                    alt=""
+                    className="object-cover"
+                    sizes="44px"
+                    fill
+                  />
                 </Link>
               )}
               <div className="flex min-w-0 flex-col gap-0.5 text-sm">
@@ -349,9 +349,7 @@ const SingleNews = ({
 
           <footer className="mt-12 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="mr-1 text-sm font-semibold text-fg">
-                Tag :
-              </span>
+              <span className="mr-1 text-sm font-semibold text-fg">Tag :</span>
               {currentNews?.tags &&
                 currentNews?.tags.map((tag) => (
                   <Link
@@ -394,15 +392,13 @@ const SingleNews = ({
           {currentNews?.user && (
             <section className="mt-10 flex flex-col gap-5 rounded-2xl border border-line bg-surface p-6 shadow-card sm:flex-row sm:items-start">
               <div className="relative size-20 shrink-0 overflow-hidden rounded-full bg-surface-2">
-                {currentNews?.user?.photo && (
-                  <Image
-                    src={currentNews.user.photo}
-                    alt=""
-                    className="object-cover"
-                    sizes="80px"
-                    fill
-                  />
-                )}
+                <Image
+                  src={currentNews?.user?.photo || "/assets/images/author.jpg"}
+                  alt=""
+                  className="object-cover"
+                  sizes="80px"
+                  fill
+                />
               </div>
               <div className="min-w-0">
                 <h2 className="m-0 mb-2 font-heading text-xl font-bold text-fg">

@@ -158,8 +158,8 @@ const News = ({
           })}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-4">
-          <Card className="overflow-hidden lg:col-span-3">
+        <div className="flex flex-col gap-6">
+          <Card className="overflow-hidden">
             <CardHeader
               title={tableName}
               actions={
@@ -206,7 +206,7 @@ const News = ({
             </Table>
           </Card>
 
-          <div className="order-first grid grid-cols-2 content-start gap-4 sm:grid-cols-3 lg:order-none lg:grid-cols-1">
+          <div className="order-first grid grid-cols-2 gap-4 sm:grid-cols-3">
             {tabs.map((tab) => (
               <StatTile
                 key={tab.name}
