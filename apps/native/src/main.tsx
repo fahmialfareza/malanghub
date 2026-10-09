@@ -16,6 +16,7 @@ import {
 import { onBackButtonPress } from "@tauri-apps/api/app";
 import {
   AppShell,
+  AskPage,
   ContactPage,
   DashboardPage,
   DraftPreviewPage,
@@ -1351,6 +1352,17 @@ const NativeBottomTabs = () => {
                 <span className="fa fa-search" aria-hidden="true" />
               </button>
             </div>
+            <button
+              type="button"
+              className={cx(nativeSheetOptionClass(false), "mt-2")}
+              onClick={() => {
+                const question = search.trim();
+                goTo(question ? `/ask?q=${encodeURIComponent(question)}` : "/ask");
+              }}
+            >
+              <NativeSheetIcon icon="fa-comments" />
+              <span>Tanya Malanghub AI</span>
+            </button>
           </form>
         </div>
       )}
@@ -1459,6 +1471,7 @@ const App = () => (
         <Route path="/users/tags" element={<DashboardPage />} />
         <Route path="/users/newsDrafts/:slug" element={<DraftPreviewRoute />} />
         <Route path="/users/:id" element={<UserRoute />} />
+        <Route path="/ask" element={<AskPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
