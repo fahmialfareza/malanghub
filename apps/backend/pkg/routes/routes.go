@@ -1,6 +1,10 @@
 package routes
 
 import (
+	"os"
+	"strconv"
+	"time"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/fahmialfareza/malanghub/backend/controllers"
@@ -85,6 +89,13 @@ func Register(r *gin.Engine) {
 			drafts.GET("/:slug", controllers.GetDraftBySlug)
 		}
 
+		// Ask AI (RAG over news), free for everyone with a per-IP limit
+		aiGroup := api.Group("/ai")
+		{
+			aiGroup.POST("/ask", middleware.RateLimitByIP("ai", aiRateLimitPerHour(), time.Hour), controllers.AskAI)
+			aiGroup.POST("/reindex", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.ReindexAI)
+		}
+
 		// comments
 		comments := api.Group("/newsComments")
 		{
@@ -93,4 +104,12 @@ func Register(r *gin.Engine) {
 			comments.POST("/commentReply/:id", authpkg.JWTMiddleware(), controllers.CreateCommentByComment)
 		}
 	}
+}
+
+// aiRateLimitPerHour reads AI_RATE_LIMIT_PER_HOUR (default 10).
+func aiRateLimitPerHour() int {
+	if n, err := strconv.Atoi(os.Getenv("AI_RATE_LIMIT_PER_HOUR")); err == nil {
+		return n
+	}
+	return 10
 }

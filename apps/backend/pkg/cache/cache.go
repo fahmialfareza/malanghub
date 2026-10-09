@@ -62,6 +62,23 @@ func Set(ctx context.Context, key string, value interface{}, ttl time.Duration) 
 	return client.Set(ctx, key, data, ttl).Err()
 }
 
+// Incr increments the counter at key and sets ttl when the key is new.
+// Returns 0 and no error when Redis is not connected so callers fail open.
+func Incr(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+	defer newrelicpkg.EndSegment(ctx, "cache.Incr")()
+	if client == nil {
+		return 0, nil
+	}
+	n, err := client.Incr(ctx, key).Result()
+	if err != nil {
+		return 0, err
+	}
+	if n == 1 && ttl > 0 {
+		_ = client.Expire(ctx, key, ttl).Err()
+	}
+	return n, nil
+}
+
 // Delete removes one or more keys.
 func Delete(ctx context.Context, keys ...string) error {
 	defer newrelicpkg.EndSegment(ctx, "cache.Delete")()

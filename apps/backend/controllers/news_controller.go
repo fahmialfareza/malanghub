@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
+	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
@@ -300,6 +301,7 @@ func CreateNews(c *gin.Context) {
 		_ = cache.DeleteByPattern(c, "tag:slug:*")
 		_ = cache.DeleteByPattern(c, "news:list:*")
 		go submitIndexNow(payload.Slug)
+		ai.IndexNewsAsync(payload.ID)
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
@@ -382,6 +384,7 @@ func UpdateNews(c *gin.Context) {
 	if approved, ok := newData["approved"].(bool); ok && approved {
 		go submitIndexNow(updated.Slug)
 	}
+	ai.IndexNewsAsync(updated.ID)
 
 	// return updated with populated fields similar to GetNewsBySlug
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
@@ -423,6 +426,7 @@ func DeleteNews(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "news not found"})
 		return
 	}
+	ai.IndexNewsAsync(oid)
 
 	c.JSON(http.StatusOK, gin.H{"data": map[string]interface{}{}})
 }

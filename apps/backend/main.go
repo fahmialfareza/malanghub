@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
+	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
@@ -52,6 +53,10 @@ func main() {
 		redisURL = "redis://localhost:6379"
 	}
 	cache.Connect(redisURL)
+
+	// Ask AI: Atlas vector index + periodic embedding sync (non-fatal)
+	ai.EnsureVectorIndex(context.Background())
+	ai.StartSyncLoop()
 
 	// initialize New Relic if configured (non-fatal)
 	nrApp, err := newrelicpkg.Init()

@@ -170,6 +170,14 @@ function Privacy({ setActiveLink }: PrivacyProps) {
                     <strong>Google Reader Revenue Manager:</strong> Untuk fitur
                     publikasi berita.
                   </li>
+                  <li>
+                    <strong>Google Gemini & Groq:</strong> Untuk fitur Tanya
+                    AI. Pertanyaan yang Anda kirim (tanpa data akun) beserta
+                    potongan artikel Malanghub diproses oleh penyedia AI ini
+                    untuk menyusun jawaban, dan dapat digunakan oleh penyedia
+                    untuk meningkatkan layanannya. Jangan menuliskan data
+                    pribadi di pertanyaan.
+                  </li>
                 </ul>
               </div>
 

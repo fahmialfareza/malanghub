@@ -6,6 +6,14 @@ import {
   NewsWithPagination,
 } from "../models/news";
 import { UserProfile } from "../models/user";
+import { AiAnswer } from "../models/ai";
+
+export interface AiReducerState {
+  question: string;
+  result: AiAnswer | null;
+  loading: boolean;
+  error: string | null;
+}
 
 export interface UserReducerState {
   isAuthenticated: boolean;

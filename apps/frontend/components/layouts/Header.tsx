@@ -239,6 +239,15 @@ const Header = ({
               </li>
               <li
                 className={
+                  activeLink === "ask" ? "nav-item active" : "nav-item"
+                }
+              >
+                <Link href="/ask" className="nav-link">
+                  Tanya AI
+                </Link>
+              </li>
+              <li
+                className={
                   activeLink === "contact"
                     ? "nav-item @@contact__active active"
                     : "nav-item @@contact__active"

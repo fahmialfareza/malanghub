@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -71,6 +72,21 @@ func EnsureIndexes(ctx context.Context, client *mongo.Client) error {
 	})
 	if err != nil && !isIndexDupErr(err) {
 		return err
+	}
+
+	// News: text index for Ask AI keyword retrieval. "none" disables stemming
+	// because MongoDB has no Indonesian language support.
+	_, err = news.Indexes().CreateOne(ctx, mongo.IndexModel{
+		Keys: bson.D{{Key: "title", Value: "text"}, {Key: "content", Value: "text"}},
+		Options: options.Index().
+			SetName("news_text_idx").
+			SetDefaultLanguage("none").
+			SetWeights(bson.D{{Key: "title", Value: 5}, {Key: "content", Value: 1}}).
+			SetBackground(true),
+	})
+	if err != nil {
+		// non-fatal: Ask AI falls back to vector-only retrieval
+		log.Printf("warning: could not create news text index: %v", err)
 	}
 
 	// NewsComments: index on news for GetCommentsByNews queries
