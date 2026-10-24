@@ -23,13 +23,14 @@ jobs:
         run: |
           set -euo pipefail
 
-          # pg_dump must be at least the server's major version; use PGDG for the latest client
+          # pg_dump must be at least the server's major version (Railway runs 18);
+          # the runner ships an older client, so install from PGDG
           sudo install -d /usr/share/postgresql-common/pgdg
           sudo curl -fsSL -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | \
             sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
           sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client-17
+          sudo apt-get install -y -qq postgresql-client-18
 
       - name: Install AWS CLI
         run: |
@@ -53,7 +54,8 @@ jobs:
           backup_filename="malanghub-postgres-${timestamp}.dump"
           backup_path="${RUNNER_TEMP}/${backup_filename}"
 
-          pg_dump --dbname="${DATABASE_URL}" --format=custom --no-owner --file="${backup_path}"
+          # call the v18 binary explicitly; the preinstalled pg_dump comes first on PATH
+          /usr/lib/postgresql/18/bin/pg_dump --dbname="${DATABASE_URL}" --format=custom --no-owner --file="${backup_path}"
 
           if [[ ! -s "${backup_path}" ]]; then
             echo "Backup archive was not created." >&2
