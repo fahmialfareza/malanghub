@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -19,6 +18,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
@@ -72,17 +72,7 @@ func ListNews(c *gin.Context) {
 		return
 	}
 
-	// simple pagination
-	page := 1
-	limit := 20
-	if p := c.Query("page"); p != "" {
-		// ignore parse errors, keep default
-		fmt.Sscan(p, &page)
-	}
-	if l := c.Query("limit"); l != "" {
-		fmt.Sscan(l, &limit)
-	}
-	skip := (page - 1) * limit
+	page, limit, skip := middleware.Pagination(c)
 
 	cacheKey := fmt.Sprintf("news:list:page:%d:limit:%d", page, limit)
 	if cached, err := cache.Get(c, cacheKey); err == nil {
@@ -164,7 +154,7 @@ func CreateNews(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.CreateNews")()
 
 	// Parse form data
-	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
+	if err := c.Request.ParseMultipartForm(middleware.MaxMultipartMemory); err != nil && err != http.ErrNotMultipart {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
 		return
 	}
@@ -432,20 +422,7 @@ func MyNews(c *gin.Context) {
 		return
 	}
 
-	// Query with pagination and proper filters
-	page := 1
-	limit := 20
-	if p := c.Query("page"); p != "" {
-		if v, err := strconv.Atoi(p); err == nil && v > 0 {
-			page = v
-		}
-	}
-	if l := c.Query("limit"); l != "" {
-		if v, err := strconv.Atoi(l); err == nil && v > 0 {
-			limit = v
-		}
-	}
-	skip := (page - 1) * limit
+	page, limit, skip := middleware.Pagination(c)
 
 	query := gdb.WithContext(c).Model(&models.News{}).Scopes(db.Published).Where("user_id = ?", uid)
 

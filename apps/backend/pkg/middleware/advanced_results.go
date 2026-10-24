@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
@@ -87,20 +86,7 @@ func AdvancedResults(table string) gin.HandlerFunc {
 			return
 		}
 
-		// pagination
-		page := 1
-		limit := 20
-		if p := c.Query("page"); p != "" {
-			if v, err := strconv.Atoi(p); err == nil && v > 0 {
-				page = v
-			}
-		}
-		if l := c.Query("limit"); l != "" {
-			if v, err := strconv.Atoi(l); err == nil && v > 0 {
-				limit = v
-			}
-		}
-		offset := (page - 1) * limit
+		page, limit, offset := Pagination(c)
 
 		// Return cached result when available (key covers table + query params + user ID).
 		cKey := advancedResultsCacheKey(table, c)

@@ -14,6 +14,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/fahmialfareza/malanghub/backend/pkg/routes"
 	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
@@ -68,6 +69,7 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.MaxMultipartMemory = middleware.MaxMultipartMemory
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}

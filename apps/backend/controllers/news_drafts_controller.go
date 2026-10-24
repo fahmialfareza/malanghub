@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
@@ -35,15 +35,7 @@ func GetAllDrafts(c *gin.Context) {
 		return
 	}
 
-	page := 1
-	limit := 20
-	if p := c.Query("page"); p != "" {
-		fmt.Sscan(p, &page)
-	}
-	if l := c.Query("limit"); l != "" {
-		fmt.Sscan(l, &limit)
-	}
-	skip := (page - 1) * limit
+	page, limit, skip := middleware.Pagination(c)
 
 	list := []models.News{}
 	if err := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).Where("approved = ?", false).
@@ -117,7 +109,7 @@ func CreateDraft(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.CreateDraft")()
 
 	// Parse form data
-	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
+	if err := c.Request.ParseMultipartForm(middleware.MaxMultipartMemory); err != nil && err != http.ErrNotMultipart {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
 		return
 	}
@@ -241,7 +233,7 @@ func UpdateDraft(c *gin.Context) {
 	uid, _ := v.(string)
 
 	// Parse multipart form (support form-data updates)
-	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
+	if err := c.Request.ParseMultipartForm(middleware.MaxMultipartMemory); err != nil && err != http.ErrNotMultipart {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid form data"})
 		return
 	}

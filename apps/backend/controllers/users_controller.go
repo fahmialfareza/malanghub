@@ -14,6 +14,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
@@ -112,7 +113,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
+	if err := c.Request.ParseMultipartForm(middleware.MaxMultipartMemory); err != nil && err != http.ErrNotMultipart {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
 		return
 	}

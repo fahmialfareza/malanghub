@@ -5,6 +5,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"net/http"
 
+	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +16,7 @@ func NewsCreateValidator() gin.HandlerFunc {
 		defer newrelicpkg.EndSegment(c, "validators.NewsCreateValidator")()
 
 		// Parse form data with file
-		if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
+		if err := c.Request.ParseMultipartForm(middleware.MaxMultipartMemory); err != nil && err != http.ErrNotMultipart {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
 			return
 		}
@@ -76,7 +77,7 @@ func NewsUpdateValidator() gin.HandlerFunc {
 		defer newrelicpkg.EndSegment(c, "validators.NewsUpdateValidator")()
 
 		// Parse form data with file
-		if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
+		if err := c.Request.ParseMultipartForm(middleware.MaxMultipartMemory); err != nil && err != http.ErrNotMultipart {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "invalid form data"})
 			return
 		}
