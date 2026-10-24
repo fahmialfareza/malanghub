@@ -71,10 +71,10 @@ func GetCategoryBySlug(c *gin.Context) {
 		return
 	}
 
-	// load approved news for category
+	// Clients only read the category here and page through its news with
+	// GET /api/news?category=<id>. Loading every article with full content made
+	// this response megabytes large, so `news` stays empty (kept for shape).
 	newsList := []models.News{}
-	_ = gdb.WithContext(c).Scopes(db.Published, db.WithNewsRelations).
-		Where("category_id = ?", cat.ID).Order("created_at DESC").Find(&newsList).Error
 
 	response := gin.H{"data": gin.H{"category": cat, "news": newsList}}
 	_ = cache.Set(c, cacheKey, response, 10*time.Minute)

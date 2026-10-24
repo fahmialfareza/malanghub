@@ -70,11 +70,10 @@ func GetTagBySlug(c *gin.Context) {
 		return
 	}
 
-	// load approved news for tag
+	// Clients only read the tag here and page through its news with
+	// GET /api/news?tags=<id>. Loading every article with full content made
+	// this response megabytes large, so `news` stays empty (kept for shape).
 	newsList := []models.News{}
-	_ = gdb.WithContext(c).Scopes(db.Published, db.WithNewsRelations).
-		Where("EXISTS (SELECT 1 FROM news_tag_links l WHERE l.news_id = news.id AND l.tag_id = ?)", tag.ID).
-		Order("created_at DESC").Find(&newsList).Error
 
 	response := gin.H{"data": gin.H{"tag": tag, "news": newsList}}
 	_ = cache.Set(c, cacheKey, response, 10*time.Minute)
