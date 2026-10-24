@@ -26,34 +26,16 @@ go run .
 If the `vector` extension is unavailable, the API still runs; Ask AI falls back to
 Postgres full-text (keyword) search and logs a warning.
 
-## Migrating from MongoDB
+## Operations
 
-`cmd/migrate-mongo` copies users, categories, tags, news (with tag links), comments
-and replies from MongoDB into Postgres. It keeps every ObjectID as the row ID, so
-URLs and IDs held by clients stay valid. It is safe to re-run; existing rows are
-skipped, and documents that reference a missing user are skipped with a log line
-(a missing category is set to `NULL`, missing tags are dropped). It prints
-per-collection counts at the end to compare.
+- **Ask AI index:** embeddings are synced ~30s after boot and every `AI_SYNC_INTERVAL`
+  (default `6h`). An admin can force a sync with `POST /api/ai/reindex`.
+- **Backups:** `.github/workflows/postgres-backup.yml` runs `pg_dump` weekly to Cloudflare R2
+  (`postgres/weekly/`, kept 4 weeks) using the `DATABASE_URL` repository secret. Restore with
+  `pg_restore --no-owner --dbname="$DATABASE_URL" <file>.dump`.
 
-```bash
-MONGO_URI="mongodb+srv://..." DATABASE_URL="postgres://..." go run ./cmd/migrate-mongo
-```
-
-Ask AI embeddings are not copied. After the cut-over, call `POST /api/ai/reindex`
-as an admin (or wait for the `AI_SYNC_INTERVAL` loop) to rebuild them.
-
-### Railway cut-over
-
-1. Check that the Postgres service has pgvector: run `CREATE EXTENSION IF NOT EXISTS vector;`
-   with psql. If it fails, either move the service to the `pgvector/pgvector:pg<major>` image
-   (back up every database on it first; other projects share this instance) or add a
-   dedicated pgvector Postgres service for Malanghub.
-2. `CREATE DATABASE malanghub;` and set `DATABASE_URL` on the malanghub service to the
-   `/malanghub` database (Railway reference variables work, e.g. replace the database name
-   in `${{Postgres.DATABASE_URL}}`).
-3. Run `go run ./cmd/migrate-mongo` once against production, deploy, and smoke-test.
-4. Run `POST /api/ai/reindex`, then remove `MONGO_URI` from the service.
-5. Add a `DATABASE_URL` repository secret for `.github/workflows/postgres-backup.yml`.
+The data was migrated from MongoDB in October 2026; IDs keep the ObjectID format so old
+links stay valid.
 
 Endpoints:
 

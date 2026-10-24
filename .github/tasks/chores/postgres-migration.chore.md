@@ -24,7 +24,7 @@ Run `apps/backend` on the Railway Postgres instance (its own `malanghub` databas
 - [x] Railway: set `DATABASE_URL` on the malanghub service to the `/malanghub` database.
 - [x] Run `cmd/migrate-mongo` against production, deploy, `POST /api/ai/reindex`.
 - [x] Add the `DATABASE_URL` repository secret for the backup workflow.
-- [ ] After a stable week: remove `MONGO_URI`, the Mongo backup workflow and `cmd/migrate-mongo`.
+- [x] Remove `MONGO_*` service variables, the `MONGO_URI` secret, the Mongo backup workflow, restore script and doc, and `cmd/migrate-mongo`.
 
 ## Validation
 

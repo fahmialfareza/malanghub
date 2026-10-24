@@ -1,5 +1,7 @@
 # Chore: automate weekly MongoDB backups
 
+> Superseded: the backend moved to Postgres; see `postgres-migration.chore.md`. The Mongo backup workflow, restore script and doc were removed.
+
 ## Summary
 
 Add repository-level automation for weekly MongoDB backups to Cloudflare R2, plus restore documentation and a local restore helper script.
