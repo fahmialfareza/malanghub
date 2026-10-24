@@ -11,17 +11,18 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
+	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
-// advancedResultsCacheKey produces a stable Redis key from the collection, query params,
+// advancedResultsCacheKey produces a stable Redis key from the table, query params,
 // and (for user-scoped routes like /myNews) the caller's user ID.
-func advancedResultsCacheKey(collection string, c *gin.Context) string {
+func advancedResultsCacheKey(table string, c *gin.Context) string {
 	params := c.Request.URL.Query()
 	keys := make([]string, 0, len(params))
 	for k := range params {
@@ -44,17 +45,44 @@ func advancedResultsCacheKey(collection string, c *gin.Context) string {
 	}
 
 	h := md5.Sum([]byte(strings.Join(parts, "&")))
-	return collection + ":list:adv:" + fmt.Sprintf("%x", h)
+	return table + ":list:adv:" + fmt.Sprintf("%x", h)
+}
+
+// sortColumns maps the public sort keys to news columns. Anything else is
+// ignored so user input never reaches raw SQL.
+var sortColumns = map[string]string{
+	"created_at": "created_at",
+	"updated_at": "updated_at",
+	"views":      "views",
+	"title":      "title",
+	"slug":       "slug",
+	"time_read":  "time_read",
+	"status":     "status",
+}
+
+// filterColumns maps the supported filter query params to news columns.
+var filterColumns = map[string]string{
+	"category": "category_id",
+	"user":     "user_id",
+	"status":   "status",
+}
+
+func splitValues(v string) []string {
+	vals := strings.Split(v, ",")
+	for i := range vals {
+		vals[i] = strings.TrimSpace(vals[i])
+	}
+	return vals
 }
 
 // AdvancedResults returns a middleware that performs filtering, sorting and pagination
-// for the given collection name and stores the results in the context under "advancedResults".
-func AdvancedResults(collection string) gin.HandlerFunc {
+// for the given table and stores the results in the context under "advancedResults".
+func AdvancedResults(table string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		defer newrelicpkg.EndSegment(c, "middleware.AdvancedResults."+collection)()
+		defer newrelicpkg.EndSegment(c, "middleware.AdvancedResults."+table)()
 
-		coll := db.GetCollection(collection)
-		if coll == nil {
+		gdb := db.DB()
+		if gdb == nil {
 			c.Next()
 			return
 		}
@@ -72,126 +100,10 @@ func AdvancedResults(collection string) gin.HandlerFunc {
 				limit = v
 			}
 		}
-		skip := (page - 1) * limit
+		offset := (page - 1) * limit
 
-		// projection
-		proj := bson.M{}
-		if sel := c.Query("select"); sel != "" {
-			fields := strings.Split(sel, ",")
-			for _, f := range fields {
-				proj[strings.TrimSpace(f)] = 1
-			}
-		}
-
-		// sort
-		sortDoc := bson.D{}
-		if s := c.Query("sort"); s != "" {
-			parts := strings.Split(s, ",")
-			for _, p := range parts {
-				p = strings.TrimSpace(p)
-				if p == "" {
-					continue
-				}
-				if strings.HasPrefix(p, "-") {
-					sortDoc = append(sortDoc, bson.E{Key: p[1:], Value: -1})
-				} else {
-					sortDoc = append(sortDoc, bson.E{Key: p, Value: 1})
-				}
-			}
-		} else {
-			// default sort
-			sortDoc = append(sortDoc, bson.E{Key: "created_at", Value: -1})
-		}
-
-		// base filter: not deleted (handles null/missing as non-deleted) and approved
-		filter := bson.M{"approved": true, "$or": bson.A{
-			bson.M{"deleted": false},
-			bson.M{"deleted": bson.M{"$exists": false}},
-		}}
-
-		// Track if this is myNews to prevent query param override
-		isMyNews := strings.Contains(c.Request.RequestURI, "/myNews") || strings.Contains(c.Request.URL.Path, "/myNews")
-
-		// If on /myNews route, automatically filter by current user (still approved)
-		if isMyNews {
-			if userIDVal, ok := c.Get("userID"); ok {
-				if userIDStr, ok := userIDVal.(string); ok {
-					if userID, err := primitive.ObjectIDFromHex(userIDStr); err == nil {
-						filter["user"] = userID
-					}
-				}
-			}
-		}
-
-		// allow basic filters via query params (category, tags, user, status)
-		// Skip user param if this is /myNews (already set above)
-		for _, key := range []string{"category", "tags", "user", "status"} {
-			if key == "user" && isMyNews {
-				continue // Skip user param on /myNews
-			}
-			if v := c.Query(key); v != "" {
-				// support comma-separated for $in
-				if strings.Contains(v, ",") {
-					vals := strings.Split(v, ",")
-					for i := range vals {
-						vals[i] = strings.TrimSpace(vals[i])
-					}
-					// if category/user, try converting to ObjectIDs
-					if key == "category" || key == "tags" || key == "user" {
-						var oids []primitive.ObjectID
-						ok := true
-						for _, s := range vals {
-							if oid, err := primitive.ObjectIDFromHex(s); err == nil {
-								oids = append(oids, oid)
-							} else {
-								ok = false
-								break
-							}
-						}
-						if ok {
-							filter[key] = bson.M{"$in": oids}
-						} else {
-							filter[key] = bson.M{"$in": vals}
-						}
-					} else {
-						filter[key] = bson.M{"$in": vals}
-					}
-				} else {
-					// single value
-					if key == "category" || key == "tags" || key == "user" {
-						if oid, err := primitive.ObjectIDFromHex(strings.TrimSpace(v)); err == nil {
-							filter[key] = oid
-						} else {
-							filter[key] = v
-						}
-					} else {
-						filter[key] = v
-					}
-				}
-			}
-		}
-
-		// search param -> alias support: use `q` or `search` for regex on title and content
-		searchQuery := c.Query("q")
-		if searchQuery == "" {
-			searchQuery = c.Query("search")
-		}
-		if searchQuery != "" {
-			// Preserve the existing $or (soft-delete check) inside an $and so it
-			// is not clobbered by the search $or — otherwise soft-deleted docs
-			// would appear in search results.
-			filter["$and"] = bson.A{
-				bson.M{"$or": filter["$or"]},
-				bson.M{"$or": bson.A{
-					bson.M{"title": bson.M{"$regex": searchQuery, "$options": "i"}},
-					bson.M{"content": bson.M{"$regex": searchQuery, "$options": "i"}},
-				}},
-			}
-			delete(filter, "$or")
-		}
-
-		// Return cached result when available (key covers collection + query params + user ID).
-		cKey := advancedResultsCacheKey(collection, c)
+		// Return cached result when available (key covers table + query params + user ID).
+		cKey := advancedResultsCacheKey(table, c)
 		if cached, err := cache.Get(c, cKey); err == nil {
 			var result interface{}
 			if jsonErr := json.Unmarshal(cached, &result); jsonErr == nil {
@@ -201,76 +113,115 @@ func AdvancedResults(collection string) gin.HandlerFunc {
 			}
 		}
 
-		// Build aggregation pipeline so we can populate related collections
-		pipeline := make([]bson.M, 0)
+		// base filter: approved and not soft-deleted
+		query := gdb.WithContext(c).Model(&models.News{}).Scopes(db.Published)
 
-		// match stage
-		pipeline = append(pipeline, bson.M{"$match": filter})
+		// Track if this is myNews to prevent query param override
+		isMyNews := strings.Contains(c.Request.RequestURI, "/myNews") || strings.Contains(c.Request.URL.Path, "/myNews")
 
-		// sort stage
-		if len(sortDoc) > 0 {
-			pipeline = append(pipeline, bson.M{"$sort": sortDoc})
-		}
-
-		// pagination stages
-		pipeline = append(pipeline, bson.M{"$skip": int64(skip)})
-		pipeline = append(pipeline, bson.M{"$limit": int64(limit)})
-
-		// populate related collections: category, user, tags
-		// category (single ref)
-		pipeline = append(pipeline, bson.M{"$lookup": bson.M{
-			"from":         "newscategories",
-			"localField":   "category",
-			"foreignField": "_id",
-			"as":           "category",
-		}})
-		pipeline = append(pipeline, bson.M{"$unwind": bson.M{"path": "$category", "preserveNullAndEmptyArrays": true}})
-
-		// user (single ref) — strip password so it is never sent to clients
-		pipeline = append(pipeline, bson.M{"$lookup": bson.M{
-			"from":         "users",
-			"localField":   "user",
-			"foreignField": "_id",
-			"as":           "user",
-		}})
-		pipeline = append(pipeline, bson.M{"$unwind": bson.M{"path": "$user", "preserveNullAndEmptyArrays": true}})
-		pipeline = append(pipeline, bson.M{"$project": bson.M{"user.password": 0}})
-
-		// tags (array of refs)
-		pipeline = append(pipeline, bson.M{"$lookup": bson.M{
-			"from":         "newstags",
-			"localField":   "tags",
-			"foreignField": "_id",
-			"as":           "tags",
-		}})
-
-		// projection stage (if select provided)
-		if len(proj) > 0 {
-			pipeline = append(pipeline, bson.M{"$project": proj})
-		}
-
-		cur, err := coll.Aggregate(c, pipeline)
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			return
-		}
-		defer cur.Close(c)
-
-		var results []bson.M
-		for cur.Next(c) {
-			var item bson.M
-			if err := cur.Decode(&item); err == nil {
-				results = append(results, item)
+		// If on /myNews route, automatically filter by current user (still approved)
+		if isMyNews {
+			if userIDVal, ok := c.Get("userID"); ok {
+				if userIDStr, ok := userIDVal.(string); ok {
+					query = query.Where("user_id = ?", userIDStr)
+				}
 			}
 		}
 
-		// count total
-		total, _ := coll.CountDocuments(c, filter)
+		// allow basic filters via query params (category, user, status); comma-separated means IN
+		// Skip user param if this is /myNews (already set above)
+		for _, key := range []string{"category", "user", "status"} {
+			if key == "user" && isMyNews {
+				continue
+			}
+			if v := c.Query(key); v != "" {
+				query = query.Where(filterColumns[key]+" IN ?", splitValues(v))
+			}
+		}
+		if v := c.Query("tags"); v != "" {
+			query = query.Where("EXISTS (SELECT 1 FROM news_tag_links l WHERE l.news_id = news.id AND l.tag_id IN ?)", splitValues(v))
+		}
 
-		meta := bson.M{"page": page, "limit": limit, "total": total}
-		response := gin.H{"meta": meta, "data": results}
+		// search param -> alias support: use `q` or `search` for case-insensitive match on title and content
+		searchQuery := c.Query("q")
+		if searchQuery == "" {
+			searchQuery = c.Query("search")
+		}
+		if searchQuery != "" {
+			pattern := "%" + escapeLike(searchQuery) + "%"
+			query = query.Where("(title ILIKE ? OR content ILIKE ?)", pattern, pattern)
+		}
+
+		var total int64
+		if err := query.Session(&gorm.Session{}).Count(&total).Error; err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+		// sort
+		sorted := false
+		if s := c.Query("sort"); s != "" {
+			for _, p := range strings.Split(s, ",") {
+				p = strings.TrimSpace(p)
+				desc := strings.HasPrefix(p, "-")
+				col, ok := sortColumns[strings.TrimPrefix(p, "-")]
+				if !ok {
+					continue
+				}
+				query = query.Order(clause.OrderByColumn{Column: clause.Column{Name: col}, Desc: desc})
+				sorted = true
+			}
+		}
+		if !sorted {
+			query = query.Order("created_at DESC")
+		}
+		// tie-breaker keeps pagination stable
+		query = query.Order("id")
+
+		results := []models.News{}
+		if err := query.Scopes(db.WithNewsRelations).Offset(offset).Limit(limit).Find(&results).Error; err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+
+		var data interface{} = results
+		if sel := c.Query("select"); sel != "" {
+			data = selectFields(results, strings.Split(sel, ","))
+		}
+
+		meta := gin.H{"page": page, "limit": limit, "total": total}
+		response := gin.H{"meta": meta, "data": data}
 		_ = cache.Set(c, cKey, response, 5*time.Minute)
 		c.Set("advancedResults", response)
 		c.Next()
 	}
+}
+
+// selectFields keeps only the requested JSON fields (plus the ID) of each
+// item, like the MongoDB $project stage did.
+func selectFields(items []models.News, fields []string) []map[string]interface{} {
+	out := make([]map[string]interface{}, 0, len(items))
+	for _, item := range items {
+		raw, err := json.Marshal(item)
+		if err != nil {
+			continue
+		}
+		var full map[string]interface{}
+		if err := json.Unmarshal(raw, &full); err != nil {
+			continue
+		}
+		picked := map[string]interface{}{"_id": full["_id"], "id": full["id"]}
+		for _, f := range fields {
+			f = strings.TrimSpace(f)
+			if v, ok := full[f]; ok {
+				picked[f] = v
+			}
+		}
+		out = append(out, picked)
+	}
+	return out
+}
+
+func escapeLike(s string) string {
+	return strings.NewReplacer(`\`, `\\`, "%", `\%`, "_", `\_`).Replace(s)
 }

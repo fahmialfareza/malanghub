@@ -67,8 +67,8 @@ func getEnvInt(key string, def int) int {
 	return def
 }
 
-// EmbedDim is the embedding vector size stored in Mongo and used by the
-// Atlas vector search index.
+// EmbedDim is the embedding vector size of the news_embeddings.embedding
+// pgvector column.
 func EmbedDim() int {
 	return getEnvInt("GEMINI_EMBED_DIM", 768)
 }

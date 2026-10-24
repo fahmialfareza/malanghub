@@ -1,12 +1,12 @@
 package auth
 
 import (
+	"github.com/fahmialfareza/malanghub/backend/models"
 	"net/http"
 
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func JWTMiddleware() gin.HandlerFunc {
@@ -52,8 +52,8 @@ func JWTMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		// validate object id
-		if _, err := primitive.ObjectIDFromHex(idStr); err != nil {
+		// validate id
+		if !models.IsValidID(idStr) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid user id"})
 			return
 		}

@@ -2,11 +2,11 @@ package validators
 
 import (
 	"encoding/json"
+	"github.com/fahmialfareza/malanghub/backend/models"
 	"net/http"
 
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // NewsCreateValidator ensures required fields for creating news
@@ -31,8 +31,8 @@ func NewsCreateValidator() gin.HandlerFunc {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "category is required"})
 			return
 		}
-		if _, err := primitive.ObjectIDFromHex(vcat); err != nil {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "category must be a valid ObjectID"})
+		if !models.IsValidID(vcat) {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "category must be a valid ID"})
 			return
 		}
 
@@ -55,13 +55,13 @@ func NewsCreateValidator() gin.HandlerFunc {
 
 		var tags []string
 		if err := json.Unmarshal([]byte(tagsStr), &tags); err != nil || len(tags) == 0 {
-			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "tags must be a valid JSON array of ObjectID strings"})
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "tags must be a valid JSON array of ID strings"})
 			return
 		}
 
 		for _, tag := range tags {
-			if _, err := primitive.ObjectIDFromHex(tag); err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "each tag must be a valid ObjectID"})
+			if !models.IsValidID(tag) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "each tag must be a valid ID"})
 				return
 			}
 		}
@@ -82,8 +82,8 @@ func NewsUpdateValidator() gin.HandlerFunc {
 		}
 
 		if cat := c.PostForm("category"); cat != "" {
-			if _, err := primitive.ObjectIDFromHex(cat); err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "category must be a valid ObjectID"})
+			if !models.IsValidID(cat) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "category must be a valid ID"})
 				return
 			}
 		}
@@ -91,12 +91,12 @@ func NewsUpdateValidator() gin.HandlerFunc {
 		if tagsStr := c.PostForm("tags"); tagsStr != "" {
 			var tags []string
 			if err := json.Unmarshal([]byte(tagsStr), &tags); err != nil {
-				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "tags must be a valid JSON array of ObjectID strings"})
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "tags must be a valid JSON array of ID strings"})
 				return
 			}
 			for _, tag := range tags {
-				if _, err := primitive.ObjectIDFromHex(tag); err != nil {
-					c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "each tag must be a valid ObjectID"})
+				if !models.IsValidID(tag) {
+					c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "each tag must be a valid ID"})
 					return
 				}
 			}

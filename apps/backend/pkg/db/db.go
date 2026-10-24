@@ -2,54 +2,87 @@ package db
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
+	"log"
+	"os"
 	"time"
 
-	nrmongo "github.com/newrelic/go-agent/v3/integrations/nrmongo"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/newrelic/go-agent/v3/integrations/nrpgx5"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 )
 
-var client *mongo.Client
-var databaseName = "malanghub"
+var (
+	gdb   *gorm.DB
+	sqlDB *sql.DB
+)
 
-// Client returns the underlying mongo client (may be nil until connected)
-func Client() *mongo.Client {
-	return client
+// ErrNotInitialized is returned when the database is used before Connect.
+var ErrNotInitialized = errors.New("db not initialized")
+
+// DB returns the GORM handle (nil until connected).
+func DB() *gorm.DB {
+	return gdb
 }
 
-func Connect(ctx context.Context, uri string) error {
+// Connect opens a Postgres connection pool (traced by New Relic) and wraps
+// it with GORM.
+func Connect(ctx context.Context, dsn string) error {
+	cfg, err := pgx.ParseConfig(dsn)
+	if err != nil {
+		return fmt.Errorf("parse DATABASE_URL: %w", err)
+	}
+	cfg.Tracer = nrpgx5.NewTracer()
+
+	conn := stdlib.OpenDB(*cfg)
+	conn.SetMaxOpenConns(20)
+	conn.SetMaxIdleConns(5)
+	conn.SetConnMaxIdleTime(5 * time.Minute)
+
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
+	if err := conn.PingContext(ctx); err != nil {
+		conn.Close()
+		return fmt.Errorf("postgres ping failed: %w", err)
+	}
 
-	c, err := mongo.Connect(ctx, options.Client().
-		ApplyURI(uri).
-		SetMonitor(nrmongo.NewCommandMonitor(nil)))
+	g, err := gorm.Open(postgres.New(postgres.Config{Conn: conn}), &gorm.Config{
+		// not-found is a normal outcome (e.g. signup email check), not an error to log
+		Logger: gormlogger.New(log.New(os.Stdout, "\r\n", log.LstdFlags), gormlogger.Config{
+			SlowThreshold:             500 * time.Millisecond,
+			LogLevel:                  gormlogger.Warn,
+			IgnoreRecordNotFoundError: true,
+		}),
+	})
 	if err != nil {
+		conn.Close()
 		return err
 	}
 
-	// verify connection
-	if err := c.Ping(ctx, nil); err != nil {
-		return fmt.Errorf("mongo ping failed: %w", err)
-	}
-
-	client = c
+	gdb, sqlDB = g, conn
 	return nil
 }
 
-func Disconnect(ctx context.Context) error {
-	if client == nil {
+func Close() error {
+	if sqlDB == nil {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-	return client.Disconnect(ctx)
+	return sqlDB.Close()
 }
 
-func GetCollection(name string) *mongo.Collection {
-	if client == nil {
-		return nil
-	}
-	return client.Database(databaseName).Collection(name)
+// IsDuplicateKey reports whether err is a unique constraint violation.
+func IsDuplicateKey(err error) bool {
+	var pgErr *pgconn.PgError
+	return errors.As(err, &pgErr) && pgErr.Code == "23505"
+}
+
+// IsNotFound reports whether err means no row matched.
+func IsNotFound(err error) bool {
+	return errors.Is(err, gorm.ErrRecordNotFound)
 }

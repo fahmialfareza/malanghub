@@ -2,13 +2,14 @@ package ai
 
 import (
 	"context"
+	"regexp"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/pgvector/pgvector-go"
+	"gorm.io/gorm/clause"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
@@ -19,7 +20,6 @@ import (
 const (
 	keywordLimit  = 10
 	vectorLimit   = 20
-	numCandidates = 100
 	maxSources    = 5
 	excerptLength = 1500
 	// rrfK is the standard Reciprocal Rank Fusion constant.
@@ -28,20 +28,20 @@ const (
 
 // Source is a retrieved article used as context for the answer.
 type Source struct {
-	ID        primitive.ObjectID `json:"id"`
-	Title     string             `json:"title"`
-	Slug      string             `json:"slug"`
-	CreatedAt time.Time          `json:"created_at"`
-	Excerpt   string             `json:"-"`
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Slug      string    `json:"slug"`
+	CreatedAt time.Time `json:"created_at"`
+	Excerpt   string    `json:"-"`
 }
 
 type vectorHit struct {
-	News primitive.ObjectID `bson:"news"`
-	Text string             `bson:"text"`
+	NewsID string
+	Text   string
 }
 
 // Retrieve finds the most relevant public articles for a question using
-// hybrid search: MongoDB $text (keyword) and Atlas $vectorSearch (meaning),
+// hybrid search: Postgres full-text search (keyword) and pgvector (meaning),
 // merged with Reciprocal Rank Fusion. If one search fails the other is used.
 func Retrieve(ctx context.Context, question string) ([]Source, error) {
 	defer newrelicpkg.EndSegment(ctx, "ai.Retrieve")()
@@ -73,9 +73,9 @@ func Retrieve(ctx context.Context, question string) ([]Source, error) {
 		return nil, keywordErr
 	}
 
-	scores := map[primitive.ObjectID]float64{}
-	articles := map[primitive.ObjectID]*models.News{}
-	bestChunk := map[primitive.ObjectID]string{}
+	scores := map[string]float64{}
+	articles := map[string]*models.News{}
+	bestChunk := map[string]string{}
 
 	for rank, n := range keywordHits {
 		scores[n.ID] += 1.0 / float64(rrfK+rank+1)
@@ -85,17 +85,17 @@ func Retrieve(ctx context.Context, question string) ([]Source, error) {
 	rank := 0
 	for _, h := range vectorHits {
 		// hits are sorted by similarity; keep each article's best chunk only
-		if _, seen := bestChunk[h.News]; seen {
+		if _, seen := bestChunk[h.NewsID]; seen {
 			continue
 		}
-		bestChunk[h.News] = h.Text
-		scores[h.News] += 1.0 / float64(rrfK+rank+1)
+		bestChunk[h.NewsID] = h.Text
+		scores[h.NewsID] += 1.0 / float64(rrfK+rank+1)
 		rank++
 	}
 
 	// load metadata for vector-only hits; the eligibility filter also drops
 	// chunks whose article was unpublished but not yet cleaned up
-	var missing []primitive.ObjectID
+	var missing []string
 	for id := range bestChunk {
 		if _, ok := articles[id]; !ok {
 			missing = append(missing, id)
@@ -109,7 +109,7 @@ func Retrieve(ctx context.Context, question string) ([]Source, error) {
 		}
 	}
 
-	ids := make([]primitive.ObjectID, 0, len(scores))
+	ids := make([]string, 0, len(scores))
 	for id := range scores {
 		if _, ok := articles[id]; ok {
 			ids = append(ids, id)
@@ -132,33 +132,41 @@ func Retrieve(ctx context.Context, question string) ([]Source, error) {
 	return sources, nil
 }
 
+var wordRe = regexp.MustCompile(`[\p{L}\p{N}]+`)
+
+// orTSQuery turns a question into a tsquery matching any of its words, like
+// MongoDB $text did. Words only contain letters and digits, so the result is
+// always valid to_tsquery input.
+func orTSQuery(question string) string {
+	return strings.Join(wordRe.FindAllString(strings.ToLower(question), -1), " | ")
+}
+
 func keywordSearch(ctx context.Context, question string) ([]models.News, error) {
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		return nil, ErrNoProvider
 	}
-	filter := eligibleFilter()
-	filter["$text"] = bson.M{"$search": question}
-
-	opts := options.Find().
-		SetProjection(bson.M{"title": 1, "slug": 1, "content": 1, "created_at": 1, "approved": 1, "score": bson.M{"$meta": "textScore"}}).
-		SetSort(bson.D{{Key: "score", Value: bson.M{"$meta": "textScore"}}, {Key: "created_at", Value: -1}}).
-		SetLimit(keywordLimit)
-
-	cur, err := coll.Find(ctx, filter, opts)
-	if err != nil {
-		return nil, err
+	query := orTSQuery(question)
+	if query == "" {
+		return nil, nil
 	}
-	defer cur.Close(ctx)
-
 	var out []models.News
-	err = cur.All(ctx, &out)
+	err := gdb.WithContext(ctx).
+		Select("id", "title", "slug", "content", "created_at", "approved").
+		Scopes(db.Published).
+		Where("("+db.NewsSearchVector+") @@ to_tsquery('simple', ?)", query).
+		Order(clause.OrderBy{Expression: clause.Expr{
+			SQL:  "ts_rank((" + db.NewsSearchVector + "), to_tsquery('simple', ?)) DESC, created_at DESC",
+			Vars: []any{query},
+		}}).
+		Limit(keywordLimit).
+		Find(&out).Error
 	return out, err
 }
 
 func vectorSearch(ctx context.Context, question string) ([]vectorHit, error) {
-	coll := db.GetCollection(embeddingsCollection)
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil || !vectorReady.Load() {
 		return nil, ErrNoProvider
 	}
 	vectors, err := Default().Embed(ctx, []string{question}, RetrievalQuery)
@@ -169,38 +177,21 @@ func vectorSearch(ctx context.Context, question string) ([]vectorHit, error) {
 		return nil, ErrNoProvider
 	}
 
-	pipeline := bson.A{
-		bson.M{"$vectorSearch": bson.M{
-			"index":         vectorIndexName,
-			"path":          "embedding",
-			"queryVector":   vectors[0],
-			"numCandidates": numCandidates,
-			"limit":         vectorLimit,
-		}},
-		bson.M{"$project": bson.M{"news": 1, "text": 1}},
-	}
-	cur, err := coll.Aggregate(ctx, pipeline)
-	if err != nil {
-		return nil, err
-	}
-	defer cur.Close(ctx)
-
 	var out []vectorHit
-	err = cur.All(ctx, &out)
+	err = gdb.WithContext(ctx).Model(&NewsChunk{}).
+		Select("news_id", "text").
+		Order(clause.OrderBy{Expression: clause.Expr{SQL: "embedding <=> ?", Vars: []any{pgvector.NewVector(vectors[0])}}}).
+		Limit(vectorLimit).
+		Scan(&out).Error
 	return out, err
 }
 
-func findEligibleNews(ctx context.Context, ids []primitive.ObjectID) ([]models.News, error) {
-	filter := eligibleFilter()
-	filter["_id"] = bson.M{"$in": ids}
-	cur, err := db.GetCollection("news").Find(ctx, filter,
-		options.Find().SetProjection(bson.M{"title": 1, "slug": 1, "content": 1, "created_at": 1, "approved": 1}))
-	if err != nil {
-		return nil, err
-	}
-	defer cur.Close(ctx)
-
+func findEligibleNews(ctx context.Context, ids []string) ([]models.News, error) {
 	var out []models.News
-	err = cur.All(ctx, &out)
+	err := db.DB().WithContext(ctx).
+		Select("id", "title", "slug", "content", "created_at", "approved").
+		Scopes(db.Published).
+		Where("id IN ?", ids).
+		Find(&out).Error
 	return out, err
 }

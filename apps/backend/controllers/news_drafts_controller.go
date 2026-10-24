@@ -11,9 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gosimple/slug"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/gorm"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
@@ -31,8 +29,8 @@ func GetAllDrafts(c *gin.Context) {
 		return
 	}
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
@@ -47,28 +45,14 @@ func GetAllDrafts(c *gin.Context) {
 	}
 	skip := (page - 1) * limit
 
-	filter := bson.M{"approved": false, "$or": bson.A{
-		bson.M{"deleted": false},
-		bson.M{"deleted": bson.M{"$exists": false}},
-	}}
-
-	findOpts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "created_at", Value: -1}})
-	cur, err := coll.Find(c, filter, findOpts)
-	if err != nil {
+	list := []models.News{}
+	if err := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).Where("approved = ?", false).
+		Order("created_at DESC").Offset(skip).Limit(limit).Find(&list).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	defer cur.Close(c)
 
-	var list []models.News
-	for cur.Next(c) {
-		var n models.News
-		if err := cur.Decode(&n); err == nil {
-			list = append(list, n)
-		}
-	}
-
-	c.JSON(http.StatusOK, gin.H{"meta": bson.M{"page": page, "limit": limit}, "data": list})
+	c.JSON(http.StatusOK, gin.H{"meta": gin.H{"page": page, "limit": limit}, "data": list})
 }
 
 // MyDrafts returns drafts created by the authenticated user
@@ -80,35 +64,23 @@ func MyDrafts(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		return
 	}
-	idStr, _ := v.(string)
-	oid, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
+	uid, _ := v.(string)
+	if !models.IsValidID(uid) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
 		return
 	}
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	cur, err := coll.Find(c, bson.M{"user": oid, "approved": false, "$or": bson.A{
-		bson.M{"deleted": false},
-		bson.M{"deleted": bson.M{"$exists": false}},
-	}})
-	if err != nil {
+	list := []models.News{}
+	if err := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).
+		Where("user_id = ? AND approved = ?", uid, false).Order("created_at DESC").Find(&list).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
-	}
-	defer cur.Close(c)
-
-	var list []models.News
-	for cur.Next(c) {
-		var n models.News
-		if err := cur.Decode(&n); err == nil {
-			list = append(list, n)
-		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": list})
@@ -119,74 +91,22 @@ func GetDraftBySlug(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetDraftBySlug")()
 
 	slug := c.Param("slug")
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	// Aggregation pipeline mirrors GetNewsBySlug but matches approved: false
-	pipeline := []bson.M{
-		{"$match": bson.M{"slug": slug, "approved": false, "$or": bson.A{
-			bson.M{"deleted": false},
-			bson.M{"deleted": bson.M{"$exists": false}},
-		}}},
-		{"$lookup": bson.M{
-			"from":         "users",
-			"localField":   "user",
-			"foreignField": "_id",
-			"as":           "user",
-		}},
-		{"$unwind": bson.M{"path": "$user", "preserveNullAndEmptyArrays": true}},
-		{"$lookup": bson.M{
-			"from":         "newscategories",
-			"localField":   "category",
-			"foreignField": "_id",
-			"as":           "category",
-		}},
-		{"$unwind": bson.M{"path": "$category", "preserveNullAndEmptyArrays": true}},
-		// normalize tags to ObjectID when stored as hex strings
-		{"$addFields": bson.M{
-			"tags": bson.M{"$map": bson.M{
-				"input": bson.M{"$ifNull": bson.A{"$tags", bson.A{}}},
-				"as":    "t",
-				"in": bson.M{"$cond": bson.A{
-					bson.M{"$eq": bson.A{bson.M{"$type": "$$t"}, "string"}},
-					bson.M{"$toObjectId": "$$t"},
-					"$$t",
-				}},
-			}},
-		}},
-		{"$lookup": bson.M{
-			"from":         "newstags",
-			"localField":   "tags",
-			"foreignField": "_id",
-			"as":           "tags",
-		}},
-	}
-
-	cur, err := coll.Aggregate(c, pipeline)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-	defer cur.Close(c)
-
-	if !cur.Next(c) {
+	var result models.News
+	err := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).
+		Where("slug = ? AND approved = ?", slug, false).Take(&result).Error
+	if db.IsNotFound(err) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "draft not found"})
 		return
 	}
-
-	var result bson.M
-	if err := cur.Decode(&result); err != nil {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
-	}
-
-	// Remove sensitive fields from user
-	if userDoc, ok := result["user"].(bson.M); ok {
-		delete(userDoc, "password")
-		delete(userDoc, "role")
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": result})
@@ -261,9 +181,8 @@ func CreateDraft(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		return
 	}
-	uidStr, _ := v.(string)
-	uid, err := primitive.ObjectIDFromHex(uidStr)
-	if err != nil {
+	uid, _ := v.(string)
+	if !models.IsValidID(uid) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
 		return
 	}
@@ -276,38 +195,31 @@ func CreateDraft(c *gin.Context) {
 	payload.Content = content
 	payload.TimeRead = models.CalculateTimeRead(content)
 
-	// convert category hex to ObjectID
-	if category != "" {
-		if cat, err := primitive.ObjectIDFromHex(category); err == nil {
-			payload.Category = cat
-		}
+	if models.IsValidID(category) {
+		payload.CategoryID = &category
 	}
 
-	// convert tags array of hex strings
+	var tagIDs []string
 	for _, tagID := range tags {
-		if oid, err := primitive.ObjectIDFromHex(tagID); err == nil {
-			payload.Tags = append(payload.Tags, oid)
+		if models.IsValidID(tagID) {
+			tagIDs = append(tagIDs, tagID)
 		}
 	}
 
-	payload.ID = primitive.NewObjectID()
-	payload.User = uid
-	now := time.Now().UTC()
-	payload.CreatedAt = now
-	payload.UpdatedAt = now
+	payload.UserID = uid
 	payload.Approved = false
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	if db.DB() == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	if _, err := coll.InsertOne(c, payload); err != nil {
+	if err := createNews(c, &payload, tagIDs); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
+	_ = db.DB().WithContext(c).Scopes(db.WithNewsRelations).Take(&payload, "id = ?", payload.ID).Error
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
 
@@ -316,8 +228,7 @@ func UpdateDraft(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.UpdateDraft")()
 
 	id := c.Param("id")
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
@@ -327,8 +238,7 @@ func UpdateDraft(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	uidStr, _ := v.(string)
-	uid, _ := primitive.ObjectIDFromHex(uidStr)
+	uid, _ := v.(string)
 
 	// Parse multipart form (support form-data updates)
 	if err := c.Request.ParseMultipartForm(32 << 20); err != nil && err != http.ErrNotMultipart {
@@ -336,7 +246,7 @@ func UpdateDraft(c *gin.Context) {
 		return
 	}
 
-	body := bson.M{}
+	body := map[string]interface{}{}
 
 	// Read simple form fields
 	if title := strings.TrimSpace(c.PostForm("title")); title != "" {
@@ -349,31 +259,31 @@ func UpdateDraft(c *gin.Context) {
 		body["time_read"] = models.CalculateTimeRead(normalizedContent)
 	}
 	if category := strings.TrimSpace(c.PostForm("category")); category != "" {
-		if coid, err := primitive.ObjectIDFromHex(category); err == nil {
-			body["category"] = coid
+		if models.IsValidID(category) {
+			body["category_id"] = category
 		} else {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid category id"})
 			return
 		}
 	}
 
-	// Parse tags JSON string -> []ObjectID
+	// Parse tags JSON string -> tag IDs
+	var tagIDs []string
+	hasTags := false
 	if tagsStr := strings.TrimSpace(c.PostForm("tags")); tagsStr != "" {
 		var tagsArr []string
 		if err := json.Unmarshal([]byte(tagsStr), &tagsArr); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tags format"})
 			return
 		}
-		var out []primitive.ObjectID
 		for _, t := range tagsArr {
-			if tid, err := primitive.ObjectIDFromHex(t); err == nil {
-				out = append(out, tid)
-			} else {
+			if !models.IsValidID(t) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "invalid tag id"})
 				return
 			}
+			tagIDs = append(tagIDs, t)
 		}
-		body["tags"] = out
+		hasTags = true
 	}
 
 	// Optional mainImage upload
@@ -399,28 +309,42 @@ func UpdateDraft(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "cloudinary upload failed: " + err.Error()})
 				return
 			}
-			body["mainImage"] = url
+			body["main_image"] = url
 		}
 	}
 
 	// update timestamp
 	body["updated_at"] = time.Now().UTC()
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db not initialized"})
 		return
 	}
 
-	// only allow update if not approved, match user stored as ObjectID or hex string
-	filter := bson.M{"_id": oid, "approved": false, "$or": bson.A{
-		bson.M{"user": uid},
-		bson.M{"user": uidStr},
-	}}
-	res := coll.FindOneAndUpdate(c, filter, bson.M{"$set": body}, options.FindOneAndUpdate().SetReturnDocument(options.After))
+	// only allow update if not approved and owned by the user
 	var updated models.News
-	if err := res.Decode(&updated); err != nil {
+	err = gdb.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&models.News{}).Where("id = ? AND approved = ? AND user_id = ?", id, false, uid).Updates(body)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		if hasTags {
+			if err := setNewsTags(tx, id, tagIDs); err != nil {
+				return err
+			}
+		}
+		return tx.Scopes(db.WithNewsRelations).Take(&updated, "id = ?", id).Error
+	})
+	if db.IsNotFound(err) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "draft not found or not owned"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -432,8 +356,7 @@ func DeleteDraft(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.DeleteDraft")()
 
 	id := c.Param("id")
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
@@ -443,40 +366,29 @@ func DeleteDraft(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
-	uidStr, _ := v.(string)
-	uid, _ := primitive.ObjectIDFromHex(uidStr)
+	uid, _ := v.(string)
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "db not initialized"})
 		return
 	}
 
 	// If user is admin, allow deleting any draft; otherwise restrict to owner
-	// Determine if user is admin
-	isAdmin := false
-	usersColl := db.GetCollection("users")
-	if usersColl != nil {
-		var u bson.M
-		_ = usersColl.FindOne(c, bson.M{"_id": uid}).Decode(&u)
-		if role, ok := u["role"].(string); ok && strings.Contains(role, "admin") {
-			isAdmin = true
-		}
+	var u models.User
+	isAdmin := gdb.WithContext(c).Select("role").Take(&u, "id = ?", uid).Error == nil && strings.Contains(u.Role, "admin")
+
+	query := gdb.WithContext(c).Model(&models.News{}).Where("id = ?", id)
+	if !isAdmin {
+		query = query.Where("user_id = ?", uid)
 	}
 
-	var filter bson.M
-	if isAdmin {
-		filter = bson.M{"_id": oid}
-	} else {
-		filter = bson.M{"_id": oid, "$or": bson.A{bson.M{"user": uid}, bson.M{"user": uidStr}}}
-	}
-
-	res, err := coll.UpdateOne(c, filter, bson.M{"$set": bson.M{"deleted": true}})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	res := query.Update("deleted", true)
+	if res.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
 		return
 	}
-	if res.MatchedCount == 0 {
+	if res.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "draft not found or not owned"})
 		return
 	}

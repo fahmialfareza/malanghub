@@ -9,13 +9,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"gorm.io/gorm/clause"
+
 	"github.com/fahmialfareza/malanghub/backend/models"
 	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func CreateUser(c *gin.Context) {
@@ -27,16 +26,20 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	payload.ID = primitive.NewObjectID()
-	payload.CreatedAt = time.Now().UTC()
+	payload.ID = ""
+	payload.Deleted = nil
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	if _, err := coll.InsertOne(c, payload); err != nil {
+	if err := gdb.WithContext(c).Create(&payload).Error; err != nil {
+		if db.IsDuplicateKey(err) {
+			c.JSON(http.StatusConflict, gin.H{"message": "email already registered"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
@@ -48,27 +51,16 @@ func CreateUser(c *gin.Context) {
 func ListUsers(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.ListUsers")()
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	cur, err := coll.Find(c, bson.D{})
-	if err != nil {
+	var users []models.User
+	if err := gdb.WithContext(c).Order("created_at").Find(&users).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
-	}
-	defer cur.Close(c)
-
-	var users []models.User
-	for cur.Next(c) {
-		var u models.User
-		if err := cur.Decode(&u); err != nil {
-			continue
-		}
-		u.Password = ""
-		users = append(users, u)
 	}
 
 	c.JSON(http.StatusOK, users)
@@ -84,26 +76,23 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
-	idStr, _ := v.(string)
-	oid, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
+	id, _ := v.(string)
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
 		return
 	}
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
 	var u models.User
-	if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&u); err != nil {
+	if err := gdb.WithContext(c).Take(&u, "id = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
 		return
 	}
-
-	u.Password = ""
 
 	c.JSON(http.StatusOK, gin.H{"data": u})
 }
@@ -117,9 +106,8 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	idStr, _ := v.(string)
-	oid, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
+	id, _ := v.(string)
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
 		return
 	}
@@ -129,7 +117,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
-	body := bson.M{}
+	body := map[string]interface{}{}
 	for _, field := range []string{"name", "motto", "bio", "instagram", "facebook", "twitter", "tiktok", "linkedin"} {
 		if value := strings.TrimSpace(c.PostForm(field)); value != "" {
 			body[field] = value
@@ -171,25 +159,19 @@ func UpdateProfile(c *gin.Context) {
 
 	body["updated_at"] = time.Now().UTC()
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	res := coll.FindOneAndUpdate(
-		c,
-		bson.M{"_id": oid},
-		bson.M{"$set": body},
-		options.FindOneAndUpdate().SetReturnDocument(options.After),
-	)
 	var u models.User
-	if err := res.Decode(&u); err != nil {
+	res := gdb.WithContext(c).Model(&u).Clauses(clause.Returning{}).Where("id = ?", id).Updates(body)
+	if res.Error != nil || res.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
 		return
 	}
 
-	u.Password = ""
 	c.JSON(http.StatusOK, gin.H{"data": u})
 }
 
@@ -203,40 +185,36 @@ func DeleteAccount(c *gin.Context) {
 		return
 	}
 
-	idStr, _ := v.(string)
-	oid, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
+	id, _ := v.(string)
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
 		return
 	}
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	deleted := true
-	update := bson.M{
-		"$set": bson.M{
-			"deleted":    &deleted,
-			"name":       "User Dihapus",
-			"email":      "deleted_" + oid.Hex() + "@malanghub.com",
-			"password":   "",
-			"photo":      "",
-			"motto":      "",
-			"bio":        "",
-			"instagram":  "",
-			"facebook":   "",
-			"twitter":    "",
-			"tiktok":     "",
-			"linkedin":   "",
-			"updated_at": time.Now().UTC(),
-		},
+	update := map[string]interface{}{
+		"deleted":    true,
+		"name":       "User Dihapus",
+		"email":      "deleted_" + id + "@malanghub.com",
+		"password":   "",
+		"photo":      "",
+		"motto":      "",
+		"bio":        "",
+		"instagram":  "",
+		"facebook":   "",
+		"twitter":    "",
+		"tiktok":     "",
+		"linkedin":   "",
+		"updated_at": time.Now().UTC(),
 	}
 
-	res, err := coll.UpdateOne(c, bson.M{"_id": oid}, update)
-	if err != nil || res.MatchedCount == 0 {
+	res := gdb.WithContext(c).Model(&models.User{}).Where("id = ?", id).Updates(update)
+	if res.Error != nil || res.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
 		return
 	}
@@ -249,23 +227,21 @@ func GetUser(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetUser")()
 
 	id := c.Param("id")
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
 		return
 	}
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
 	var u models.User
-	if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&u); err != nil {
+	if err := gdb.WithContext(c).Take(&u, "id = ?", id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
 		return
 	}
-	u.Password = ""
 	c.JSON(http.StatusOK, gin.H{"data": u})
 }

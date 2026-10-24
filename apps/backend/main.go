@@ -28,23 +28,23 @@ func main() {
 	}
 
 	// load env vars if present (user can use dir environment)
-	mongoURI := os.Getenv("MONGO_URI")
-	if mongoURI == "" {
-		log.Println("MONGO_URI not set; using default mongodb://localhost:27017")
-		mongoURI = "mongodb://localhost:27017"
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL == "" {
+		databaseURL = "postgres://localhost:5432/malanghub?sslmode=disable"
+		log.Println("DATABASE_URL not set; using default " + databaseURL)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
-	if err := db.Connect(ctx, mongoURI); err != nil {
-		log.Fatalf("failed to connect to mongo: %v", err)
+	if err := db.Connect(ctx, databaseURL); err != nil {
+		log.Fatalf("failed to connect to postgres: %v", err)
 	}
-	defer db.Disconnect(ctx)
+	defer db.Close()
 
-	// ensure indexes
-	if err := db.EnsureIndexes(ctx, db.Client()); err != nil {
-		log.Printf("warning: could not ensure indexes: %v", err)
+	// create or update the schema
+	if err := db.Migrate(ctx); err != nil {
+		log.Fatalf("failed to migrate database: %v", err)
 	}
 
 	// initialize Redis if configured (non-fatal)
@@ -54,8 +54,8 @@ func main() {
 	}
 	cache.Connect(redisURL)
 
-	// Ask AI: Atlas vector index + periodic embedding sync (non-fatal)
-	ai.EnsureVectorIndex(context.Background())
+	// Ask AI: pgvector store + periodic embedding sync (non-fatal)
+	ai.Migrate(context.Background())
 	ai.StartSyncLoop()
 
 	// initialize New Relic if configured (non-fatal)

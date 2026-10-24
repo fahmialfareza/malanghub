@@ -16,8 +16,6 @@ import (
 	jwtv5 "github.com/golang-jwt/jwt/v5"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
@@ -53,15 +51,15 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
 	// check existing
-	var existing bson.M
-	if err := coll.FindOne(c, bson.M{"email": p.Email}).Decode(&existing); err == nil {
+	var existing models.User
+	if err := gdb.WithContext(c).Select("id").Take(&existing, "email = ?", p.Email).Error; err == nil {
 		c.JSON(http.StatusConflict, gin.H{"message": "email already registered"})
 		return
 	}
@@ -72,23 +70,23 @@ func Signup(c *gin.Context) {
 		return
 	}
 
-	now := time.Now().UTC()
 	u := models.User{
-		ID:        primitive.NewObjectID(),
-		Name:      p.Name,
-		Email:     p.Email,
-		Password:  string(hashed),
-		Role:      "user",
-		CreatedAt: now,
-		UpdatedAt: now,
+		Name:     p.Name,
+		Email:    p.Email,
+		Password: string(hashed),
+		Role:     "user",
 	}
 
-	if _, err := coll.InsertOne(c, u); err != nil {
+	if err := gdb.WithContext(c).Create(&u).Error; err != nil {
+		if db.IsDuplicateKey(err) {
+			c.JSON(http.StatusConflict, gin.H{"message": "email already registered"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
-	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
+	token, err := auth.GenerateTokenWithContext(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to generate token"})
 		return
@@ -107,14 +105,14 @@ func Signin(c *gin.Context) {
 		return
 	}
 
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
 	var u models.User
-	if err := coll.FindOne(c, bson.M{"email": p.Email}).Decode(&u); err != nil {
+	if err := gdb.WithContext(c).Take(&u, "email = ?", p.Email).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "invalid credentials"})
 		return
 	}
@@ -124,7 +122,7 @@ func Signin(c *gin.Context) {
 		return
 	}
 
-	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
+	token, err := auth.GenerateTokenWithContext(c, u.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to generate token"})
 		return
@@ -291,32 +289,28 @@ func googleUserInfoFromIDToken(c *gin.Context, idToken string) (googleUserInfo, 
 }
 
 func tokenForGoogleUser(c *gin.Context, info googleUserInfo) (string, int, gin.H) {
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		return "", http.StatusInternalServerError, gin.H{"message": "db not initialized"}
 	}
 
 	// try find by email
 	var u models.User
-	if err := coll.FindOne(c, bson.M{"email": info.Email}).Decode(&u); err != nil {
+	if err := gdb.WithContext(c).Take(&u, "email = ?", info.Email).Error; err != nil {
 		// create user
-		now := time.Now().UTC()
 		newU := models.User{
-			ID:        primitive.NewObjectID(),
-			Name:      info.Name,
-			Email:     info.Email,
-			Role:      "user",
-			Photo:     info.Picture,
-			CreatedAt: now,
-			UpdatedAt: now,
+			Name:  info.Name,
+			Email: info.Email,
+			Role:  "user",
+			Photo: info.Picture,
 		}
-		if _, err := coll.InsertOne(c, newU); err != nil {
+		if err := gdb.WithContext(c).Create(&newU).Error; err != nil {
 			return "", http.StatusInternalServerError, gin.H{"message": "failed to create user"}
 		}
 		u = newU
 	}
 
-	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
+	token, err := auth.GenerateTokenWithContext(c, u.ID)
 	if err != nil {
 		return "", http.StatusInternalServerError, gin.H{"message": "failed to generate token"}
 	}
@@ -463,19 +457,18 @@ func verifyAppleIdentityToken(c *gin.Context, identityToken string) (jwtv5.MapCl
 }
 
 func tokenForAppleUser(c *gin.Context, appleSub, email, name string) (string, int, gin.H) {
-	coll := db.GetCollection("users")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		return "", http.StatusInternalServerError, gin.H{"message": "db not initialized"}
 	}
 
 	var u models.User
 	// Prefer lookup by Apple sub (stable across email changes)
-	if err := coll.FindOne(c, bson.M{"apple_sub": appleSub}).Decode(&u); err != nil && email != "" {
-		_ = coll.FindOne(c, bson.M{"email": email}).Decode(&u)
+	if err := gdb.WithContext(c).Take(&u, "apple_sub = ?", appleSub).Error; err != nil && email != "" {
+		_ = gdb.WithContext(c).Take(&u, "email = ?", email).Error
 	}
 
-	now := time.Now().UTC()
-	if u.ID.IsZero() {
+	if u.ID == "" {
 		genEmail := email
 		if genEmail == "" {
 			genEmail = "apple_" + appleSub + "@privaterelay.appleid.com"
@@ -485,23 +478,21 @@ func tokenForAppleUser(c *gin.Context, appleSub, email, name string) (string, in
 			genName = "Apple User"
 		}
 		newU := models.User{
-			ID:        primitive.NewObjectID(),
-			Name:      genName,
-			Email:     genEmail,
-			AppleSub:  appleSub,
-			Role:      "user",
-			CreatedAt: now,
-			UpdatedAt: now,
+			Name:     genName,
+			Email:    genEmail,
+			AppleSub: appleSub,
+			Role:     "user",
 		}
-		if _, err := coll.InsertOne(c, newU); err != nil {
+		if err := gdb.WithContext(c).Create(&newU).Error; err != nil {
 			return "", http.StatusInternalServerError, gin.H{"message": "failed to create user"}
 		}
 		u = newU
 	} else if u.AppleSub == "" {
-		_, _ = coll.UpdateOne(c, bson.M{"_id": u.ID}, bson.M{"$set": bson.M{"apple_sub": appleSub, "updated_at": now}})
+		_ = gdb.WithContext(c).Model(&models.User{}).Where("id = ?", u.ID).
+			Updates(map[string]interface{}{"apple_sub": appleSub, "updated_at": time.Now().UTC()}).Error
 	}
 
-	token, err := auth.GenerateTokenWithContext(c, u.ID.Hex())
+	token, err := auth.GenerateTokenWithContext(c, u.ID)
 	if err != nil {
 		return "", http.StatusInternalServerError, gin.H{"message": "failed to generate token"}
 	}

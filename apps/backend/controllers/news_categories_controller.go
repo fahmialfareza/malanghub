@@ -7,10 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	slugpkg "github.com/gosimple/slug"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/gorm/clause"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
@@ -28,28 +25,16 @@ func GetAllCategories(c *gin.Context) {
 		return
 	}
 
-	coll := db.GetCollection("newscategories")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	cur, err := coll.Find(c, bson.M{"$or": bson.A{
-		bson.M{"deleted": false},
-		bson.M{"deleted": bson.M{"$exists": false}},
-	}})
-	if err != nil {
+	var cats []models.Category
+	if err := gdb.WithContext(c).Scopes(db.NotDeleted).Order("created_at").Find(&cats).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
-	}
-	defer cur.Close(c)
-
-	var cats []models.Category
-	for cur.Next(c) {
-		var cat models.Category
-		if err := cur.Decode(&cat); err == nil {
-			cats = append(cats, cat)
-		}
 	}
 
 	if len(cats) == 0 {
@@ -74,41 +59,24 @@ func GetCategoryBySlug(c *gin.Context) {
 		return
 	}
 
-	coll := db.GetCollection("newscategories")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
 	var cat models.Category
-	if err := coll.FindOne(c, bson.M{"slug": slug, "$or": bson.A{
-		bson.M{"deleted": false},
-		bson.M{"deleted": bson.M{"$exists": false}},
-	}}).Decode(&cat); err != nil {
+	if err := gdb.WithContext(c).Scopes(db.NotDeleted).Where("slug = ?", slug).Take(&cat).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": "category not found"})
 		return
 	}
 
 	// load approved news for category
-	newsColl := db.GetCollection("news")
-	var newsList []models.News
-	if newsColl != nil {
-		cur, err := newsColl.Find(c, bson.M{"category": cat.ID, "approved": true, "$or": bson.A{
-			bson.M{"deleted": false},
-			bson.M{"deleted": bson.M{"$exists": false}},
-		}})
-		if err == nil {
-			defer cur.Close(c)
-			for cur.Next(c) {
-				var n models.News
-				if err := cur.Decode(&n); err == nil {
-					newsList = append(newsList, n)
-				}
-			}
-		}
-	}
+	newsList := []models.News{}
+	_ = gdb.WithContext(c).Scopes(db.Published, db.WithNewsRelations).
+		Where("category_id = ?", cat.ID).Order("created_at DESC").Find(&newsList).Error
 
-	response := gin.H{"data": bson.M{"category": cat, "news": newsList}}
+	response := gin.H{"data": gin.H{"category": cat, "news": newsList}}
 	_ = cache.Set(c, cacheKey, response, 10*time.Minute)
 	c.JSON(http.StatusOK, response)
 }
@@ -136,19 +104,18 @@ func CreateCategory(c *gin.Context) {
 		return
 	}
 
-	payload.ID = primitive.NewObjectID()
-	now := time.Now().UTC()
-	payload.CreatedAt = now
-	payload.UpdatedAt = now
+	// server-controlled fields
+	payload.ID = ""
+	payload.Deleted = nil
 
-	coll := db.GetCollection("newscategories")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	if _, err := coll.InsertOne(c, payload); err != nil {
-		if mongo.IsDuplicateKeyError(err) {
+	if err := gdb.WithContext(c).Create(&payload).Error; err != nil {
+		if db.IsDuplicateKey(err) {
 			c.JSON(http.StatusConflict, gin.H{"message": "category already exists"})
 			return
 		}
@@ -165,8 +132,7 @@ func UpdateCategory(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.UpdateCategory")()
 
 	id := c.Param("id")
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid id"})
 		return
 	}
@@ -175,7 +141,7 @@ func UpdateCategory(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-	update := bson.M{}
+	update := map[string]interface{}{}
 	if name, ok := body["name"].(string); ok {
 		name = strings.TrimSpace(name)
 		if name == "" {
@@ -198,19 +164,23 @@ func UpdateCategory(c *gin.Context) {
 	}
 	update["updated_at"] = time.Now().UTC()
 
-	coll := db.GetCollection("newscategories")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	res := coll.FindOneAndUpdate(c, bson.M{"_id": oid}, bson.M{"$set": update}, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	var updated models.Category
-	if err := res.Decode(&updated); err != nil {
-		if mongo.IsDuplicateKeyError(err) {
+	res := gdb.WithContext(c).Model(&updated).Clauses(clause.Returning{}).Where("id = ?", id).Updates(update)
+	if res.Error != nil {
+		if db.IsDuplicateKey(res.Error) {
 			c.JSON(http.StatusConflict, gin.H{"message": "category already exists"})
 			return
 		}
+		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
+		return
+	}
+	if res.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "category not found"})
 		return
 	}
@@ -225,31 +195,28 @@ func DeleteCategory(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.DeleteCategory")()
 
 	id := c.Param("id")
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid id"})
 		return
 	}
-	coll := db.GetCollection("newscategories")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	// fetch slug before soft-delete to invalidate the per-slug cache key
 	var existing models.Category
-	if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&existing); err == nil {
-		_ = cache.Delete(c, "categories:all", "category:slug:"+existing.Slug)
-	}
-
-	res, err := coll.UpdateOne(c, bson.M{"_id": oid}, bson.M{"$set": bson.M{"deleted": true}})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+	res := gdb.WithContext(c).Model(&existing).Clauses(clause.Returning{Columns: []clause.Column{{Name: "slug"}}}).
+		Where("id = ?", id).Update("deleted", true)
+	if res.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
 		return
 	}
-	if res.MatchedCount == 0 {
+	if res.RowsAffected == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "category not found"})
 		return
 	}
+
+	_ = cache.Delete(c, "categories:all", "category:slug:"+existing.Slug)
 	c.JSON(http.StatusOK, gin.H{"data": map[string]interface{}{}})
 }

@@ -30,3 +30,16 @@ func TestChunk(t *testing.T) {
 		t.Fatalf("empty body should yield title only, got %v", got)
 	}
 }
+
+func TestOrTSQuery(t *testing.T) {
+	tests := map[string]string{
+		"":                          "",
+		"Apa kabar Malang?":         "apa | kabar | malang",
+		"harga 'BBM' & (naik) | !x": "harga | bbm | naik | x",
+	}
+	for in, want := range tests {
+		if got := orTSQuery(in); got != want {
+			t.Errorf("orTSQuery(%q) = %q, want %q", in, got, want)
+		}
+	}
+}

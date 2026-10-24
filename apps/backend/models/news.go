@@ -1,29 +1,63 @@
 package models
 
 import (
+	"encoding/json"
 	"time"
 	"unicode/utf8"
 
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"gorm.io/gorm"
 )
 
 type News struct {
-	ID        primitive.ObjectID   `json:"id" bson:"_id,omitempty"`
-	User      primitive.ObjectID   `json:"user" bson:"user"`
-	Slug      string               `json:"slug" bson:"slug"`
-	Title     string               `json:"title" bson:"title"`
-	Category  primitive.ObjectID   `json:"category" bson:"category"`
-	TimeRead  int                  `json:"time_read" bson:"time_read"`
-	MainImage string               `json:"mainImage" bson:"mainImage"`
-	Content   string               `json:"content" bson:"content"`
-	Tags      []primitive.ObjectID `json:"tags" bson:"tags"`
-	Views     int                  `json:"views" bson:"views"`
-	Status    string               `json:"status" bson:"status"`
-	Message   string               `json:"message,omitempty" bson:"message,omitempty"`
-	Approved  bool                 `json:"approved" bson:"approved"`
-	Deleted   *bool                `json:"deleted,omitempty" bson:"deleted,omitempty"`
-	CreatedAt time.Time            `json:"created_at,omitempty" bson:"created_at,omitempty"`
-	UpdatedAt time.Time            `json:"updated_at,omitempty" bson:"updated_at,omitempty"`
+	ID         string    `gorm:"primaryKey;type:varchar(24)" json:"_id"`
+	UserID     string    `gorm:"type:varchar(24);not null" json:"-"`
+	User       *User     `json:"user"`
+	Slug       string    `gorm:"uniqueIndex" json:"slug"`
+	Title      string    `gorm:"uniqueIndex" json:"title"`
+	CategoryID *string   `gorm:"type:varchar(24)" json:"-"`
+	Category   *Category `json:"category"`
+	TimeRead   int       `json:"time_read"`
+	MainImage  string    `json:"mainImage"`
+	Content    string    `json:"content"`
+	Tags       []Tag     `gorm:"many2many:news_tag_links" json:"tags"`
+	Views      int       `json:"views"`
+	Status     string    `json:"status"`
+	Message    string    `json:"message,omitempty"`
+	Approved   bool      `json:"approved"`
+	Deleted    *bool     `json:"deleted,omitempty"`
+	CreatedAt  time.Time `json:"created_at,omitempty"`
+	UpdatedAt  time.Time `json:"updated_at,omitempty"`
+}
+
+func (n *News) BeforeCreate(*gorm.DB) error {
+	ensureID(&n.ID)
+	return nil
+}
+
+// MarshalJSON keeps the MongoDB-era response shape: the ID as both `_id` and
+// `id`, user/category as populated objects (or their ID when not loaded),
+// and tags as an array (never null).
+func (n News) MarshalJSON() ([]byte, error) {
+	type alias News
+	var user any = n.User
+	if n.User == nil {
+		user = n.UserID
+	}
+	var category any = n.Category
+	if n.Category == nil {
+		category = n.CategoryID
+	}
+	tags := n.Tags
+	if tags == nil {
+		tags = []Tag{}
+	}
+	return json.Marshal(struct {
+		alias
+		IDAlias  string `json:"id"`
+		User     any    `json:"user"`
+		Category any    `json:"category"`
+		Tags     []Tag  `json:"tags"`
+	}{alias(n), n.ID, user, category, tags})
 }
 
 func CalculateTimeRead(content string) int {

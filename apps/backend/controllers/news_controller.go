@@ -12,9 +12,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	slug "github.com/gosimple/slug"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
@@ -67,8 +66,8 @@ func ListNews(c *gin.Context) {
 	}
 
 	// fallback: behave like previous simple pagination
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
@@ -91,26 +90,11 @@ func ListNews(c *gin.Context) {
 		return
 	}
 
-	filter := bson.M{"approved": true, "$or": bson.A{
-		bson.M{"deleted": false},
-		bson.M{"deleted": bson.M{"$exists": false}},
-	}}
-
-	findOptions := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)).SetSort(bson.D{{Key: "created_at", Value: -1}})
-	cur, err := coll.Find(c, filter, findOptions)
-	if err != nil {
+	results := []models.News{}
+	if err := gdb.WithContext(c).Scopes(db.Published, db.WithNewsRelations).
+		Order("created_at DESC").Offset(skip).Limit(limit).Find(&results).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
-	}
-	defer cur.Close(c)
-
-	var results []models.News
-	for cur.Next(c) {
-		var n models.News
-		if err := cur.Decode(&n); err != nil {
-			continue
-		}
-		results = append(results, n)
 	}
 
 	_ = cache.Set(c, cacheKey, results, 5*time.Minute)
@@ -129,82 +113,50 @@ func GetNewsBySlug(c *gin.Context) {
 		return
 	}
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	// Use aggregation pipeline to populate all related docs in one go
-	pipeline := []bson.M{
-		// match by slug (treats null/missing deleted as non-deleted)
-		{"$match": bson.M{"slug": slugParam, "approved": true, "$or": bson.A{
-			bson.M{"deleted": false},
-			bson.M{"deleted": bson.M{"$exists": false}},
-		}}},
-		// lookup user
-		{"$lookup": bson.M{
-			"from":         "users",
-			"localField":   "user",
-			"foreignField": "_id",
-			"as":           "user",
-		}},
-		{"$unwind": bson.M{"path": "$user", "preserveNullAndEmptyArrays": true}},
-		// lookup category
-		{"$lookup": bson.M{
-			"from":         "newscategories",
-			"localField":   "category",
-			"foreignField": "_id",
-			"as":           "category",
-		}},
-		{"$unwind": bson.M{"path": "$category", "preserveNullAndEmptyArrays": true}},
-		// ensure tags are ObjectIDs when stored as hex strings so lookup works
-		{"$addFields": bson.M{
-			"tags": bson.M{"$map": bson.M{
-				"input": bson.M{"$ifNull": bson.A{"$tags", bson.A{}}},
-				"as":    "t",
-				"in": bson.M{"$cond": bson.A{
-					bson.M{"$eq": bson.A{bson.M{"$type": "$$t"}, "string"}},
-					bson.M{"$toObjectId": "$$t"},
-					"$$t",
-				}},
-			}},
-		}},
-		// lookup tags (after normalization)
-		{"$lookup": bson.M{
-			"from":         "newstags",
-			"localField":   "tags",
-			"foreignField": "_id",
-			"as":           "tags",
-		}},
-	}
-
-	cur, err := coll.Aggregate(c, pipeline)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-		return
-	}
-	defer cur.Close(c)
-
-	if !cur.Next(c) {
+	var result models.News
+	err := gdb.WithContext(c).Scopes(db.Published, db.WithNewsRelations).
+		Where("slug = ?", slugParam).Take(&result).Error
+	if db.IsNotFound(err) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "news not found"})
 		return
 	}
-
-	var result bson.M
-	if err := cur.Decode(&result); err != nil {
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
-	}
-
-	// Remove password from user if present
-	if userDoc, ok := result["user"].(bson.M); ok {
-		delete(userDoc, "password")
 	}
 
 	response := gin.H{"data": result}
 	_ = cache.Set(c, cacheKey, response, 5*time.Minute)
 	c.JSON(http.StatusOK, response)
+}
+
+// setNewsTags replaces the tag links of a news item. Unknown tag IDs are
+// skipped, like the MongoDB $lookup used to ignore them.
+func setNewsTags(tx *gorm.DB, newsID string, tagIDs []string) error {
+	if err := tx.Exec("DELETE FROM news_tag_links WHERE news_id = ?", newsID).Error; err != nil {
+		return err
+	}
+	if len(tagIDs) == 0 {
+		return nil
+	}
+	return tx.Exec(`INSERT INTO news_tag_links (news_id, tag_id)
+		SELECT ?, id FROM news_tags WHERE id IN ? ON CONFLICT DO NOTHING`, newsID, tagIDs).Error
+}
+
+// createNews inserts a news row and its tag links in one transaction.
+func createNews(c *gin.Context, n *models.News, tagIDs []string) error {
+	return db.DB().WithContext(c).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Omit(clause.Associations).Create(n).Error; err != nil {
+			return err
+		}
+		return setNewsTags(tx, n.ID, tagIDs)
+	})
 }
 
 // CreateNews creates a news entry; slug is generated if not provided
@@ -252,45 +204,34 @@ func CreateNews(c *gin.Context) {
 	payload.Content = content
 	payload.TimeRead = models.CalculateTimeRead(content)
 
-	// convert category hex to ObjectID
-	if category != "" {
-		if cat, err := primitive.ObjectIDFromHex(category); err == nil {
-			payload.Category = cat
-		}
+	if models.IsValidID(category) {
+		payload.CategoryID = &category
 	}
 
-	// convert tags array of hex strings
+	var tagIDs []string
 	for _, tagID := range tags {
-		if oid, err := primitive.ObjectIDFromHex(tagID); err == nil {
-			payload.Tags = append(payload.Tags, oid)
+		if models.IsValidID(tagID) {
+			tagIDs = append(tagIDs, tagID)
 		}
 	}
 
 	// Set user from context (set by JWTMiddleware)
 	if userIDVal, ok := c.Get("userID"); ok {
 		if userIDStr, ok := userIDVal.(string); ok {
-			if userID, err := primitive.ObjectIDFromHex(userIDStr); err == nil {
-				payload.User = userID
-			}
+			payload.UserID = userIDStr
 		}
 	}
-
-	payload.ID = primitive.NewObjectID()
-	now := time.Now().UTC()
-	payload.CreatedAt = now
-	payload.UpdatedAt = now
 
 	// Check if approved flag is passed (for direct creation by authorized users)
 	approvedStr := strings.TrimSpace(c.PostForm("approved"))
 	payload.Approved = approvedStr == "true" // Default to false if not specified
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	if db.DB() == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	if _, err := coll.InsertOne(c, payload); err != nil {
+	if err := createNews(c, &payload, tagIDs); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
@@ -304,6 +245,7 @@ func CreateNews(c *gin.Context) {
 		ai.IndexNewsAsync(payload.ID)
 	}
 
+	_ = db.DB().WithContext(c).Scopes(db.WithNewsRelations).Take(&payload, "id = ?", payload.ID).Error
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
 
@@ -312,8 +254,7 @@ func UpdateNews(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.UpdateNews")()
 
 	id := c.Param("id")
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid id"})
 		return
 	}
@@ -324,55 +265,80 @@ func UpdateNews(c *gin.Context) {
 		return
 	}
 
-	// convert possible category and tags fields from hex strings to ObjectIDs
+	// only known fields are updatable; JSON names map to columns
+	update := map[string]interface{}{}
+	for field, column := range map[string]string{"title": "title", "slug": "slug", "message": "message", "mainImage": "main_image"} {
+		if v, ok := newData[field].(string); ok {
+			update[column] = v
+		}
+	}
+
 	if cat, ok := newData["category"].(string); ok && cat != "" {
-		if coid, err := primitive.ObjectIDFromHex(cat); err == nil {
-			newData["category"] = coid
-		} else {
+		if !models.IsValidID(cat) {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "invalid category id"})
 			return
 		}
+		update["category_id"] = cat
 	}
-	if tags, ok := newData["tags"]; ok {
-		// expect array
-		if arr, ok := tags.([]interface{}); ok {
-			var out []primitive.ObjectID
-			for _, it := range arr {
-				if s, ok := it.(string); ok {
-					if tid, err := primitive.ObjectIDFromHex(s); err == nil {
-						out = append(out, tid)
-					} else {
-						c.JSON(http.StatusBadRequest, gin.H{"message": "invalid tag id"})
-						return
-					}
+	var tagIDs []string
+	_, hasTags := newData["tags"].([]interface{})
+	if arr, ok := newData["tags"].([]interface{}); ok {
+		for _, it := range arr {
+			if s, ok := it.(string); ok {
+				if !models.IsValidID(s) {
+					c.JSON(http.StatusBadRequest, gin.H{"message": "invalid tag id"})
+					return
 				}
+				tagIDs = append(tagIDs, s)
 			}
-			newData["tags"] = out
 		}
 	}
 
 	if content, ok := newData["content"].(string); ok {
 		normalizedContent := strings.ReplaceAll(content, "&lt;", "<")
-		newData["content"] = normalizedContent
-		newData["time_read"] = models.CalculateTimeRead(normalizedContent)
+		update["content"] = normalizedContent
+		update["time_read"] = models.CalculateTimeRead(normalizedContent)
 	}
 
-	if approved, ok := newData["approved"].(bool); ok && approved {
-		newData["status"] = "publish"
+	approved, _ := newData["approved"].(bool)
+	if _, ok := newData["approved"].(bool); ok {
+		update["approved"] = approved
+	}
+	if approved {
+		update["status"] = "publish"
 	} else {
-		newData["status"] = "decline"
+		update["status"] = "decline"
 	}
+	update["updated_at"] = time.Now().UTC()
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	res := coll.FindOneAndUpdate(c, bson.M{"_id": oid, "approved": false}, bson.M{"$set": newData}, options.FindOneAndUpdate().SetReturnDocument(options.After))
 	var updated models.News
-	if err := res.Decode(&updated); err != nil {
+	err := gdb.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		res := tx.Model(&models.News{}).Where("id = ? AND approved = ?", id, false).Updates(update)
+		if res.Error != nil {
+			return res.Error
+		}
+		if res.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		if hasTags {
+			if err := setNewsTags(tx, id, tagIDs); err != nil {
+				return err
+			}
+		}
+		return tx.Scopes(db.WithNewsRelations).Take(&updated, "id = ?", id).Error
+	})
+	if db.IsNotFound(err) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "news not found or already approved"})
+		return
+	}
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
 
@@ -381,7 +347,7 @@ func UpdateNews(c *gin.Context) {
 	_ = cache.DeleteByPattern(c, "category:slug:*")
 	_ = cache.DeleteByPattern(c, "tag:slug:*")
 	_ = cache.DeleteByPattern(c, "news:list:*")
-	if approved, ok := newData["approved"].(bool); ok && approved {
+	if approved {
 		go submitIndexNow(updated.Slug)
 	}
 	ai.IndexNewsAsync(updated.ID)
@@ -390,43 +356,50 @@ func UpdateNews(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
 
-// DeleteNews marks news as deleted (soft delete)
+// DeleteNews permanently deletes a news item
 func DeleteNews(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.DeleteNews")()
 
 	id := c.Param("id")
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
+	if !models.IsValidID(id) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid id"})
 		return
 	}
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
 
-	// fetch doc before deleting to get the slug for cache invalidation
+	// fetch row before deleting to get the slug for cache invalidation
 	var existing models.News
-	if err := coll.FindOne(c, bson.M{"_id": oid}).Decode(&existing); err == nil {
+	if err := gdb.WithContext(c).Select("id", "slug").Take(&existing, "id = ?", id).Error; err == nil {
 		_ = cache.Delete(c, "news:slug:"+existing.Slug)
 		_ = cache.DeleteByPattern(c, "category:slug:*")
 		_ = cache.DeleteByPattern(c, "tag:slug:*")
 		_ = cache.DeleteByPattern(c, "news:list:*")
 	}
 
-	// perform hard delete to match original Node behavior
-	res, err := coll.DeleteOne(c, bson.M{"_id": oid})
+	// perform hard delete to match original Node behavior; tag links go first
+	var deleted int64
+	err := gdb.WithContext(c).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Exec("DELETE FROM news_tag_links WHERE news_id = ?", id).Error; err != nil {
+			return err
+		}
+		res := tx.Delete(&models.News{}, "id = ?", id)
+		deleted = res.RowsAffected
+		return res.Error
+	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	if res.DeletedCount == 0 {
+	if deleted == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"message": "news not found"})
 		return
 	}
-	ai.IndexNewsAsync(oid)
+	ai.IndexNewsAsync(id)
 
 	c.JSON(http.StatusOK, gin.H{"data": map[string]interface{}{}})
 }
@@ -447,15 +420,14 @@ func MyNews(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized"})
 		return
 	}
-	uidStr, _ := v.(string)
-	uid, err := primitive.ObjectIDFromHex(uidStr)
-	if err != nil {
+	uid, _ := v.(string)
+	if !models.IsValidID(uid) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid user id"})
 		return
 	}
 
-	coll := db.GetCollection("news")
-	if coll == nil {
+	gdb := db.DB()
+	if gdb == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
 		return
 	}
@@ -475,34 +447,22 @@ func MyNews(c *gin.Context) {
 	}
 	skip := (page - 1) * limit
 
-	filter := bson.M{
-		"user":     uid,
-		"approved": true,
-		"$or": bson.A{
-			bson.M{"deleted": false},
-			bson.M{"deleted": bson.M{"$exists": false}},
-		},
-	}
+	query := gdb.WithContext(c).Model(&models.News{}).Scopes(db.Published).Where("user_id = ?", uid)
 
-	cur, err := coll.Find(c, filter, options.Find().SetSkip(int64(skip)).SetLimit(int64(limit)))
-	if err != nil {
+	var total int64
+	if err := query.Session(&gorm.Session{}).Count(&total).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
-	defer cur.Close(c)
 
-	var results []models.News
-	for cur.Next(c) {
-		var n models.News
-		if err := cur.Decode(&n); err != nil {
-			continue
-		}
-		results = append(results, n)
+	results := []models.News{}
+	if err := query.Scopes(db.WithNewsRelations).Order("created_at DESC").Offset(skip).Limit(limit).Find(&results).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
 	}
 
-	total, _ := coll.CountDocuments(c, filter)
 	c.JSON(http.StatusOK, gin.H{
-		"meta": bson.M{"page": page, "limit": limit, "total": total},
+		"meta": gin.H{"page": page, "limit": limit, "total": total},
 		"data": results,
 	})
 }
