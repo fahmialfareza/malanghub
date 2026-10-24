@@ -15,11 +15,10 @@ COPY . .
 ENV CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 RUN go build -ldflags='-s -w' -o /malanghub-backend ./
 
-# Final image: minimal alpine with filesystem structure
-FROM alpine:latest
-
-# Install CA certificates
-RUN apk --no-cache add ca-certificates tzdata
+# Final image: distroless static (no shell or package manager, runs as non-root).
+# It ships CA certificates (outbound HTTPS), tzdata and a writable /tmp
+# (multipart uploads above 32 MB spill to temp files).
+FROM gcr.io/distroless/static-debian12:nonroot
 
 WORKDIR /app
 COPY --from=builder /malanghub-backend /app/malanghub-backend
@@ -30,4 +29,5 @@ EXPOSE 4000
 # Set a default TZ environment variable for apps that read it
 ENV TZ=UTC
 
+USER nonroot:nonroot
 ENTRYPOINT ["/app/malanghub-backend"]

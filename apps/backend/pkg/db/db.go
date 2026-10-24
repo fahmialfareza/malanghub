@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -41,8 +42,8 @@ func Connect(ctx context.Context, dsn string) error {
 	cfg.Tracer = nrpgx5.NewTracer()
 
 	conn := stdlib.OpenDB(*cfg)
-	conn.SetMaxOpenConns(20)
-	conn.SetMaxIdleConns(5)
+	conn.SetMaxOpenConns(envInt("DB_MAX_OPEN_CONNS", 10))
+	conn.SetMaxIdleConns(envInt("DB_MAX_IDLE_CONNS", 2))
 	conn.SetConnMaxIdleTime(5 * time.Minute)
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -74,6 +75,13 @@ func Close() error {
 		return nil
 	}
 	return sqlDB.Close()
+}
+
+func envInt(key string, def int) int {
+	if n, err := strconv.Atoi(os.Getenv(key)); err == nil && n > 0 {
+		return n
+	}
+	return def
 }
 
 // IsDuplicateKey reports whether err is a unique constraint violation.

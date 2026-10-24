@@ -5,6 +5,7 @@ Go (Gin) API for Malanghub, backed by Postgres (GORM) and Redis.
 Environment variables (use `.env` or export in your shell):
 
 - `DATABASE_URL` - Postgres connection URL (default: `postgres://localhost:5432/malanghub?sslmode=disable`). The schema is created/updated automatically on startup.
+- `DB_MAX_OPEN_CONNS` / `DB_MAX_IDLE_CONNS` - Postgres connection pool size (defaults `10` / `2`).
 - `GEMINI_EMBED_DIM` - Ask AI embedding size (default `768`); it fixes the `news_embeddings.embedding` column size when the table is first created.
 - `PORT` - HTTP server port (default: `8080`)
 - `GOOGLE_ALLOWED_CLIENT_IDS` - comma-separated Google OAuth client IDs accepted for native ID-token login.
