@@ -21,13 +21,14 @@ Run `apps/backend` on the Railway Postgres instance (its own `malanghub` databas
 - [x] `postgres-backup.yml` workflow, README and `.env.example`.
 - [x] Railway: confirm pgvector is available (`vector` 0.8.7 in `pg_available_extensions`).
 - [x] Railway: create the `malanghub` database.
-- [ ] Railway: set `DATABASE_URL` on the malanghub service to the `/malanghub` database.
-- [ ] Run `cmd/migrate-mongo` against production, deploy, `POST /api/ai/reindex`.
-- [ ] Add the `DATABASE_URL` repository secret for the backup workflow.
+- [x] Railway: set `DATABASE_URL` on the malanghub service to the `/malanghub` database.
+- [x] Run `cmd/migrate-mongo` against production, deploy, `POST /api/ai/reindex`.
+- [x] Add the `DATABASE_URL` repository secret for the backup workflow.
 - [ ] After a stable week: remove `MONGO_URI`, the Mongo backup workflow and `cmd/migrate-mongo`.
 
 ## Validation
 
 - [x] `gofmt -l .`, `go vet ./...`, `go build ./...`, `go test ./...` in `apps/backend`.
 - [x] Local run against `pgvector/pgvector:pg17` + `mongo:7` seeded with legacy-shaped data: migration (run twice), news list filters/sort/search/select, news by slug, drafts, approve, myNews, category CRUD + duplicates, comments + replies, signup/signin/profile, hard delete, Ask AI keyword + vector ordering.
-- [ ] Production smoke test after cut-over.
+- [x] Production smoke test after cut-over.
+- [x] Manual `postgres-backup.yml` run uploaded a `pg_dump` (v18) archive to R2.
