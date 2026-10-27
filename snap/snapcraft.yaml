@@ -20,6 +20,9 @@ apps:
       - home
       - network
       - network-bind
+      # Lets the network-monitor portal answer, so the webview's
+      # navigator.onLine is true instead of always offline.
+      - network-status
       - opengl
       - wayland
       - x11
