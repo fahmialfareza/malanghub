@@ -25,6 +25,9 @@
       } catch (error) {
         // Ignore storage access errors in restricted WebView modes.
       }
+      if (/Linux/.test(navigator.userAgent) && !/Android/.test(navigator.userAgent)) {
+        document.documentElement.setAttribute("data-os", "linux");
+      }
     </script>
     <style>
       html,
@@ -36,6 +39,14 @@
         touch-action: pan-x pan-y;
         -webkit-text-size-adjust: 100%;
         text-size-adjust: 100%;
+      }
+
+      /* WebKitGTK stops wheel and touchpad scrolling at body and #root when
+         they have overscroll-behavior: none (keyboard scrolling still works). */
+      [data-os="linux"],
+      [data-os="linux"] body,
+      [data-os="linux"] #root {
+        overscroll-behavior: auto;
       }
 
       [data-theme="dark"],
