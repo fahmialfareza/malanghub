@@ -1,9 +1,11 @@
 name: malanghub
 base: core24
 version: "0.1.0"
-summary: Malanghub native app
+title: "Malanghub: Berita Malang Raya"
+summary: Berita terkini Kota Malang dan sekitarnya
 description: |
-  Malanghub native desktop app.
+  Malanghub menyajikan berita terkini Kota Malang, Kabupaten Malang, dan Kota
+  Batu.
 grade: stable
 confinement: strict
 

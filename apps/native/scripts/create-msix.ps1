@@ -117,7 +117,7 @@ $manifest = @"
   IgnorableNamespaces="uap uap10 rescap">
   <Identity Name="$escapedIdentityName" Publisher="$escapedPublisher" Version="$Version" ProcessorArchitecture="$ProcessorArchitecture" />
   <Properties>
-    <DisplayName>Malanghub</DisplayName>
+    <DisplayName>Malanghub: Berita Malang Raya</DisplayName>
     <PublisherDisplayName>$escapedPublisherDisplayName</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
