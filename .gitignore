@@ -7,3 +7,6 @@ target
 **/src-tauri/gen
 DEPLOYMENT.md
 .env*.local
+.env
+.env.production
+.env.development
