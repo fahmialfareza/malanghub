@@ -32,7 +32,7 @@ func ImageUpload(c *gin.Context) {
 
 		cld, err := cloudinarypkg.InitWithContext(c)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			internalError(c, "error", err)
 			return
 		}
 		if cld != nil {
@@ -46,7 +46,7 @@ func ImageUpload(c *gin.Context) {
 
 			url, err := cloudinarypkg.UploadFileHeader(c, cld, fh, "malanghub", publicID)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				internalError(c, "error", err)
 				return
 			}
 			c.JSON(http.StatusOK, gin.H{"uploaded": true, "location": url})

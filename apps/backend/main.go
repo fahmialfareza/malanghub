@@ -1,10 +1,12 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -12,6 +14,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
+	"github.com/fahmialfareza/malanghub/backend/pkg/auth"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
@@ -26,6 +29,11 @@ func main() {
 		if err := godotenv.Load(); err != nil {
 			log.Printf("warning: failed to load .env: %v", err)
 		}
+	}
+
+	// JWT_SECRET is read only after .env is loaded; refuse to start without it.
+	if err := auth.Init(); err != nil {
+		log.Fatalf("invalid auth config: %v", err)
 	}
 
 	// load env vars if present (user can use dir environment)
@@ -68,8 +76,20 @@ func main() {
 		log.Printf("newrelic enabled")
 	}
 
+	// GIN_MODE is read here because gin's own init runs before .env is loaded.
+	gin.SetMode(cmp.Or(os.Getenv("GIN_MODE"), gin.ReleaseMode))
+
 	r := gin.Default()
 	r.MaxMultipartMemory = middleware.MaxMultipartMemory
+	// c.ClientIP() (used by the rate limits) trusts X-Forwarded-For only from
+	// the proxies listed in TRUSTED_PROXIES; by default it uses the TCP peer.
+	if err := r.SetTrustedProxies(trustedProxies()); err != nil {
+		log.Fatalf("invalid TRUSTED_PROXIES: %v", err)
+	}
+	if h := os.Getenv("TRUSTED_PLATFORM_HEADER"); h != "" {
+		// e.g. CF-Connecting-IP, only when the backend is reachable solely via that platform
+		r.TrustedPlatform = h
+	}
 	config := cors.DefaultConfig()
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
@@ -92,4 +112,15 @@ func main() {
 	if err := r.Run(":" + port); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
+}
+
+// trustedProxies parses TRUSTED_PROXIES (comma-separated IPs or CIDRs).
+func trustedProxies() []string {
+	var proxies []string
+	for _, p := range strings.Split(os.Getenv("TRUSTED_PROXIES"), ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			proxies = append(proxies, p)
+		}
+	}
+	return proxies
 }

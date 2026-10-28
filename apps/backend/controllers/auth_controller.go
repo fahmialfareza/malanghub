@@ -21,6 +21,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/auth"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	"github.com/fahmialfareza/malanghub/backend/pkg/logger"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
@@ -36,9 +37,10 @@ type signinPayload struct {
 }
 
 type googleUserInfo struct {
-	Email   string `json:"email"`
-	Name    string `json:"name"`
-	Picture string `json:"picture"`
+	Email         string `json:"email"`
+	EmailVerified any    `json:"email_verified"`
+	Name          string `json:"name"`
+	Picture       string `json:"picture"`
 }
 
 func Signup(c *gin.Context) {
@@ -82,7 +84,7 @@ func Signup(c *gin.Context) {
 			c.JSON(http.StatusConflict, gin.H{"message": "email already registered"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -199,6 +201,11 @@ func signInWithGoogleIDToken(c *gin.Context, idToken string) (string, int, gin.H
 }
 
 func googleUserInfoFromAccessToken(c *gin.Context, accessToken string) (googleUserInfo, int, gin.H) {
+	// the token must have been issued to one of our OAuth clients
+	if status, payload := checkGoogleAccessTokenAudience(c, accessToken); status != http.StatusOK {
+		return googleUserInfo{}, status, payload
+	}
+
 	// fetch google userinfo
 	userInfoURL, err := url.Parse("https://www.googleapis.com/oauth2/v3/userinfo")
 	if err != nil {
@@ -229,8 +236,55 @@ func googleUserInfoFromAccessToken(c *gin.Context, accessToken string) (googleUs
 	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
 		return googleUserInfo{}, http.StatusInternalServerError, gin.H{"message": "failed to parse google response"}
 	}
+	if info.Email == "" {
+		return googleUserInfo{}, http.StatusBadRequest, gin.H{"message": "google account does not include email"}
+	}
+	if !isGoogleEmailVerified(info.EmailVerified) {
+		return googleUserInfo{}, http.StatusBadRequest, gin.H{"message": "google email is not verified"}
+	}
 
 	return info, http.StatusOK, gin.H{}
+}
+
+// checkGoogleAccessTokenAudience asks Google's tokeninfo endpoint which client
+// the access token was issued to and accepts only configured client IDs.
+func checkGoogleAccessTokenAudience(c *gin.Context, accessToken string) (int, gin.H) {
+	tokenInfoURL, err := url.Parse("https://oauth2.googleapis.com/tokeninfo")
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"message": "failed to build google request"}
+	}
+	query := tokenInfoURL.Query()
+	query.Set("access_token", accessToken)
+	tokenInfoURL.RawQuery = query.Encode()
+
+	req, err := http.NewRequestWithContext(c, http.MethodGet, tokenInfoURL.String(), nil)
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"message": "failed to build google request"}
+	}
+	req = newrelicpkg.InstrumentRequest(c, req)
+
+	client := newrelicpkg.InstrumentedHTTPClient(&http.Client{Timeout: 10 * time.Second})
+	resp, err := client.Do(req)
+	if err != nil {
+		return http.StatusInternalServerError, gin.H{"message": "failed to call google"}
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return http.StatusBadRequest, gin.H{"message": "google access token invalid"}
+	}
+
+	var tokenInfo struct {
+		Audience        string `json:"aud"`
+		AuthorizedParty string `json:"azp"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&tokenInfo); err != nil {
+		return http.StatusInternalServerError, gin.H{"message": "failed to parse google response"}
+	}
+	if !isAllowedGoogleAudience(tokenInfo.Audience) && !isAllowedGoogleAudience(tokenInfo.AuthorizedParty) {
+		return http.StatusBadRequest, gin.H{"message": "google access token audience is not allowed"}
+	}
+
+	return http.StatusOK, gin.H{}
 }
 
 func googleUserInfoFromIDToken(c *gin.Context, idToken string) (googleUserInfo, int, gin.H) {
@@ -296,7 +350,13 @@ func tokenForGoogleUser(c *gin.Context, info googleUserInfo) (string, int, gin.H
 
 	// try find by email
 	var u models.User
-	if err := gdb.WithContext(c).Take(&u, "email = ?", info.Email).Error; err != nil {
+	if err := gdb.WithContext(c).Scopes(db.NotDeleted).Take(&u, "email = ?", info.Email).Error; err == nil {
+		// Google verified the email, so a password set on this account
+		// before (possibly by someone pre-registering it) is cleared.
+		if err := clearPassword(c, u); err != nil {
+			return "", http.StatusInternalServerError, gin.H{"message": "failed to link account"}
+		}
+	} else {
 		// create user
 		newU := models.User{
 			Name:  info.Name,
@@ -316,6 +376,18 @@ func tokenForGoogleUser(c *gin.Context, info googleUserInfo) (string, int, gin.H
 	}
 
 	return token, http.StatusOK, gin.H{"token": token}
+}
+
+// clearPassword removes the password of an account that is being signed in
+// through an identity provider. Signup never verifies email ownership, so the
+// password may have been set by someone else (pre-account hijacking); from
+// now on the account signs in through the identity provider.
+func clearPassword(c *gin.Context, u models.User) error {
+	if u.Password == "" {
+		return nil
+	}
+	return db.DB().WithContext(c).Model(&models.User{}).Where("id = ?", u.ID).
+		Updates(map[string]interface{}{"password": "", "updated_at": time.Now().UTC()}).Error
 }
 
 func isAllowedGoogleAudience(audience string) bool {
@@ -430,6 +502,11 @@ func verifyAppleIdentityToken(c *gin.Context, identityToken string) (jwtv5.MapCl
 		return nil, fmt.Errorf("fetch Apple JWKS: %w", err)
 	}
 
+	audiences := allowedAppleAudiences()
+	if len(audiences) == 0 {
+		return nil, fmt.Errorf("no Apple client IDs configured")
+	}
+
 	token, err := jwtv5.Parse(identityToken, func(token *jwtv5.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwtv5.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("unexpected alg: %v", token.Header["alg"])
@@ -443,6 +520,7 @@ func verifyAppleIdentityToken(c *gin.Context, identityToken string) (jwtv5.MapCl
 		return nil, fmt.Errorf("no key for kid=%q", kid)
 	},
 		jwtv5.WithIssuer("https://appleid.apple.com"),
+		jwtv5.WithAudience(audiences...),
 		jwtv5.WithExpirationRequired(),
 	)
 	if err != nil {
@@ -456,6 +534,20 @@ func verifyAppleIdentityToken(c *gin.Context, identityToken string) (jwtv5.MapCl
 	return claims, nil
 }
 
+// allowedAppleAudiences reads APPLE_CLIENT_IDS: the comma-separated bundle
+// IDs / Services IDs whose identity tokens are accepted.
+func allowedAppleAudiences() []string {
+	var values []string
+	for _, value := range strings.Split(os.Getenv("APPLE_CLIENT_IDS"), ",") {
+		if trimmed := strings.TrimSpace(value); trimmed != "" {
+			values = append(values, trimmed)
+		}
+	}
+	return values
+}
+
+// tokenForAppleUser signs in the user linked to appleSub. email must come from
+// the verified identity token; it is used only to link or create an account.
 func tokenForAppleUser(c *gin.Context, appleSub, email, name string) (string, int, gin.H) {
 	gdb := db.DB()
 	if gdb == nil {
@@ -464,8 +556,12 @@ func tokenForAppleUser(c *gin.Context, appleSub, email, name string) (string, in
 
 	var u models.User
 	// Prefer lookup by Apple sub (stable across email changes)
-	if err := gdb.WithContext(c).Take(&u, "apple_sub = ?", appleSub).Error; err != nil && email != "" {
-		_ = gdb.WithContext(c).Take(&u, "email = ?", email).Error
+	if err := gdb.WithContext(c).Scopes(db.NotDeleted).Take(&u, "apple_sub = ?", appleSub).Error; err != nil && email != "" {
+		_ = gdb.WithContext(c).Scopes(db.NotDeleted).Take(&u, "email = ?", email).Error
+	}
+
+	if u.ID != "" && u.AppleSub != "" && u.AppleSub != appleSub {
+		return "", http.StatusConflict, gin.H{"message": "account is linked to a different Apple ID"}
 	}
 
 	if u.ID == "" {
@@ -488,8 +584,12 @@ func tokenForAppleUser(c *gin.Context, appleSub, email, name string) (string, in
 		}
 		u = newU
 	} else if u.AppleSub == "" {
-		_ = gdb.WithContext(c).Model(&models.User{}).Where("id = ?", u.ID).
-			Updates(map[string]interface{}{"apple_sub": appleSub, "updated_at": time.Now().UTC()}).Error
+		// first Apple link of an existing account: Apple verified the email,
+		// so drop any password set before (see clearPassword)
+		if err := gdb.WithContext(c).Model(&models.User{}).Where("id = ?", u.ID).
+			Updates(map[string]interface{}{"apple_sub": appleSub, "password": "", "updated_at": time.Now().UTC()}).Error; err != nil {
+			return "", http.StatusInternalServerError, gin.H{"message": "failed to link account"}
+		}
 	}
 
 	token, err := auth.GenerateTokenWithContext(c, u.ID)
@@ -499,14 +599,13 @@ func tokenForAppleUser(c *gin.Context, appleSub, email, name string) (string, in
 	return token, http.StatusOK, gin.H{"token": token}
 }
 
-// AppleSignIn accepts { "identity_token": "...", "email": "...", "name": "..." }
-// from the native Apple Sign In SDK.
+// AppleSignIn accepts { "identity_token": "...", "name": "..." } from the native
+// Apple Sign In SDK. The email is taken only from the verified token.
 func AppleSignIn(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.AppleSignIn")()
 
 	var body struct {
 		IdentityToken string `form:"identity_token" json:"identity_token"`
-		Email         string `form:"email"          json:"email"`
 		Name          string `form:"name"           json:"name"`
 	}
 	if err := c.ShouldBind(&body); err != nil {
@@ -522,7 +621,8 @@ func AppleSignIn(c *gin.Context) {
 
 	claims, err := verifyAppleIdentityToken(c, identityToken)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid Apple identity token: " + err.Error()})
+		logger.Error("apple sign-in:", err)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid Apple identity token"})
 		return
 	}
 
@@ -532,10 +632,12 @@ func AppleSignIn(c *gin.Context) {
 		return
 	}
 
-	// Apple returns email only on first sign-in; fall back to body value
+	// Never trust a client-supplied email; without a verified email claim the
+	// account can only be found by its Apple sub.
 	email, _ := claims["email"].(string)
-	if email == "" {
-		email = strings.TrimSpace(body.Email)
+	if email != "" && !isGoogleEmailVerified(claims["email_verified"]) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Apple email is not verified"})
+		return
 	}
 
 	token, status, payload := tokenForAppleUser(c, sub, email, body.Name)

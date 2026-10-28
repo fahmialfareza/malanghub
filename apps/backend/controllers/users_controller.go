@@ -4,10 +4,12 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 
 	"gorm.io/gorm/clause"
 
@@ -18,17 +20,16 @@ import (
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
+// CreateUser (admin only) creates a regular user. Like Signup, it binds only
+// name, email and password, hashes the password and forces role "user".
 func CreateUser(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.CreateUser")()
 
-	var payload models.User
-	if err := c.ShouldBind(&payload); err != nil {
+	var p signupPayload
+	if err := c.ShouldBind(&p); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
-	payload.ID = ""
-	payload.Deleted = nil
 
 	gdb := db.DB()
 	if gdb == nil {
@@ -36,17 +37,29 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
-	if err := gdb.WithContext(c).Create(&payload).Error; err != nil {
+	hashed, err := bcrypt.GenerateFromPassword([]byte(p.Password), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to hash password"})
+		return
+	}
+
+	u := models.User{
+		Name:     p.Name,
+		Email:    p.Email,
+		Password: string(hashed),
+		Role:     "user",
+	}
+
+	if err := gdb.WithContext(c).Create(&u).Error; err != nil {
 		if db.IsDuplicateKey(err) {
 			c.JSON(http.StatusConflict, gin.H{"message": "email already registered"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
-	payload.Password = ""
-	c.JSON(http.StatusCreated, payload)
+	c.JSON(http.StatusCreated, u)
 }
 
 func ListUsers(c *gin.Context) {
@@ -60,7 +73,7 @@ func ListUsers(c *gin.Context) {
 
 	var users []models.User
 	if err := gdb.WithContext(c).Order("created_at").Find(&users).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -124,6 +137,13 @@ func UpdateProfile(c *gin.Context) {
 			body[field] = value
 		}
 	}
+	// social links are handles or http(s) URLs; reject javascript: and the like
+	for _, field := range []string{"instagram", "facebook", "twitter", "tiktok", "linkedin"} {
+		if value, ok := body[field].(string); ok && !isSafeSocialLink(value) {
+			c.JSON(http.StatusBadRequest, gin.H{"message": field + " must be a handle or an http(s) URL"})
+			return
+		}
+	}
 
 	if fileHeader, err := c.FormFile("photo"); err == nil && fileHeader != nil {
 		contentType := fileHeader.Header.Get("Content-Type")
@@ -138,7 +158,7 @@ func UpdateProfile(c *gin.Context) {
 
 		cld, err := cloudinarypkg.InitWithContext(c)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary init failed: " + err.Error()})
+			internalError(c, "message", err)
 			return
 		}
 		if cld != nil {
@@ -151,7 +171,7 @@ func UpdateProfile(c *gin.Context) {
 
 			url, err := cloudinarypkg.UploadFileHeader(c, cld, fileHeader, "malanghub", publicID)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary upload failed: " + err.Error()})
+				internalError(c, "message", err)
 				return
 			}
 			body["photo"] = url
@@ -211,6 +231,8 @@ func DeleteAccount(c *gin.Context) {
 		"twitter":    "",
 		"tiktok":     "",
 		"linkedin":   "",
+		"role":       "",
+		"apple_sub":  "",
 		"updated_at": time.Now().UTC(),
 	}
 
@@ -244,5 +266,14 @@ func GetUser(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "user not found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"data": u})
+	c.JSON(http.StatusOK, gin.H{"data": models.PublicUser(u)})
+}
+
+// isSafeSocialLink allows plain handles and http(s) URLs only.
+func isSafeSocialLink(value string) bool {
+	u, err := url.Parse(value)
+	if err != nil {
+		return false
+	}
+	return u.Scheme == "" || u.Scheme == "http" || u.Scheme == "https"
 }

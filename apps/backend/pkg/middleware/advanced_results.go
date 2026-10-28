@@ -16,6 +16,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	"github.com/fahmialfareza/malanghub/backend/pkg/logger"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
@@ -140,7 +141,8 @@ func AdvancedResults(table string) gin.HandlerFunc {
 
 		var total int64
 		if err := query.Session(&gorm.Session{}).Count(&total).Error; err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			logger.Error("advancedResults:", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 			return
 		}
 
@@ -166,7 +168,8 @@ func AdvancedResults(table string) gin.HandlerFunc {
 
 		results := []models.News{}
 		if err := query.Scopes(db.WithNewsRelations).Offset(offset).Limit(limit).Find(&results).Error; err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			logger.Error("advancedResults:", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 			return
 		}
 

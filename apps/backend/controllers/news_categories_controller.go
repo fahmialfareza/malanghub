@@ -33,7 +33,7 @@ func GetAllCategories(c *gin.Context) {
 
 	var cats []models.Category
 	if err := gdb.WithContext(c).Scopes(db.NotDeleted).Order("created_at").Find(&cats).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -119,7 +119,7 @@ func CreateCategory(c *gin.Context) {
 			c.JSON(http.StatusConflict, gin.H{"message": "category already exists"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -177,7 +177,7 @@ func UpdateCategory(c *gin.Context) {
 			c.JSON(http.StatusConflict, gin.H{"message": "category already exists"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
+		internalError(c, "message", res.Error)
 		return
 	}
 	if res.RowsAffected == 0 {
@@ -209,7 +209,7 @@ func DeleteCategory(c *gin.Context) {
 	res := gdb.WithContext(c).Model(&existing).Clauses(clause.Returning{Columns: []clause.Column{{Name: "slug"}}}).
 		Where("id = ?", id).Update("deleted", true)
 	if res.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
+		internalError(c, "message", res.Error)
 		return
 	}
 	if res.RowsAffected == 0 {

@@ -13,6 +13,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/fahmialfareza/malanghub/backend/models"
+	"github.com/fahmialfareza/malanghub/backend/pkg/auth"
 	cloudinarypkg "github.com/fahmialfareza/malanghub/backend/pkg/cloudinary"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
@@ -40,7 +41,7 @@ func GetAllDrafts(c *gin.Context) {
 	list := []models.News{}
 	if err := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).Where("approved = ?", false).
 		Order("created_at DESC").Offset(skip).Limit(limit).Find(&list).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -71,17 +72,19 @@ func MyDrafts(c *gin.Context) {
 	list := []models.News{}
 	if err := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).
 		Where("user_id = ? AND approved = ?", uid, false).Order("created_at DESC").Find(&list).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"data": list})
 }
 
-// GetDraftBySlug returns a single draft by slug (not approved)
+// GetDraftBySlug returns a single draft by slug (not approved) to its owner
+// or an admin
 func GetDraftBySlug(c *gin.Context) {
 	defer newrelicpkg.EndSegment(c, "controllers.GetDraftBySlug")()
 
+	uid := c.GetString("userID")
 	slug := c.Param("slug")
 	gdb := db.DB()
 	if gdb == nil {
@@ -89,15 +92,20 @@ func GetDraftBySlug(c *gin.Context) {
 		return
 	}
 
+	query := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).
+		Where("slug = ? AND approved = ?", slug, false)
+	if !auth.IsAdmin(c, uid) {
+		query = query.Where("user_id = ?", uid)
+	}
+
 	var result models.News
-	err := gdb.WithContext(c).Scopes(db.NotDeleted, db.WithNewsRelations).
-		Where("slug = ? AND approved = ?", slug, false).Take(&result).Error
+	err := query.Take(&result).Error
 	if db.IsNotFound(err) {
 		c.JSON(http.StatusNotFound, gin.H{"message": "draft not found"})
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -135,7 +143,7 @@ func CreateDraft(c *gin.Context) {
 
 	cld, err := cloudinarypkg.InitWithContext(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary init failed: " + err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 	if cld == nil {
@@ -153,7 +161,7 @@ func CreateDraft(c *gin.Context) {
 
 	url, err := cloudinarypkg.UploadFileHeader(c, cld, fileHeader, "malanghub", publicID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "cloudinary upload failed: " + err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 	mainImage = url
@@ -207,7 +215,7 @@ func CreateDraft(c *gin.Context) {
 	}
 
 	if err := createNews(c, &payload, tagIDs); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -298,7 +306,7 @@ func UpdateDraft(c *gin.Context) {
 
 			url, err := cloudinarypkg.UploadFileHeader(c, cld, fileHeader, "malanghub", publicID)
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "cloudinary upload failed: " + err.Error()})
+				internalError(c, "error", err)
 				return
 			}
 			body["main_image"] = url
@@ -336,7 +344,7 @@ func UpdateDraft(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, "error", err)
 		return
 	}
 
@@ -367,17 +375,14 @@ func DeleteDraft(c *gin.Context) {
 	}
 
 	// If user is admin, allow deleting any draft; otherwise restrict to owner
-	var u models.User
-	isAdmin := gdb.WithContext(c).Select("role").Take(&u, "id = ?", uid).Error == nil && strings.Contains(u.Role, "admin")
-
 	query := gdb.WithContext(c).Model(&models.News{}).Where("id = ?", id)
-	if !isAdmin {
+	if !auth.IsAdmin(c, uid) {
 		query = query.Where("user_id = ?", uid)
 	}
 
 	res := query.Update("deleted", true)
 	if res.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
+		internalError(c, "message", res.Error)
 		return
 	}
 	if res.RowsAffected == 0 {

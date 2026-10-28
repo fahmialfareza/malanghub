@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"net/http"
 	"strings"
 
@@ -33,7 +34,7 @@ func AdminMiddleware() gin.HandlerFunc {
 		}
 
 		var u models.User
-		if err := gdb.WithContext(c).Select("role").Take(&u, "id = ?", id).Error; err != nil {
+		if err := gdb.WithContext(c).Select("role").Scopes(db.NotDeleted).Take(&u, "id = ?", id).Error; err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "user not found"})
 			return
 		}
@@ -45,4 +46,18 @@ func AdminMiddleware() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+// IsAdmin reports whether the user (not soft-deleted) has the admin role. It
+// returns false when the user or database is unavailable.
+func IsAdmin(ctx context.Context, id string) bool {
+	gdb := db.DB()
+	if gdb == nil || !models.IsValidID(id) {
+		return false
+	}
+	var u models.User
+	if err := gdb.WithContext(ctx).Select("role").Scopes(db.NotDeleted).Take(&u, "id = ?", id).Error; err != nil {
+		return false
+	}
+	return strings.Contains(u.Role, "admin")
 }

@@ -50,7 +50,7 @@ func GetCommentsByNews(c *gin.Context) {
 	out := []models.NewsComment{}
 	if err := gdb.WithContext(c).Scopes(withCommentRelations).
 		Where("news_id = ?", newsID).Order("created_at").Find(&out).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, "error", err)
 		return
 	}
 
@@ -97,7 +97,7 @@ func CreateComment(c *gin.Context) {
 	}
 
 	if err := gdb.WithContext(c).Create(&nc).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		internalError(c, "error", err)
 		return
 	}
 
@@ -145,12 +145,12 @@ func CreateCommentByComment(c *gin.Context) {
 
 	reply := models.NewsCommentReply{CommentID: commentID, UserID: uid, Comment: body.Comment}
 	if err := gdb.WithContext(c).Create(&reply).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
 	if err := gdb.WithContext(c).Scopes(withCommentRelations).Take(&updated, "id = ?", commentID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 

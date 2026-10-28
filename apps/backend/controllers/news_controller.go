@@ -16,6 +16,7 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/models"
 	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
+	"github.com/fahmialfareza/malanghub/backend/pkg/auth"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
@@ -83,7 +84,7 @@ func ListNews(c *gin.Context) {
 	results := []models.News{}
 	if err := gdb.WithContext(c).Scopes(db.Published, db.WithNewsRelations).
 		Order("created_at DESC").Offset(skip).Limit(limit).Find(&results).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -117,7 +118,7 @@ func GetNewsBySlug(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -212,9 +213,9 @@ func CreateNews(c *gin.Context) {
 		}
 	}
 
-	// Check if approved flag is passed (for direct creation by authorized users)
+	// Only admins may publish directly; everyone else goes through approval.
 	approvedStr := strings.TrimSpace(c.PostForm("approved"))
-	payload.Approved = approvedStr == "true" // Default to false if not specified
+	payload.Approved = approvedStr == "true" && auth.IsAdmin(c, payload.UserID)
 
 	if db.DB() == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
@@ -222,7 +223,7 @@ func CreateNews(c *gin.Context) {
 	}
 
 	if err := createNews(c, &payload, tagIDs); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -328,7 +329,7 @@ func UpdateNews(c *gin.Context) {
 		return
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -382,7 +383,7 @@ func DeleteNews(c *gin.Context) {
 		return res.Error
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 	if deleted == 0 {
@@ -428,13 +429,13 @@ func MyNews(c *gin.Context) {
 
 	var total int64
 	if err := query.Session(&gorm.Session{}).Count(&total).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
 	results := []models.News{}
 	if err := query.Scopes(db.WithNewsRelations).Order("created_at DESC").Offset(skip).Limit(limit).Find(&results).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 

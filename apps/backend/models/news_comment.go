@@ -23,7 +23,7 @@ func (r *NewsCommentReply) BeforeCreate(*gorm.DB) error {
 
 func (r NewsCommentReply) MarshalJSON() ([]byte, error) {
 	type alias NewsCommentReply
-	var user any = r.User
+	var user any = (*PublicUser)(r.User)
 	if r.User == nil {
 		user = r.UserID
 	}
@@ -53,7 +53,7 @@ func (nc *NewsComment) BeforeCreate(*gorm.DB) error {
 
 func (nc NewsComment) MarshalJSON() ([]byte, error) {
 	type alias NewsComment
-	var user any = nc.User
+	var user any = (*PublicUser)(nc.User)
 	if nc.User == nil {
 		user = nc.UserID
 	}

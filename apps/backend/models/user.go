@@ -43,3 +43,22 @@ func (u User) MarshalJSON() ([]byte, error) {
 		IDAlias string `json:"id"`
 	}{a, u.ID})
 }
+
+// PublicUser is the view of a user that anyone may read (authors,
+// commenters, public profiles): it drops email, role, apple_sub and deleted.
+type PublicUser User
+
+func (u PublicUser) MarshalJSON() ([]byte, error) {
+	b, err := json.Marshal(User(u))
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]json.RawMessage
+	if err := json.Unmarshal(b, &m); err != nil {
+		return nil, err
+	}
+	for _, k := range []string{"email", "role", "apple_sub", "deleted"} {
+		delete(m, k)
+	}
+	return json.Marshal(m)
+}

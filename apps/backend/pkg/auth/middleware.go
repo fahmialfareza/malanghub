@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/fahmialfareza/malanghub/backend/models"
+	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	"net/http"
 
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
@@ -55,6 +56,18 @@ func JWTMiddleware() gin.HandlerFunc {
 		// validate id
 		if !models.IsValidID(idStr) {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "invalid user id"})
+			return
+		}
+
+		// reject tokens of deleted (or removed) accounts
+		gdb := db.DB()
+		if gdb == nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": "db not initialized"})
+			return
+		}
+		var count int64
+		if err := gdb.WithContext(c).Model(&models.User{}).Scopes(db.NotDeleted).Where("id = ?", idStr).Count(&count).Error; err != nil || count == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "user not found"})
 			return
 		}
 

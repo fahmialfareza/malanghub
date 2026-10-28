@@ -32,7 +32,7 @@ func GetAllTags(c *gin.Context) {
 
 	var tags []models.Tag
 	if err := gdb.WithContext(c).Scopes(db.NotDeleted).Order("created_at").Find(&tags).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -118,7 +118,7 @@ func CreateTag(c *gin.Context) {
 			c.JSON(http.StatusConflict, gin.H{"message": "tag already exists"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		internalError(c, "message", err)
 		return
 	}
 
@@ -176,7 +176,7 @@ func UpdateTag(c *gin.Context) {
 			c.JSON(http.StatusConflict, gin.H{"message": "tag already exists"})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
+		internalError(c, "message", res.Error)
 		return
 	}
 	if res.RowsAffected == 0 {
@@ -208,7 +208,7 @@ func DeleteTag(c *gin.Context) {
 	res := gdb.WithContext(c).Model(&existing).Clauses(clause.Returning{Columns: []clause.Column{{Name: "slug"}}}).
 		Where("id = ?", id).Update("deleted", true)
 	if res.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"message": res.Error.Error()})
+		internalError(c, "message", res.Error)
 		return
 	}
 	if res.RowsAffected == 0 {

@@ -14,26 +14,30 @@ import (
 )
 
 func Register(r *gin.Engine) {
+	// per-IP attempt limits; /api/auth and /api/users mirrors share a bucket
+	signinLimit := middleware.RateLimitByIP("signin", authRateLimitPerHour(), time.Hour)
+	signupLimit := middleware.RateLimitByIP("signup", authRateLimitPerHour(), time.Hour)
+
 	api := r.Group("/api")
 	{
 		auth := api.Group("/auth")
-		auth.POST("/signup", controllers.Signup)
-		auth.POST("/signin", controllers.Signin)
+		auth.POST("/signup", signupLimit, controllers.Signup)
+		auth.POST("/signin", signinLimit, controllers.Signin)
 		auth.POST("/google", controllers.GoogleSignIn)
 		auth.POST("/apple", controllers.AppleSignIn)
 
 		users := api.Group("/users")
 		// Mirror original Node routes: GET /api/users returns profile when authenticated
 		users.GET("", authpkg.JWTMiddleware(), controllers.GetProfile)
-		users.POST("/signup", controllers.Signup)
-		users.POST("/signin", controllers.Signin)
+		users.POST("/signup", signupLimit, controllers.Signup)
+		users.POST("/signin", signinLimit, controllers.Signin)
 		users.POST("/google", controllers.GoogleSignIn)
 		users.POST("/apple", controllers.AppleSignIn)
 		users.PUT("", authpkg.JWTMiddleware(), controllers.UpdateProfile)
 		users.DELETE("", authpkg.JWTMiddleware(), controllers.DeleteAccount)
 		// Admin listing endpoint kept at /all
-		users.GET("/all", authpkg.AdminMiddleware(), controllers.ListUsers)
-		users.POST("", controllers.CreateUser)
+		users.GET("/all", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.ListUsers)
+		users.POST("", signupLimit, authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.CreateUser)
 		users.GET("/profile", authpkg.JWTMiddleware(), controllers.GetProfile)
 		users.GET("/:id", controllers.GetUser)
 
@@ -75,18 +79,18 @@ func Register(r *gin.Engine) {
 		// images (simple upload endpoint)
 		images := api.Group("/upload")
 		{
-			images.POST("", controllers.ImageUpload)
+			images.POST("", authpkg.JWTMiddleware(), controllers.ImageUpload)
 		}
 
 		// news drafts
 		drafts := api.Group("/newsDrafts")
 		{
-			drafts.GET("", controllers.GetAllDrafts)
+			drafts.GET("", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.GetAllDrafts)
 			drafts.POST("", authpkg.JWTMiddleware(), validators.NewsCreateValidator(), controllers.CreateDraft)
 			drafts.GET("/myDrafts", authpkg.JWTMiddleware(), controllers.MyDrafts)
 			drafts.PUT("/:id", authpkg.JWTMiddleware(), validators.NewsUpdateValidator(), controllers.UpdateDraft)
 			drafts.DELETE("/:id", authpkg.JWTMiddleware(), controllers.DeleteDraft)
-			drafts.GET("/:slug", controllers.GetDraftBySlug)
+			drafts.GET("/:slug", authpkg.JWTMiddleware(), controllers.GetDraftBySlug)
 		}
 
 		// Ask AI (RAG over news), free for everyone with a per-IP limit
@@ -104,6 +108,15 @@ func Register(r *gin.Engine) {
 			comments.POST("/commentReply/:id", authpkg.JWTMiddleware(), controllers.CreateCommentByComment)
 		}
 	}
+}
+
+// authRateLimitPerHour reads AUTH_RATE_LIMIT_PER_HOUR (default 30), the
+// per-IP limit for each of signin and signup. 0 disables it.
+func authRateLimitPerHour() int {
+	if n, err := strconv.Atoi(os.Getenv("AUTH_RATE_LIMIT_PER_HOUR")); err == nil {
+		return n
+	}
+	return 30
 }
 
 // aiRateLimitPerHour reads AI_RATE_LIMIT_PER_HOUR (default 10).

@@ -39,7 +39,7 @@ func (n *News) BeforeCreate(*gorm.DB) error {
 // and tags as an array (never null).
 func (n News) MarshalJSON() ([]byte, error) {
 	type alias News
-	var user any = n.User
+	var user any = (*PublicUser)(n.User)
 	if n.User == nil {
 		user = n.UserID
 	}
