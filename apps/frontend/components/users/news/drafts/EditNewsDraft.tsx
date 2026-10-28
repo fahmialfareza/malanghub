@@ -17,6 +17,7 @@ import {
 } from "../../../../redux/actions/newsTagActions";
 import { updateNewsDraft } from "../../../../redux/actions/newsDraftActions";
 import { setAlert } from "../../../../redux/actions/layoutActions";
+import { uploadEditorImage } from "../../../../utils/axiosCreate";
 import {
   NewsCategoryReducerState,
   NewsDraftReducerState,
@@ -228,7 +229,7 @@ const EditNewsDraft = ({
                   value: "img-fluid rounded mx-auto my-2 d-block",
                 },
               ],
-              images_upload_url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/upload`,
+              images_upload_handler: uploadEditorImage,
             }}
             onEditorChange={(text) => setContent(text)}
           />

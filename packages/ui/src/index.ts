@@ -5,3 +5,5 @@ export * from "./ask";
 export * from "./dashboard";
 export * from "./shell";
 export * from "./primitives";
+export { sanitizeHtml } from "./sanitize";
+export { getSocialHref } from "./utils";

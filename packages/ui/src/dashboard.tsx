@@ -28,6 +28,7 @@ import {
   useUpdateTagMutation,
 } from "@malanghub/core";
 import { useAdapters } from "./adapters";
+import { sanitizeHtml } from "./sanitize";
 import { useMalanghubRuntime } from "./providers";
 import {
   Badge,
@@ -141,6 +142,7 @@ const RichTextEditor = ({
   onChange(value: string): void;
 }) => {
   const adapters = useAdapters();
+  const { api } = useMalanghubRuntime();
   const { theme } = useTheme();
   const editorIdRef = useRef(
     `malanghub-richtext-${Math.random().toString(36).slice(2)}`,
@@ -191,7 +193,13 @@ const RichTextEditor = ({
               value: "img-fluid rounded mx-auto my-2 d-block",
             },
           ],
-          images_upload_url: `${adapters.apiBaseUrl ?? ""}/api/upload`,
+          images_upload_handler: (blobInfo: {
+            blob(): Blob;
+            filename(): string;
+          }) =>
+            api.uploads
+              .image(blobInfo.blob(), blobInfo.filename())
+              .then((res) => res.location),
         }}
         onEditorChange={(text) => onChange(text)}
       />
@@ -1450,7 +1458,9 @@ const DraftContent = ({ html }: { html: string }) => {
     });
   }, [html]);
 
-  return <div ref={contentRef} dangerouslySetInnerHTML={{ __html: html }} />;
+  return (
+    <div ref={contentRef} dangerouslySetInnerHTML={{ __html: sanitizeHtml(html) }} />
+  );
 };
 
 export const DraftPreviewPage = ({ slug }: { slug?: string }) => {

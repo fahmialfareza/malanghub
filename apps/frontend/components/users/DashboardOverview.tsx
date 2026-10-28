@@ -3,7 +3,14 @@ import Link from "next/link";
 import Image from "next/image";
 import { connect } from "react-redux";
 import parse from "html-react-parser";
-import { Badge, Button, Card, Spinner, buttonClass } from "@malanghub/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  Spinner,
+  buttonClass,
+  sanitizeHtml,
+} from "@malanghub/ui";
 import assetsPath from "../layouts/Assets";
 import EditProfileModal from "./EditProfileModal";
 import AddNews from "./news/AddNews";
@@ -178,7 +185,7 @@ const DashboardOverview = ({
             </h2>
             {user && user.bio && (
               <div className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-body [&_p]:mb-2 [&_p]:text-body">
-                {parse(user.bio)}
+                {parse(sanitizeHtml(user.bio))}
               </div>
             )}
             <div className="mt-5 flex flex-col items-center gap-4 sm:flex-row md:justify-between">

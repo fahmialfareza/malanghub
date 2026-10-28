@@ -5,6 +5,7 @@
 import React from "react";
 import type { News, User } from "@malanghub/core";
 import { useAdapters } from "./adapters";
+import { sanitizeHtml } from "./sanitize";
 import {
   Breadcrumbs,
   type BreadcrumbItem,
@@ -203,7 +204,9 @@ export const SocialLinks = ({
   user?: Partial<Pick<User, SocialPlatform>> | null;
   className?: string;
 }) => {
-  const links = SOCIALS.filter(({ platform }) => user?.[platform]);
+  const links = SOCIALS.filter(({ platform }) =>
+    getSocialHref(platform, user?.[platform]),
+  );
   if (!links.length) return null;
 
   return (
@@ -254,7 +257,7 @@ export const ProfileHeader = ({
         {user?.bio && (
           <div
             className="mt-4 max-w-2xl text-body [&_p]:text-body"
-            dangerouslySetInnerHTML={{ __html: user.bio }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(user.bio) }}
           />
         )}
         <SocialLinks user={user} className="mt-5" />

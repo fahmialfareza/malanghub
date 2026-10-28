@@ -3,7 +3,13 @@ import Image from "next/image";
 import Moment from "react-moment";
 import "moment/locale/id";
 import parse from "html-react-parser";
-import { Pagination, PageLinkProps, badgeClass, cx } from "@malanghub/ui";
+import {
+  Pagination,
+  PageLinkProps,
+  badgeClass,
+  cx,
+  sanitizeHtml,
+} from "@malanghub/ui";
 import { News } from "../../models/news";
 
 /** Category name + slug, whether the API populated the category or not. */
@@ -202,7 +208,7 @@ export const NewsCard = ({
               featured ? "line-clamp-3" : "line-clamp-2",
             )}
           >
-            {parse(stripHtml(news.content))}
+            {parse(sanitizeHtml(stripHtml(news.content)))}
           </p>
         )}
         <NewsMeta news={news} />

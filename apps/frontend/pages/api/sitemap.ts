@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { escapeXml } from "../../utils/seo";
 
 const SITE_URL = "https://www.malanghub.com";
 const API_ADDRESS = process.env.API_ADDRESS;
@@ -91,7 +92,7 @@ function buildXml(entries: SitemapEntry[]): string {
       const priority = e.priority
         ? `\n    <priority>${e.priority}</priority>`
         : "";
-      return `  <url>\n    <loc>${e.url}</loc>${lastmod}${changefreq}${priority}\n  </url>`;
+      return `  <url>\n    <loc>${escapeXml(e.url)}</loc>${lastmod}${changefreq}${priority}\n  </url>`;
     })
     .join("\n");
 

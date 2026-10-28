@@ -13,6 +13,8 @@ import {
   Container,
   Spinner,
   badgeClass,
+  getSocialHref,
+  sanitizeHtml,
 } from "@malanghub/ui";
 import assetsPath from "../../components/layouts/Assets";
 import { NewsPagination } from "../../components/news/NewsCard";
@@ -69,37 +71,37 @@ const GetUserProfile = ({
           key: "facebook",
           label: "Facebook",
           icon: "fab fa-facebook",
-          href: userProfile.facebook,
+          href: getSocialHref("facebook", userProfile.facebook),
         },
         userProfile.twitter && {
           key: "twitter",
           label: "Twitter",
           icon: "fab fa-twitter",
-          href: `https://twitter.com/${userProfile.twitter}`,
+          href: getSocialHref("twitter", userProfile.twitter),
         },
         userProfile.instagram && {
           key: "instagram",
           label: "Instagram",
           icon: "fab fa-instagram",
-          href: `https://instagram.com/${userProfile.instagram}`,
+          href: getSocialHref("instagram", userProfile.instagram),
         },
         userProfile.linkedin && {
           key: "linkedin",
           label: "Linkedin",
           icon: "fab fa-linkedin",
-          href: userProfile.linkedin,
+          href: getSocialHref("linkedin", userProfile.linkedin),
         },
         userProfile.tiktok && {
           key: "tiktok",
           label: "Tiktok",
           icon: "fab fa-tiktok",
-          href: `https://www.tiktok.com/@${userProfile.tiktok}`,
+          href: getSocialHref("tiktok", userProfile.tiktok),
         },
       ].filter(
         (
           link,
         ): link is { key: string; label: string; icon: string; href: string } =>
-          !!link,
+          !!link && !!link.href,
       )
     : [];
 
@@ -196,7 +198,7 @@ const GetUserProfile = ({
                   </h1>
                   {userProfile && userProfile.bio && (
                     <div className="mt-3 max-w-2xl text-[0.95rem] leading-relaxed text-body [&_p]:mb-2 [&_p]:text-body">
-                      {parse(userProfile.bio)}
+                      {parse(sanitizeHtml(userProfile.bio))}
                     </div>
                   )}
                   {socialLinks.length > 0 && (
@@ -259,7 +261,7 @@ const GetUserProfile = ({
                           {news && news.title}
                         </Link>
                         <div className="mt-2 line-clamp-2 text-sm text-body">
-                          {parse(news.content.replace(/<(.|\n)*?>/g, ""))}
+                          {parse(sanitizeHtml(news.content.replace(/<(.|\n)*?>/g, "")))}
                         </div>
                         <div className="mt-3 text-sm text-muted">
                           {news.user && news.user._id ? (

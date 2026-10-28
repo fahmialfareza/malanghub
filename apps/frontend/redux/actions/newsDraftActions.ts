@@ -26,6 +26,11 @@ export const getAllNewsDrafts = () => async (dispatch: Dispatch) => {
   Sentry.startSpan({ name: "newsDraftActions.getAllNewsDrafts" }, async () => {
     setLoading();
 
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
+    }
+
     var config = {
       method: "get",
       url: "/api/newsDrafts",
@@ -103,6 +108,11 @@ export const getMyNewsDrafts = () => async (dispatch: Dispatch) => {
 export const getOneByUser = (id: string) => async (dispatch: Dispatch) => {
   Sentry.startSpan({ name: "newsDraftActions.getOneByUser" }, async () => {
     setLoading();
+
+    const token = localStorage.getItem("token");
+    if (token) {
+      setAuthToken(token);
+    }
 
     var config = {
       method: "get",
@@ -331,7 +341,8 @@ export const deleteNewsDraft =
           payload: id,
         });
 
-        dispatch(getAllNewsDrafts());
+        // DELETE_NEWS_DRAFT already drops it from allNewsDrafts; refetching
+        // the admin-only list would 403 for regular users.
         dispatch(getMyNewsDrafts());
         dispatch(setAlert("Berita berhasil dihapus!", "success"));
       } catch (e) {

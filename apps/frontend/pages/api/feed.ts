@@ -1,24 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { excerpt, stripHtml } from "../../utils/seo";
+import { cdata, escapeXml, excerpt, stripHtml } from "../../utils/seo";
 
 const SITE_URL = "https://www.malanghub.com";
 const API_ADDRESS = process.env.API_ADDRESS;
-
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
 
 function buildRss(items: any[]): string {
   const pubDate = new Date().toUTCString();
 
   const entries = items
     .map((item) => {
-      const link = `${SITE_URL}/news/${item.slug}`;
+      const link = escapeXml(`${SITE_URL}/news/${item.slug}`);
       const title = escapeXml(item.title || "");
       const description = escapeXml(excerpt(item.content || "", 300));
       const itemPubDate = item.created_at
@@ -34,13 +25,13 @@ function buildRss(items: any[]): string {
             .join("\n      ")
         : "";
       const image = item.mainImage
-        ? `<enclosure url="${item.mainImage}" length="0" type="image/jpeg" />`
+        ? `<enclosure url="${escapeXml(item.mainImage)}" length="0" type="image/jpeg" />`
         : "";
       const author = item.user?.name
         ? `<author>${escapeXml(item.user.name)}</author>`
         : "";
       const fullContent = item.content
-        ? `<content:encoded><![CDATA[${item.content}]]></content:encoded>`
+        ? `<content:encoded>${cdata(item.content)}</content:encoded>`
         : "";
 
       return `    <item>

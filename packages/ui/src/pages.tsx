@@ -20,6 +20,7 @@ import {
 } from "@malanghub/core";
 import { useAdapters, usePageParam } from "./adapters";
 import { useMalanghubRuntime } from "./providers";
+import { sanitizeHtml } from "./sanitize";
 import {
   Button,
   Card,
@@ -542,7 +543,9 @@ export const NewsDetailPage = ({ slug }: { slug?: string }) => {
       <ArticleView
         news={currentNews}
         content={
-          <div dangerouslySetInnerHTML={{ __html: currentNews.content }} />
+          <div
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(currentNews.content) }}
+          />
         }
         tagsLabel="Tag :"
         shareLabel="Bagikan :"

@@ -19,6 +19,7 @@ import {
   Spinner,
   badgeClass,
   buttonClass,
+  sanitizeHtml,
 } from "@malanghub/ui";
 import { RootState } from "../../../redux/store";
 import { GetServerSidePropsContext } from "next";
@@ -261,7 +262,7 @@ const NewsDraft = ({
                       ref={contentRef}
                       className="text-justify text-body [&_p]:mb-4 [&_p]:leading-relaxed [&_img]:mx-auto [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_img]:rounded-xl [&_a]:text-brand [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:font-heading [&_h2]:text-fg [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:font-heading [&_h3]:text-fg [&_ul]:mb-4 [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:pl-6 [&_blockquote]:my-6 [&_blockquote]:border-l-4 [&_blockquote]:border-brand [&_blockquote]:pl-4 [&_blockquote]:italic"
                     >
-                      {parse(currentNewsDraft.content)}
+                      {parse(sanitizeHtml(currentNewsDraft.content))}
                     </div>
                   )}
 
@@ -498,11 +499,15 @@ export async function getServerSideProps({
         }
 
         // If user is authenticated, fetch the news draft
-        const newsDraftUrl = `${process.env.API_ADDRESS}/api/newsDrafts/${params?.slug}`;
+        const newsDraftUrl = `${process.env.API_ADDRESS}/api/newsDrafts/${encodeURIComponent(String(params?.slug ?? ""))}`;
         let data = {};
 
         try {
-          const draftResponse = await fetch(newsDraftUrl);
+          const draftResponse = await fetch(newsDraftUrl, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
 
           if (!draftResponse.ok) {
             throw new Error("Failed to fetch news draft");

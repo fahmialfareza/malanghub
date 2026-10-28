@@ -1,4 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { escapeXml } from "../../utils/seo";
 
 const SITE_URL = "https://www.malanghub.com";
 const API_ADDRESS = process.env.API_ADDRESS;
@@ -48,21 +49,12 @@ async function fetchRecentNews(): Promise<NewsEntry[]> {
   return recent.length > 0 ? recent : fallback;
 }
 
-function escapeXml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-}
-
 function buildNewsXml(entries: NewsEntry[]): string {
   const urls = entries
     .map((e) => {
       const pubDate = new Date(e.created_at).toISOString();
       return `  <url>
-    <loc>${SITE_URL}/news/${e.slug}</loc>
+    <loc>${escapeXml(`${SITE_URL}/news/${e.slug}`)}</loc>
     <news:news>
       <news:publication>
         <news:name>${PUBLICATION_NAME}</news:name>

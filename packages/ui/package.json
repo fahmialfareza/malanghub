@@ -15,7 +15,8 @@
     "@headlessui/react": "^2.2.10",
     "@malanghub/core": "workspace:*",
     "@tanstack/react-query": "^5.90.12",
-    "@tinymce/tinymce-react": "^6.3.0"
+    "@tinymce/tinymce-react": "^6.3.0",
+    "xss": "^1.0.17"
   },
   "peerDependencies": {
     "react": ">=18",

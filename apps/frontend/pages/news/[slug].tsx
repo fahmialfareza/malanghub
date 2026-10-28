@@ -15,7 +15,13 @@ import {
   SectionTitle,
   renderNextLink,
 } from "../../components/news/NewsListingLayout";
-import { Breadcrumbs, Container, badgeClass, cx } from "@malanghub/ui";
+import {
+  Breadcrumbs,
+  Container,
+  badgeClass,
+  cx,
+  sanitizeHtml,
+} from "@malanghub/ui";
 import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../../redux/store";
 import { GetServerSidePropsContext } from "next";
@@ -228,7 +234,7 @@ const SingleNews = ({
                 cssSelector: [".blog-desc-big", ".single-post-content p"],
               },
               inLanguage: "id-ID",
-            }),
+            }).replace(/</g, "\\u003c"),
           }}
         />
 
@@ -258,7 +264,7 @@ const SingleNews = ({
                   item: `https://www.malanghub.com/news/${currentNews?.slug}`,
                 },
               ],
-            }),
+            }).replace(/</g, "\\u003c"),
           }}
         />
       </Head>
@@ -342,7 +348,7 @@ const SingleNews = ({
           <div className="single-post-content">
             {currentNews && currentNews.content && (
               <div ref={contentRef} className={articleBodyClass}>
-                {parse(currentNews.content)}
+                {parse(sanitizeHtml(currentNews.content))}
               </div>
             )}
           </div>

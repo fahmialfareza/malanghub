@@ -12,6 +12,7 @@ import {
 } from "@malanghub/ui";
 import { updateNewsDraftApproved } from "../../../redux/actions/newsDraftActions";
 import { setAlert } from "../../../redux/actions/layoutActions";
+import { uploadEditorImage } from "../../../utils/axiosCreate";
 import { RootState } from "../../../redux/store";
 import { NewsDraftReducerState } from "../../../redux/types";
 import { UpdateNewsDraftApproved } from "../../../redux/actions/types/newsDraft";
@@ -141,7 +142,7 @@ const EditNews = ({
                   value: "img-fluid rounded mx-auto my-2 d-block",
                 },
               ],
-              images_upload_url: `${process.env.NEXT_PUBLIC_API_ADDRESS}/api/upload`,
+              images_upload_handler: uploadEditorImage,
             }}
             onEditorChange={(text) => setContent(text)}
           />

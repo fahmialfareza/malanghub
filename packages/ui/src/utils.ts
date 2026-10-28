@@ -76,7 +76,11 @@ export const getSocialHref = (
   const raw = value?.trim();
 
   if (!raw) return "";
-  if (isUrlLike(raw) || hasProtocol(raw)) return normalizeExternalUrl(raw);
+  if (isUrlLike(raw) || hasProtocol(raw)) {
+    // Only http(s) links; drops javascript:, data:, etc.
+    const href = normalizeExternalUrl(raw);
+    return /^https?:\/\//i.test(href) ? href : "";
+  }
 
   const handle = cleanHandle(raw);
   if (!handle) return "";
