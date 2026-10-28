@@ -61,3 +61,10 @@ Backend development can also use the VS Code debugger when configured.
 
 - Update this file first when shared agent guidance changes.
 - Keep agent-specific files thin; they should reference this file instead of duplicating large blocks of repo facts.
+
+## Agent Skills
+
+- Shared agent skills live in `.agents/skills/` (used by Codex) and are symlinked into `.claude/skills/` for Claude Code. `skills-lock.json` pins each skill's source and hash.
+- Installed: `cloudflare`, `karpathy-guidelines`, `nextjs-on-cloudflare`, `security-audit`, `use-railway`, `vercel-react-best-practices`, `web-perf`, `workers-best-practices`, `wrangler`, and `graphify`.
+- Restore after clone: `npx skills experimental_install`. Update: `npx skills update -p`. Add: `npx skills add <owner/repo> --skill <name> -a claude-code -a codex`.
+- `graphify` is managed by its own installer, not `skills-lock.json`: install the CLI with `uv tool install graphifyy`, then refresh the skill with `graphify install --project --platform agents`.
