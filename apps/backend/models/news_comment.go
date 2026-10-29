@@ -9,7 +9,7 @@ import (
 
 type NewsCommentReply struct {
 	ID        string    `gorm:"primaryKey;type:varchar(24)" json:"_id"`
-	CommentID string    `gorm:"type:varchar(24);not null;index" json:"-"`
+	CommentID string    `gorm:"type:varchar(24);not null" json:"-"`
 	UserID    string    `gorm:"type:varchar(24);not null" json:"-"`
 	User      *User     `json:"user"`
 	Comment   string    `json:"comment"`
@@ -36,7 +36,7 @@ func (r NewsCommentReply) MarshalJSON() ([]byte, error) {
 
 type NewsComment struct {
 	ID             string             `gorm:"primaryKey;type:varchar(24)" json:"_id"`
-	NewsID         string             `gorm:"type:varchar(24);not null;index" json:"news"`
+	NewsID         string             `gorm:"type:varchar(24);not null" json:"news"`
 	UserID         string             `gorm:"type:varchar(24);not null" json:"-"`
 	User           *User              `json:"user"`
 	Comment        string             `json:"comment"`
