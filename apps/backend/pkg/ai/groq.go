@@ -2,12 +2,15 @@ package ai
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/fahmialfareza/malanghub/backend/pkg/langfuse"
 )
 
 // groqURL is a var so tests can point it at a fake server.
@@ -33,9 +36,10 @@ func NewGroq() *Groq {
 	}
 }
 
-func (g *Groq) Name() string { return "groq" }
+func (g *Groq) Name() string  { return "groq" }
+func (g *Groq) Model() string { return g.model }
 
-func (g *Groq) Generate(ctx context.Context, system, prompt string) (string, error) {
+func (g *Groq) Generate(ctx context.Context, system, prompt string) (Completion, error) {
 	body := map[string]interface{}{
 		"model": g.model,
 		"messages": []map[string]string{
@@ -52,31 +56,31 @@ func (g *Groq) Generate(ctx context.Context, system, prompt string) (string, err
 	}
 	payload, err := json.Marshal(body)
 	if err != nil {
-		return "", err
+		return Completion{}, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, groqURL, bytes.NewReader(payload))
 	if err != nil {
-		return "", err
+		return Completion{}, err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+g.apiKey)
 
 	resp, err := g.client.Do(req)
 	if err != nil {
-		return "", err
+		return Completion{}, err
 	}
 	defer resp.Body.Close()
 
 	data, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
 	if err != nil {
-		return "", err
+		return Completion{}, err
 	}
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return "", fmt.Errorf("%s: %w: %s", g.Name(), ErrQuotaExceeded, truncate(string(data), 300))
+		return Completion{}, fmt.Errorf("%s: %w: %s", g.Name(), ErrQuotaExceeded, truncate(string(data), 300))
 	}
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", &httpError{Provider: g.Name(), Status: resp.StatusCode, Body: truncate(string(data), 300)}
+		return Completion{}, &httpError{Provider: g.Name(), Status: resp.StatusCode, Body: truncate(string(data), 300)}
 	}
 
 	var out struct {
@@ -85,14 +89,26 @@ func (g *Groq) Generate(ctx context.Context, system, prompt string) (string, err
 				Content string `json:"content"`
 			} `json:"message"`
 		} `json:"choices"`
+		Model string `json:"model"`
+		Usage *struct {
+			PromptTokens     int64 `json:"prompt_tokens"`
+			CompletionTokens int64 `json:"completion_tokens"`
+			TotalTokens      int64 `json:"total_tokens"`
+		} `json:"usage"`
 	}
 	if err := json.Unmarshal(data, &out); err != nil {
-		return "", err
+		return Completion{}, err
+	}
+
+	result := Completion{Model: cmp.Or(out.Model, g.model)}
+	if u := out.Usage; u != nil {
+		result.Usage = &langfuse.Usage{Input: u.PromptTokens, Output: u.CompletionTokens, Total: u.TotalTokens}
 	}
 	if len(out.Choices) == 0 {
-		return "", &httpError{Provider: g.Name(), Status: http.StatusBadGateway, Body: "empty choices"}
+		return result, &httpError{Provider: g.Name(), Status: http.StatusBadGateway, Body: "empty choices"}
 	}
-	return strings.TrimSpace(out.Choices[0].Message.Content), nil
+	result.Text = strings.TrimSpace(out.Choices[0].Message.Content)
+	return result, nil
 }
 
 func (g *Groq) Embed(ctx context.Context, texts []string, task TaskType) ([][]float32, error) {

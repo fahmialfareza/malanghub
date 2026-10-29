@@ -2,12 +2,15 @@ package ai
 
 import (
 	"bytes"
+	"cmp"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
+
+	"github.com/fahmialfareza/malanghub/backend/pkg/langfuse"
 )
 
 // geminiBaseURL is a var so tests can point it at a fake server.
@@ -37,7 +40,11 @@ func NewGemini() *Gemini {
 	}
 }
 
-func (g *Gemini) Name() string { return "gemini" }
+func (g *Gemini) Name() string  { return "gemini" }
+func (g *Gemini) Model() string { return g.model }
+
+// EmbedModel is the configured embedding model.
+func (g *Gemini) EmbedModel() string { return g.embedModel }
 
 type geminiPart struct {
 	Text string `json:"text"`
@@ -48,7 +55,7 @@ type geminiContent struct {
 	Parts []geminiPart `json:"parts"`
 }
 
-func (g *Gemini) Generate(ctx context.Context, system, prompt string) (string, error) {
+func (g *Gemini) Generate(ctx context.Context, system, prompt string) (Completion, error) {
 	body := map[string]interface{}{
 		"systemInstruction": geminiContent{Parts: []geminiPart{{Text: system}}},
 		"contents":          []geminiContent{{Role: "user", Parts: []geminiPart{{Text: prompt}}}},
@@ -64,19 +71,37 @@ func (g *Gemini) Generate(ctx context.Context, system, prompt string) (string, e
 		Candidates []struct {
 			Content geminiContent `json:"content"`
 		} `json:"candidates"`
+		ModelVersion  string `json:"modelVersion"`
+		UsageMetadata *struct {
+			PromptTokenCount     int64 `json:"promptTokenCount"`
+			CandidatesTokenCount int64 `json:"candidatesTokenCount"`
+			ThoughtsTokenCount   int64 `json:"thoughtsTokenCount"`
+			TotalTokenCount      int64 `json:"totalTokenCount"`
+		} `json:"usageMetadata"`
 	}
 	if err := g.post(ctx, g.model+":generateContent", body, &out); err != nil {
-		return "", err
+		return Completion{}, err
+	}
+
+	result := Completion{Model: cmp.Or(out.ModelVersion, g.model)}
+	if u := out.UsageMetadata; u != nil {
+		// thinking tokens are billed as output
+		result.Usage = &langfuse.Usage{
+			Input:  u.PromptTokenCount,
+			Output: u.CandidatesTokenCount + u.ThoughtsTokenCount,
+			Total:  u.TotalTokenCount,
+		}
 	}
 	if len(out.Candidates) == 0 {
-		return "", &httpError{Provider: g.Name(), Status: http.StatusBadGateway, Body: "empty candidates"}
+		return result, &httpError{Provider: g.Name(), Status: http.StatusBadGateway, Body: "empty candidates"}
 	}
 
 	var sb strings.Builder
 	for _, p := range out.Candidates[0].Content.Parts {
 		sb.WriteString(p.Text)
 	}
-	return strings.TrimSpace(sb.String()), nil
+	result.Text = strings.TrimSpace(sb.String())
+	return result, nil
 }
 
 func (g *Gemini) Embed(ctx context.Context, texts []string, task TaskType) ([][]float32, error) {

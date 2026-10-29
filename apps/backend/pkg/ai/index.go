@@ -134,6 +134,9 @@ func embedNews(ctx context.Context, n *models.News) error {
 		return nil
 	}
 
+	ctx, span := StartTrace(ctx, "ai-index-news", map[string]any{"news_id": n.ID})
+	defer span.End()
+
 	texts := Chunk(n.Title, StripHTML(n.Content))
 	vectors := make([][]float32, 0, len(texts))
 	for i := 0; i < len(texts); i += embedBatchSize {

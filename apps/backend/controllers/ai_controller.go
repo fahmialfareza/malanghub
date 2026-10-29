@@ -16,6 +16,7 @@ import (
 
 	"github.com/fahmialfareza/malanghub/backend/pkg/ai"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
+	"github.com/fahmialfareza/malanghub/backend/pkg/langfuse"
 	"github.com/fahmialfareza/malanghub/backend/pkg/logger"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
@@ -64,33 +65,63 @@ func AskAI(c *gin.Context) {
 		}
 	}
 
-	sources, err := ai.Retrieve(c, question)
+	// one Langfuse trace per answered question: retrieval embedding plus every
+	// Gemini/Groq attempt; cache hits make no model call and are not traced
+	ctx, span := ai.StartTrace(c, "ask-ai", nil)
+	defer span.End()
+	langfuse.SetInput(span, map[string]any{"question": question})
+
+	sources, err := ai.Retrieve(ctx, question)
 	if err != nil {
+		langfuse.SetLevel(span, langfuse.LevelError, err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "gagal mencari artikel"})
 		return
 	}
 	if len(sources) == 0 {
+		langfuse.SetMetadata(span, map[string]any{"sources": 0, "fallback_reason": "no_sources"})
+		langfuse.SetOutput(span, map[string]any{"answer": aiNotFoundAnswer})
 		c.JSON(http.StatusOK, gin.H{"data": askAIResponse{Answer: aiNotFoundAnswer, Sources: []ai.Source{}}})
 		return
 	}
 
 	resp := askAIResponse{Sources: sources, Fallback: true}
+	metadata := map[string]any{"sources": len(sources)}
 	switch {
 	case !ai.Default().Enabled():
 		logger.Info("ai: no provider configured; returning related articles only")
+		metadata["fallback_reason"] = "disabled"
 	case !underDailyLimit(c):
 		logger.Info("ai: AI_DAILY_LIMIT reached; returning related articles only")
+		metadata["fallback_reason"] = "daily_limit"
 	default:
-		answer, provider, err := ai.Default().Generate(c, ai.SystemPrompt, ai.BuildPrompt(question, sources))
+		answer, provider, err := ai.Default().Generate(ctx, ai.SystemPrompt, ai.BuildPrompt(question, sources))
 		if err == nil {
 			resp.Answer, resp.Provider, resp.Fallback = answer, provider, false
 			_ = cache.Set(c, cacheKey, resp, aiAnswerTTL)
 		} else {
 			logger.Error("ai: no answer, returning related articles only:", err)
+			metadata["fallback_reason"] = "generate_failed"
+			langfuse.SetLevel(span, langfuse.LevelError, err.Error())
 		}
 	}
+	langfuse.SetMetadata(span, metadata)
+	langfuse.SetOutput(span, askAITraceOutput(resp))
 
 	c.JSON(http.StatusOK, gin.H{"data": resp})
+}
+
+// askAITraceOutput lists sources by title and slug, without excerpts.
+func askAITraceOutput(resp askAIResponse) map[string]any {
+	sources := make([]map[string]string, len(resp.Sources))
+	for i, src := range resp.Sources {
+		sources[i] = map[string]string{"id": src.ID, "title": src.Title, "slug": src.Slug}
+	}
+	return map[string]any{
+		"answer":   resp.Answer,
+		"provider": resp.Provider,
+		"fallback": resp.Fallback,
+		"sources":  sources,
+	}
 }
 
 // underDailyLimit counts LLM calls per day across all users so the free quota

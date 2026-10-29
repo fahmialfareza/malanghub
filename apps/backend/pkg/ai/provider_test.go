@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/fahmialfareza/malanghub/backend/pkg/langfuse"
 )
 
 // fakeServers starts fake Gemini and Groq APIs and points the providers at them.
@@ -53,14 +55,44 @@ func TestGeminiGenerateRequest(t *testing.T) {
 	t.Setenv("GEMINI_MODEL", "test-model")
 
 	got, err := NewGemini().Generate(context.Background(), "sys", "prompt")
-	if err != nil || got != "Halo Malang" {
-		t.Fatalf("got %q, %v", got, err)
+	if err != nil || got.Text != "Halo Malang" {
+		t.Fatalf("got %q, %v", got.Text, err)
 	}
 	if gotKey != "test-gemini" || gotPath != "/test-model:generateContent" {
 		t.Fatalf("unexpected key %q or path %q", gotKey, gotPath)
 	}
 	if _, ok := body["systemInstruction"]; !ok {
 		t.Fatalf("systemInstruction missing from request: %v", body)
+	}
+}
+
+func TestGeminiGenerateUsage(t *testing.T) {
+	fakeServers(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"candidates":[{"content":{"parts":[{"text":"ok"}]}}],"modelVersion":"gemini-x-001",` +
+			`"usageMetadata":{"promptTokenCount":10,"candidatesTokenCount":3,"thoughtsTokenCount":4,"totalTokenCount":17}}`))
+	}, status(500))
+
+	got, err := NewGemini().Generate(context.Background(), "sys", "prompt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Model != "gemini-x-001" || got.Usage == nil || *got.Usage != (langfuse.Usage{Input: 10, Output: 7, Total: 17}) {
+		t.Fatalf("unexpected model %q or usage %+v", got.Model, got.Usage)
+	}
+}
+
+func TestGroqGenerateUsage(t *testing.T) {
+	fakeServers(t, status(500), func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`{"model":"groq-model","choices":[{"message":{"content":"ok"}}],` +
+			`"usage":{"prompt_tokens":8,"completion_tokens":2,"total_tokens":10}}`))
+	})
+
+	got, err := NewGroq().Generate(context.Background(), "sys", "prompt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.Model != "groq-model" || got.Usage == nil || *got.Usage != (langfuse.Usage{Input: 8, Output: 2, Total: 10}) {
+		t.Fatalf("unexpected model %q or usage %+v", got.Model, got.Usage)
 	}
 }
 

@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/fahmialfareza/malanghub/backend/pkg/langfuse"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
@@ -28,10 +29,21 @@ var (
 	ErrNoProvider = errors.New("ai: no provider available")
 )
 
+// Completion is a generated answer plus what the provider reported about it.
+type Completion struct {
+	Text string
+	// Model is the model that answered, as reported by the provider.
+	Model string
+	// Usage is nil when the provider did not report token counts.
+	Usage *langfuse.Usage
+}
+
 // Provider is an LLM backend used for answer generation and embeddings.
 type Provider interface {
 	Name() string
-	Generate(ctx context.Context, system, prompt string) (string, error)
+	// Model is the configured generation model.
+	Model() string
+	Generate(ctx context.Context, system, prompt string) (Completion, error)
 	Embed(ctx context.Context, texts []string, task TaskType) ([][]float32, error)
 }
 

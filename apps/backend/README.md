@@ -7,6 +7,7 @@ Environment variables (use `.env` or export in your shell):
 - `DATABASE_URL` - Postgres connection URL (default: `postgres://localhost:5432/malanghub?sslmode=disable`). The schema is created/updated automatically on startup.
 - `DB_MAX_OPEN_CONNS` / `DB_MAX_IDLE_CONNS` - Postgres connection pool size (defaults `10` / `2`).
 - `GEMINI_EMBED_DIM` - Ask AI embedding size (default `768`); it fixes the `news_embeddings.embedding` column size when the table is first created.
+- `LANGFUSE_PUBLIC_KEY` / `LANGFUSE_SECRET_KEY` - optional Langfuse keys; when both are set, every Ask AI question becomes an `ask-ai` trace with one generation per Gemini/Groq attempt (model, tokens, latency, failover level). `LANGFUSE_BASE_URL` (default `https://cloud.langfuse.com`) and `LANGFUSE_TRACING_ENVIRONMENT` are optional.
 - `PORT` - HTTP server port (default: `8080`)
 - `GOOGLE_ALLOWED_CLIENT_IDS` - comma-separated Google OAuth client IDs accepted for native ID-token login.
 - `GOOGLE_SERVER_CLIENT_ID` / `GOOGLE_WEB_CLIENT_ID` / `GOOGLE_CLIENT_ID` - accepted fallback Google OAuth audience envs for ID-token login.

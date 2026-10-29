@@ -8,7 +8,10 @@ import (
 	"sync"
 	"time"
 
+	"go.opentelemetry.io/otel/trace"
+
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
+	"github.com/fahmialfareza/malanghub/backend/pkg/langfuse"
 	"github.com/fahmialfareza/malanghub/backend/pkg/logger"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
@@ -86,19 +89,32 @@ func (c *Chain) Generate(ctx context.Context, system, prompt string) (string, st
 	if !c.Enabled() {
 		return "", "", ErrNoProvider
 	}
+	ctx, endTrace := ensureTrace(ctx, "ask")
+	defer endTrace()
 
 	lastErr := ErrAllCoolingDown
-	for _, p := range c.providers {
+	attempt := 0
+	var skipped []string
+	defer func() {
+		if len(skipped) > 0 {
+			langfuse.SetMetadata(trace.SpanFromContext(ctx), map[string]any{"skipped_providers": skipped})
+		}
+	}()
+	for i, p := range c.providers {
 		if ttl, ok := coolingDown(ctx, p.Name()); ok {
 			logger.Info("ai: skipping", p.Name(), "- cooling down for", ttl.Round(time.Second), "after a recent failure")
+			skipped = append(skipped, p.Name())
 			continue
 		}
-		text, err := p.Generate(ctx, system, prompt)
-		if err == nil && text != "" {
-			return text, p.Name(), nil
-		}
-		if err == nil {
+		attempt++
+		obs := startObservation(ctx, langfuse.ObservationGeneration, p.Name(), "ask", p.Model(), attempt, chatInput(system, prompt))
+		completion, err := p.Generate(ctx, system, prompt)
+		if err == nil && completion.Text == "" {
 			err = errors.New(p.Name() + ": empty answer")
+		}
+		obs.endCompletion(completion, err, i < len(c.providers)-1)
+		if err == nil {
+			return completion.Text, p.Name(), nil
 		}
 		if ctx.Err() != nil {
 			return "", "", ctx.Err()
@@ -123,10 +139,21 @@ func (c *Chain) Embed(ctx context.Context, texts []string, task TaskType) ([][]f
 		return nil, ErrNoProvider
 	}
 	for _, p := range c.providers {
+		em, ok := p.(embedder)
+		if !ok {
+			continue
+		}
 		if _, ok := coolingDown(ctx, p.Name()+":embed"); ok {
 			return nil, ErrQuotaExceeded
 		}
+		ctx, endTrace := ensureTrace(ctx, "embed")
+		obs := startObservation(ctx, langfuse.ObservationEmbedding, p.Name(), "embed", em.EmbedModel(), 1, map[string]any{
+			"texts": len(texts),
+			"task":  string(task),
+		})
 		vectors, err := p.Embed(ctx, texts, task)
+		obs.end("", nil, map[string]any{"vectors": len(vectors), "dim": EmbedDim()}, err, false)
+		endTrace()
 		if errors.Is(err, ErrNotSupported) {
 			continue
 		}
@@ -136,6 +163,11 @@ func (c *Chain) Embed(ctx context.Context, texts []string, task TaskType) ([][]f
 		return vectors, err
 	}
 	return nil, ErrNotSupported
+}
+
+// embedder is a provider that can embed text.
+type embedder interface {
+	EmbedModel() string
 }
 
 // isModelNotFound reports a 404 from a provider, which usually means the

@@ -3,10 +3,13 @@ package main
 import (
 	"cmp"
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -17,6 +20,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/auth"
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
+	"github.com/fahmialfareza/malanghub/backend/pkg/langfuse"
 	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 	"github.com/fahmialfareza/malanghub/backend/pkg/routes"
@@ -67,6 +71,13 @@ func main() {
 	ai.Migrate(context.Background())
 	ai.StartSyncLoop()
 
+	// Langfuse tracing for Ask AI (non-fatal; off without keys)
+	if err := langfuse.Init(); err != nil {
+		log.Printf("warning: langfuse init error: %v", err)
+	} else if langfuse.Enabled() {
+		log.Printf("langfuse tracing enabled")
+	}
+
 	// initialize New Relic if configured (non-fatal)
 	nrApp, err := newrelicpkg.Init()
 	if err != nil {
@@ -108,9 +119,27 @@ func main() {
 		port = "8080"
 	}
 
-	log.Printf("listening on :%s", port)
-	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("server error: %v", err)
+	srv := &http.Server{Addr: ":" + port, Handler: r}
+	go func() {
+		log.Printf("listening on :%s", port)
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			log.Fatalf("server error: %v", err)
+		}
+	}()
+
+	// wait for a deploy or Ctrl+C, then drain requests and flush traces
+	stop, cancelStop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer cancelStop()
+	<-stop.Done()
+	log.Println("shutting down")
+
+	shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancelShutdown()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("server shutdown error: %v", err)
+	}
+	if err := langfuse.Shutdown(shutdownCtx); err != nil {
+		log.Printf("langfuse shutdown error: %v", err)
 	}
 }
 
