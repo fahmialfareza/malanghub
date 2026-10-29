@@ -115,7 +115,7 @@ function Privacy({ setActiveLink }: PrivacyProps) {
                 className="fa fa-calendar mr-2 text-brand"
                 aria-hidden="true"
               ></span>
-              Terakhir diperbarui: Mei 2026
+              Terakhir diperbarui: Oktober 2026
             </p>
 
             <div className={sectionClass}>
@@ -198,6 +198,12 @@ function Privacy({ setActiveLink }: PrivacyProps) {
                   artikel Malanghub diproses oleh penyedia AI ini untuk menyusun
                   jawaban, dan dapat digunakan oleh penyedia untuk meningkatkan
                   layanannya. Jangan menuliskan data pribadi di pertanyaan.
+                </li>
+                <li>
+                  <strong>Langfuse:</strong> Untuk memantau kualitas fitur Tanya
+                  AI. Pertanyaan, jawaban AI, dan judul artikel sumber (tanpa
+                  data akun) dicatat agar kami dapat memperbaiki jawaban yang
+                  kurang tepat.
                 </li>
               </ul>
             </div>
