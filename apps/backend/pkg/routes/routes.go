@@ -18,7 +18,11 @@ func Register(r *gin.Engine) {
 	signinLimit := middleware.RateLimitByIP("signin", authRateLimitPerHour(), time.Hour)
 	signupLimit := middleware.RateLimitByIP("signup", authRateLimitPerHour(), time.Hour)
 
-	api := r.Group("/api")
+	// Responses are private by default; publicCache marks GETs that are the
+	// same for every caller as cacheable by Cloudflare for a short time.
+	publicCache := middleware.PublicCache(time.Minute)
+
+	api := r.Group("/api", middleware.NoStore())
 	{
 		auth := api.Group("/auth")
 		auth.POST("/signup", signupLimit, controllers.Signup)
@@ -39,15 +43,15 @@ func Register(r *gin.Engine) {
 		users.GET("/all", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.ListUsers)
 		users.POST("", signupLimit, authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.CreateUser)
 		users.GET("/profile", authpkg.JWTMiddleware(), controllers.GetProfile)
-		users.GET("/:id", controllers.GetUser)
+		users.GET("/:id", publicCache, controllers.GetUser)
 
 		// news
 		news := api.Group("/news")
 		{
-			news.GET("", middleware.AdvancedResults("news"), controllers.ListNews)
+			news.GET("", publicCache, middleware.AdvancedResults("news"), controllers.ListNews)
 			news.GET("/myNews", authpkg.JWTMiddleware(), middleware.AdvancedResults("news"), controllers.MyNews)
-			news.GET("/search", middleware.AdvancedResults("news"), controllers.ListNews)
-			news.GET("/:slug", controllers.GetNewsBySlug)
+			news.GET("/search", publicCache, middleware.AdvancedResults("news"), controllers.ListNews)
+			news.GET("/:slug", publicCache, controllers.GetNewsBySlug)
 			news.POST("", authpkg.JWTMiddleware(), validators.NewsCreateValidator(), controllers.CreateNews)
 			news.PUT("/:id", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), validators.NewsUpdateValidator(), controllers.UpdateNews)
 			news.DELETE("/:id", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.DeleteNews)
@@ -56,8 +60,8 @@ func Register(r *gin.Engine) {
 		// categories
 		categories := api.Group("/newsCategories")
 		{
-			categories.GET("", controllers.GetAllCategories)
-			categories.GET("/:slug", controllers.GetCategoryBySlug)
+			categories.GET("", publicCache, controllers.GetAllCategories)
+			categories.GET("/:slug", publicCache, controllers.GetCategoryBySlug)
 			categories.POST("", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), validators.CategoryCreateValidator(), controllers.CreateCategory)
 			categories.PUT("/:id", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.UpdateCategory)
 			categories.DELETE("/:id", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.DeleteCategory)
@@ -66,8 +70,8 @@ func Register(r *gin.Engine) {
 		// tags
 		tags := api.Group("/newsTags")
 		{
-			tags.GET("", controllers.GetAllTags)
-			tags.GET("/:slug", controllers.GetTagBySlug)
+			tags.GET("", publicCache, controllers.GetAllTags)
+			tags.GET("/:slug", publicCache, controllers.GetTagBySlug)
 			tags.POST("", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), validators.TagCreateValidator(), controllers.CreateTag)
 			tags.PUT("/:id", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.UpdateTag)
 			tags.DELETE("/:id", authpkg.JWTMiddleware(), authpkg.AdminMiddleware(), controllers.DeleteTag)

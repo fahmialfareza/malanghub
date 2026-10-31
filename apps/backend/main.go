@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
@@ -108,6 +109,9 @@ func main() {
 	r.Use(nrgin.Middleware(nrApp))
 	r.Use(newrelicpkg.GinTransactionContextMiddleware())
 	r.Use(cors.New(config))
+	// Compress responses for clients that accept it (Cloudflare and Worker
+	// fetch do); JSON shrinks ~3x, which cuts Railway egress.
+	r.Use(gzip.Gzip(gzip.DefaultCompression))
 
 	routes.Register(r)
 	r.NoRoute(func(c *gin.Context) {

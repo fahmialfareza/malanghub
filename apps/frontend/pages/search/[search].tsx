@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { connect } from "react-redux";
-import moment from "moment";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import NewsListingLayout, {
   EmptyNews,
@@ -101,9 +100,7 @@ export async function getServerSideProps({
     async () => {
       const trendingNewsUrl = `${
         process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
-        .subtract(1, "months")
-        .toISOString()}`;
+      }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
 
       // A failing request degrades to an empty section instead of a 404.
       const [trendingNews, list] = await Promise.all([
@@ -114,7 +111,7 @@ export async function getServerSideProps({
             return [];
           }),
         fetchNewsPage(
-          `/api/news/search?page=${page}&sort=-views&limit=${LIMIT}&search=${encodeURIComponent(search)}`,
+          `/api/news/search?page=${page}&sort=-views&limit=${LIMIT}&search=${encodeURIComponent(search)}&excerpt=1`,
         ).catch((e) => {
           Sentry.captureException(e);
           return { meta: null, data: [] as News[] };

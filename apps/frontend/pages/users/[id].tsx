@@ -4,7 +4,6 @@ import Image from "next/image";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
-import moment from "moment";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import {
   Badge,
@@ -423,9 +422,7 @@ export async function getServerSideProps({
     async () => {
       const trendingNewsUrl = `${
         process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&user=${id}&created_at[gte]=${moment()
-        .subtract(3, "months")
-        .toISOString()}`;
+      }/api/news?page=1&sort=-views&limit=4&user=${id}&excerpt=1`;
       const userUrl = `${process.env.API_ADDRESS}/api/users/${id}`;
 
       try {
@@ -434,7 +431,7 @@ export async function getServerSideProps({
           fetchJson(trendingNewsUrl),
           fetchJson(userUrl),
           fetchNewsPage(
-            `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&user=${id}`,
+            `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&user=${id}&excerpt=1`,
           ),
         ]);
 

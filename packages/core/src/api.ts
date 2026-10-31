@@ -128,8 +128,10 @@ const newsListQuery = (params: NewsListParams = {}) => ({
   tags: params.tags,
   user: params.user,
   search: params.search,
-  "created_at[gte]": params.createdAfter,
-  "_id[ne]": params.excludeId,
+  // Cards only show a short excerpt, so skip the full article HTML.
+  excerpt: 1,
+  // createdAfter and excludeId are not sent: the API ignores them, and the
+  // timestamp made every URL unique so responses were never cached.
 });
 
 const createFormData = (data: Record<string, unknown>) => {
@@ -351,33 +353,30 @@ export const createApiClient = ({
         request<PaginatedResponse<News>>("/api/news", {
           query: newsListQuery({ page: 1, limit, sort: "-created_at" }),
         }),
-      trending: (limit = 4) => {
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-        return request<PaginatedResponse<News>>("/api/news", {
-          query: newsListQuery({
-            page: 1,
-            limit,
-            sort: "-views",
-            createdAfter: oneMonthAgo.toISOString(),
-          }),
-        });
-      },
+      trending: (limit = 4) =>
+        request<PaginatedResponse<News>>("/api/news", {
+          query: newsListQuery({ page: 1, limit, sort: "-views" }),
+        }),
       bySlug: (slug) => request<ApiEnvelope<News>>(`/api/news/${slug}`),
+      // One extra item so the current article can be dropped here; the URL
+      // is then the same for every article in the category.
       related: (news, limit = 4) =>
         request<PaginatedResponse<News>>("/api/news", {
           query: newsListQuery({
             page: 1,
-            limit,
+            limit: limit + 1,
             sort: "-views",
             category:
               typeof news.category === "string"
                 ? news.category
                 : news.category?._id,
-            excludeId: news._id,
           }),
-        }),
+        }).then((response) => ({
+          ...response,
+          data: (response.data ?? [])
+            .filter((item) => item._id !== news._id)
+            .slice(0, limit),
+        })),
       myNews: () => request<ApiEnvelope<News[]>>("/api/news/myNews"),
       create: (data) =>
         request<ApiEnvelope<News>>("/api/news", {

@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { connect } from "react-redux";
-import moment from "moment";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import NewsListingLayout, {
   EmptyNews,
@@ -89,15 +88,13 @@ export async function getServerSideProps({ query }: GetServerSidePropsContext) {
     async () => {
       const trendingNewsUrl = `${
         process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
-        .subtract(1, "months")
-        .toISOString()}`;
+      }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
 
       try {
         const [trendingJson, list] = await Promise.all([
           fetchJson(trendingNewsUrl),
           fetchNewsPage(
-            `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}`,
+            `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&excerpt=1`,
           ),
         ]);
 

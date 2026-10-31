@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -20,13 +21,23 @@ import (
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
 )
 
+// cacheKeyParams are the query params AdvancedResults reads. Anything else
+// (e.g. the created_at[gte] timestamp older clients send) does not change the
+// result, so it is left out of the cache key instead of making it unique.
+var cacheKeyParams = map[string]bool{
+	"page": true, "limit": true, "sort": true, "select": true, "excerpt": true,
+	"category": true, "user": true, "status": true, "tags": true, "q": true, "search": true,
+}
+
 // advancedResultsCacheKey produces a stable Redis key from the table, query params,
 // and (for user-scoped routes like /myNews) the caller's user ID.
 func advancedResultsCacheKey(table string, c *gin.Context) string {
 	params := c.Request.URL.Query()
 	keys := make([]string, 0, len(params))
 	for k := range params {
-		keys = append(keys, k)
+		if cacheKeyParams[k] {
+			keys = append(keys, k)
+		}
 	}
 	sort.Strings(keys)
 
@@ -173,6 +184,14 @@ func AdvancedResults(table string) gin.HandlerFunc {
 			return
 		}
 
+		// ?excerpt=1: list cards only show a short text excerpt, so send that
+		// instead of the full HTML (most of each item's size).
+		if c.Query("excerpt") == "1" {
+			for i := range results {
+				results[i].Content = contentExcerpt(results[i].Content)
+			}
+		}
+
 		var data interface{} = results
 		if sel := c.Query("select"); sel != "" {
 			data = selectFields(results, strings.Split(sel, ","))
@@ -209,6 +228,30 @@ func selectFields(items []models.News, fields []string) []map[string]interface{}
 		out = append(out, picked)
 	}
 	return out
+}
+
+// excerptRunes is longer than any client excerpt (120–300 characters).
+const excerptRunes = 320
+
+var htmlTag = regexp.MustCompile(`(?s)<.*?>`)
+
+// contentExcerpt strips tags the same way the clients do (entities are kept
+// as-is) and cuts the text at a word boundary.
+func contentExcerpt(content string) string {
+	text := strings.Join(strings.Fields(htmlTag.ReplaceAllString(content, "")), " ")
+	runes := []rune(text)
+	if len(runes) <= excerptRunes {
+		return text
+	}
+	cut := string(runes[:excerptRunes])
+	if i := strings.LastIndexByte(cut, ' '); i > 0 {
+		cut = cut[:i]
+	}
+	// never end inside an entity such as "&amp;"
+	if i := strings.LastIndexByte(cut, '&'); i >= 0 && !strings.Contains(cut[i:], ";") {
+		cut = cut[:i]
+	}
+	return strings.TrimSpace(cut) + "…"
 }
 
 func escapeLike(s string) string {

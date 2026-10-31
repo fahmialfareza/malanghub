@@ -23,7 +23,7 @@ async function fetchRecentNews(): Promise<NewsEntry[]> {
 
   try {
     const res = await fetch(
-      `${API_ADDRESS}/api/news?page=1&limit=100&sort=-created_at`
+      `${API_ADDRESS}/api/news?page=1&limit=100&sort=-created_at&select=slug,title,created_at`
     );
     if (!res.ok) return [];
     const json = await res.json();

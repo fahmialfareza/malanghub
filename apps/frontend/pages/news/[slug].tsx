@@ -561,12 +561,18 @@ export async function getServerSideProps({
         data.push(currentNewsJson.data);
 
         // Fetch related news items
-        const relatedNewsUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&category=${data[0].category._id}&_id[ne]=${data[0]._id}`;
+        // One extra item so the current article can be dropped here; the URL
+        // stays the same for every article in the category, so it is cached.
+        const relatedNewsUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=5&category=${data[0].category._id}&excerpt=1`;
         const relatedNewsResponse = await fetch(relatedNewsUrl);
 
         if (relatedNewsResponse.ok) {
           const relatedNewsJson = await relatedNewsResponse.json();
-          data.push(relatedNewsJson.data);
+          data.push(
+            (relatedNewsJson.data || [])
+              .filter((item: { _id: string }) => item._id !== data[0]._id)
+              .slice(0, 4),
+          );
         } else {
           throw new Error("Failed to fetch related news");
         }

@@ -19,7 +19,7 @@ async function fetchAllNewsSlugs(): Promise<SitemapEntry[]> {
   do {
     try {
       const res = await fetch(
-        `${API_ADDRESS}/api/news?page=${page}&limit=100&sort=-updated_at`
+        `${API_ADDRESS}/api/news?page=${page}&limit=100&sort=-updated_at&select=slug,updated_at`
       );
       if (!res.ok) break;
       const json = await res.json();

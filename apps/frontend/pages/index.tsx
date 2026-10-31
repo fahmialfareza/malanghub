@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import Head from "next/head";
 import { connect } from "react-redux";
-import moment from "moment";
 import { setActiveLink } from "../redux/actions/layoutActions";
 import { Container, LoadingBlock } from "@malanghub/ui";
 import {
@@ -147,10 +146,8 @@ export async function getServerSideProps() {
     async () => {
       const configTrendingUrl = `${
         process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
-        .subtract(1, "months")
-        .toISOString()}`;
-      const configRecentUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4`;
+      }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
+      const configRecentUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4&excerpt=1`;
 
       let dataRecent = {};
       let dataTrending = {};
