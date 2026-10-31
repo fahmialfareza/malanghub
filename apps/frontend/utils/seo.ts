@@ -62,3 +62,23 @@ export function excerpt(text: string, length = 155): string {
   const trimmed = lastSpace > length * 0.6 ? cut.slice(0, lastSpace) : cut;
   return trimmed.replace(/[\s,.;:!?-]+$/, "") + "...";
 }
+
+// Crawler-facing routes (sitemaps, feed, llms.txt) call the API from the
+// Worker; retry transient failures so one blip doesn't fail the whole fetch.
+export async function fetchWithRetry(
+  url: string,
+  attempts = 3,
+): Promise<Response> {
+  let lastError: unknown;
+  for (let i = 0; i < attempts; i++) {
+    if (i > 0) await new Promise((r) => setTimeout(r, 400 * i));
+    try {
+      const res = await fetch(url);
+      if (res.status < 500) return res;
+      lastError = new Error(`HTTP ${res.status}`);
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError;
+}

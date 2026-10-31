@@ -1,5 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { cdata, escapeXml, excerpt, stripHtml } from "../../utils/seo";
+import {
+  cdata,
+  escapeXml,
+  excerpt,
+  fetchWithRetry,
+  stripHtml,
+} from "../../utils/seo";
 
 const SITE_URL = "https://www.malanghub.com";
 const API_ADDRESS = process.env.API_ADDRESS;
@@ -75,7 +81,7 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const response = await fetch(
+    const response = await fetchWithRetry(
       `${API_ADDRESS}/api/news?page=1&limit=20&sort=-created_at`
     );
     if (!response.ok) throw new Error("Failed to fetch news");
@@ -88,6 +94,9 @@ export default async function handler(
     res.setHeader("Content-Type", "application/rss+xml; charset=utf-8");
     res.status(200).send(xml);
   } catch {
-    res.status(500).send("Error generating RSS feed");
+    // 503 tells crawlers to retry later instead of treating it as broken.
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Retry-After", "600");
+    res.status(503).send("Feed temporarily unavailable");
   }
 }

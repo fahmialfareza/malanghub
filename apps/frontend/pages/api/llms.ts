@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { excerpt } from "../../utils/seo";
+import { excerpt, fetchWithRetry } from "../../utils/seo";
 
 const SITE_URL = "https://www.malanghub.com";
 const API_ADDRESS = process.env.API_ADDRESS;
@@ -65,7 +65,7 @@ interface CategoryItem {
 
 async function fetchList<T>(path: string): Promise<T[]> {
   try {
-    const res = await fetch(`${API_ADDRESS}${path}`);
+    const res = await fetchWithRetry(`${API_ADDRESS}${path}`);
     if (!res.ok) return [];
     const json = await res.json();
     return json.data || [];

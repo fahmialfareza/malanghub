@@ -1,14 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { escapeXml } from "../../utils/seo";
+import { escapeXml, fetchWithRetry } from "../../utils/seo";
 
 const SITE_URL = "https://www.malanghub.com";
 const API_ADDRESS = process.env.API_ADDRESS;
 const PUBLICATION_NAME = "Malanghub";
 const PUBLICATION_LANGUAGE = "id";
 
-// Google News only accepts articles from the last 2 days; older entries are
-// reported as errors, so the sitemap is left empty on quiet days.
+// Google News reads articles from the last 2 days. On quiet days the latest
+// few are listed instead: Google ignores old entries, but reports an empty
+// <urlset> as a "Missing XML tag" error.
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
+const FALLBACK_LIMIT = 10;
 
 interface NewsEntry {
   slug: string;
@@ -21,9 +23,10 @@ interface NewsEntry {
 async function fetchRecentNews(): Promise<NewsEntry[] | null> {
   const cutoff = Date.now() - TWO_DAYS_MS;
   const recent: NewsEntry[] = [];
+  const fallback: NewsEntry[] = [];
 
   try {
-    const res = await fetch(
+    const res = await fetchWithRetry(
       `${API_ADDRESS}/api/news?page=1&limit=100&sort=-created_at&select=slug,title,created_at`
     );
     if (!res.ok) return null;
@@ -32,18 +35,22 @@ async function fetchRecentNews(): Promise<NewsEntry[] | null> {
 
     for (const item of items) {
       if (!item.slug || !item.title || !item.created_at) continue;
-      if (new Date(item.created_at).getTime() < cutoff) continue;
-      recent.push({
+      const entry: NewsEntry = {
         slug: item.slug.replace(/-+$/, ""),
         title: item.title,
         created_at: item.created_at,
-      });
+      };
+      if (new Date(item.created_at).getTime() >= cutoff) {
+        recent.push(entry);
+      } else if (fallback.length < FALLBACK_LIMIT) {
+        fallback.push(entry);
+      }
     }
   } catch {
     return null;
   }
 
-  return recent;
+  return recent.length > 0 ? recent : fallback;
 }
 
 function buildNewsXml(entries: NewsEntry[]): string {

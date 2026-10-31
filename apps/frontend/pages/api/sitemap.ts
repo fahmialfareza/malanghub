@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { escapeXml } from "../../utils/seo";
+import { escapeXml, fetchWithRetry } from "../../utils/seo";
 
 const SITE_URL = "https://www.malanghub.com";
 const API_ADDRESS = process.env.API_ADDRESS;
@@ -20,7 +20,7 @@ async function fetchAllNewsSlugs(): Promise<SitemapEntry[] | null> {
 
   do {
     try {
-      const res = await fetch(
+      const res = await fetchWithRetry(
         `${API_ADDRESS}/api/news?page=${page}&limit=100&sort=-updated_at&select=slug,updated_at`
       );
       if (!res.ok) return null;
@@ -54,7 +54,7 @@ async function fetchAllNewsSlugs(): Promise<SitemapEntry[] | null> {
 
 async function fetchCategoryEntries(): Promise<SitemapEntry[]> {
   try {
-    const res = await fetch(`${API_ADDRESS}/api/newsCategories`);
+    const res = await fetchWithRetry(`${API_ADDRESS}/api/newsCategories`);
     if (!res.ok) return [];
     const json = await res.json();
     const categories: any[] = json.data || [];
@@ -70,7 +70,7 @@ async function fetchCategoryEntries(): Promise<SitemapEntry[]> {
 
 async function fetchTagEntries(): Promise<SitemapEntry[]> {
   try {
-    const res = await fetch(`${API_ADDRESS}/api/newsTags`);
+    const res = await fetchWithRetry(`${API_ADDRESS}/api/newsTags`);
     if (!res.ok) return [];
     const json = await res.json();
     const tags: any[] = json.data || [];
