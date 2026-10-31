@@ -108,6 +108,9 @@ jobs:
             pnpm --filter native mobile:store-id android
           fi
 
+      - name: Generate app icons
+        run: pnpm --filter native tauri icon src-tauri/icons/icon.png
+
       - name: Configure Android release signing
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
