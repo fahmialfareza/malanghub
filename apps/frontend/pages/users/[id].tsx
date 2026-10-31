@@ -108,7 +108,10 @@ const GetUserProfile = ({
     <>
       <ListingSeo
         title={`Malanghub - Pengguna - ${userProfile?.name}`}
-        description={bioText.slice(0, 255)}
+        description={
+          bioText.trim().slice(0, 255) ||
+          `Kumpulan berita dan tulisan ${userProfile?.name} di Malanghub.`
+        }
         collectionName={`Berita dari ${userProfile?.name} - Malanghub`}
         basePath={basePath}
         page={page}

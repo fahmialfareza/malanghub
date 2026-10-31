@@ -34,19 +34,19 @@ const Home = ({
   return (
     <>
       <Head>
-        <title>Malanghub - Beranda</title>
-        <meta name="title" content="Malanghub - Beranda" />
+        <title>Malanghub - Berita dan Informasi Terkini Malang Raya</title>
+        <meta name="title" content="Malanghub - Berita dan Informasi Terkini Malang Raya" />
         <meta
           name="description"
-          content="Malanghub - Beranda - Situs yang menyediakan informasi sekitar Malang Raya!"
+          content="Berita, opini, dan informasi terkini seputar Malang Raya: Kota Malang, Kabupaten Malang, dan Kota Batu. Ditulis oleh warga, mahasiswa, dan komunitas lokal."
         />
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.malanghub.com/" />
-        <meta property="og:title" content="Malanghub - Beranda" />
+        <meta property="og:title" content="Malanghub - Berita dan Informasi Terkini Malang Raya" />
         <meta
           property="og:description"
-          content="Malanghub - Beranda - Situs yang menyediakan informasi sekitar Malang Raya!"
+          content="Berita, opini, dan informasi terkini seputar Malang Raya: Kota Malang, Kabupaten Malang, dan Kota Batu. Ditulis oleh warga, mahasiswa, dan komunitas lokal."
         />
         <meta
           property="og:image"
@@ -57,10 +57,10 @@ const Home = ({
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content="https://www.malanghub.com/" />
-        <meta property="twitter:title" content="Malanghub - Beranda" />
+        <meta property="twitter:title" content="Malanghub - Berita dan Informasi Terkini Malang Raya" />
         <meta
           property="twitter:description"
-          content="Malanghub - Beranda - Situs yang menyediakan informasi sekitar Malang Raya!"
+          content="Berita, opini, dan informasi terkini seputar Malang Raya: Kota Malang, Kabupaten Malang, dan Kota Batu. Ditulis oleh warga, mahasiswa, dan komunitas lokal."
         />
         <meta
           property="twitter:image"

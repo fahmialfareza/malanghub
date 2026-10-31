@@ -47,6 +47,10 @@ const baseConfig = {
         destination: "/api/feed",
       },
       {
+        source: "/llms.txt",
+        destination: "/api/llms",
+      },
+      {
         source: "/:key([0-9a-f]{32,}).txt",
         destination: "/api/indexnow-key",
       },

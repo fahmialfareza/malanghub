@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import Head from "next/head";
-import { excerpt } from "../../utils/seo";
+import { excerpt, plainText } from "../../utils/seo";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -81,18 +81,20 @@ const SingleNews = ({
     }
   }, [contentRef, currentNews]);
 
+  // <title> must get a single string child: mixed text + expression renders
+  // an empty title under React 19.
+  const seoTitle = `${currentNews?.title} | Malanghub`;
+  const description = excerpt(currentNews?.content || "", 155);
+  const plainContent = currentNews?.content
+    ? plainText(currentNews.content)
+    : "";
+
   return (
     <>
       <Head>
-        <title>Malanghub - Berita - {currentNews?.title}</title>
-        <meta
-          name="title"
-          content={`Malanghub - Berita - ${currentNews?.title}`}
-        />
-        <meta
-          name="description"
-          content={excerpt(currentNews?.content || "", 155)}
-        />
+        <title>{seoTitle}</title>
+        <meta name="title" content={seoTitle} />
+        <meta name="description" content={description} />
 
         <link
           rel="canonical"
@@ -104,14 +106,8 @@ const SingleNews = ({
           property="og:url"
           content={`https://www.malanghub.com/news/${currentNews?.slug}`}
         />
-        <meta
-          property="og:title"
-          content={`Malanghub - Berita - ${currentNews?.title}`}
-        />
-        <meta
-          property="og:description"
-          content={excerpt(currentNews?.content || "", 155)}
-        />
+        <meta property="og:title" content={currentNews?.title} />
+        <meta property="og:description" content={description} />
         <meta property="og:image" content={currentNews?.mainImage} />
         {currentNews?.created_at && (
           <meta
@@ -150,14 +146,8 @@ const SingleNews = ({
           property="twitter:url"
           content={`https://www.malanghub.com/news/${currentNews?.slug}`}
         />
-        <meta
-          property="twitter:title"
-          content={`Malanghub - Berita - ${currentNews?.title}`}
-        />
-        <meta
-          property="twitter:description"
-          content={excerpt(currentNews?.content || "", 155)}
-        />
+        <meta property="twitter:title" content={currentNews?.title} />
+        <meta property="twitter:description" content={description} />
         <meta property="twitter:image" content={currentNews?.mainImage} />
         {currentNews?.user?.name && (
           <meta name="twitter:label1" content="Penulis" />
@@ -182,11 +172,12 @@ const SingleNews = ({
               "@context": "https://schema.org",
               "@type": "NewsArticle",
               headline: currentNews?.title,
-              description: excerpt(currentNews?.content || "", 155),
+              description,
               image: currentNews?.mainImage
                 ? [{ "@type": "ImageObject", url: currentNews.mainImage }]
                 : undefined,
-              isAccessibleForFree: "True",
+              thumbnailUrl: currentNews?.mainImage || undefined,
+              isAccessibleForFree: true,
               datePublished: currentNews?.created_at
                 ? new Date(currentNews.created_at).toISOString()
                 : undefined,
@@ -206,7 +197,9 @@ const SingleNews = ({
                 : undefined,
               publisher: {
                 "@type": "Organization",
+                "@id": "https://www.malanghub.com/#organization",
                 name: "Malanghub",
+                url: "https://www.malanghub.com/",
                 logo: {
                   "@type": "ImageObject",
                   url: "https://www.malanghub.com/logo-wide.png",
@@ -226,8 +219,9 @@ const SingleNews = ({
                     .filter(Boolean)
                     .join(", ")
                 : undefined,
-              articleBody: currentNews?.content
-                ? currentNews.content.replace(/<(.|\n)*?>/g, "").trim()
+              articleBody: plainContent || undefined,
+              wordCount: plainContent
+                ? plainContent.split(/\s+/).filter(Boolean).length
                 : undefined,
               speakable: {
                 "@type": "SpeakableSpecification",
