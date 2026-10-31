@@ -520,8 +520,13 @@ const SingleNews = ({
   );
 };
 
+// Article HTML is the same for every visitor (the session loads client-side),
+// so worker.ts may keep it at the edge for this long.
+const EDGE_CACHE_SECONDS = 3600;
+
 export async function getServerSideProps({
   params,
+  res,
 }: GetServerSidePropsContext<{ slug: string }>) {
   const rawSlug = params?.slug;
   const cleanSlug = rawSlug?.replace(/-+$/, "");
@@ -587,6 +592,12 @@ export async function getServerSideProps({
         // tell Google to drop the page.
         return notFoundOrThrow(e);
       }
+
+      // Only a complete page is shared-cacheable; browsers always revalidate.
+      res.setHeader(
+        "Cache-Control",
+        `public, max-age=0, s-maxage=${EDGE_CACHE_SECONDS}`,
+      );
 
       // Return the current news and related news as props
       return { props: { currentNews: data[0], relatedNews: data[1] } };
