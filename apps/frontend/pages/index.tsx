@@ -10,6 +10,7 @@ import {
 } from "../components/news/NewsListingLayout";
 import NewsItem from "../components/news/NewsItem";
 import * as Sentry from "@sentry/nextjs";
+import { fetchJson } from "../utils/pagination";
 import { RootState } from "../redux/store";
 import { News } from "../models/news";
 import { NewsReducerState } from "../redux/types";
@@ -35,7 +36,10 @@ const Home = ({
     <>
       <Head>
         <title>Malanghub - Berita dan Informasi Terkini Malang Raya</title>
-        <meta name="title" content="Malanghub - Berita dan Informasi Terkini Malang Raya" />
+        <meta
+          name="title"
+          content="Malanghub - Berita dan Informasi Terkini Malang Raya"
+        />
         <meta
           name="description"
           content="Berita, opini, dan informasi terkini seputar Malang Raya: Kota Malang, Kabupaten Malang, dan Kota Batu. Ditulis oleh warga, mahasiswa, dan komunitas lokal."
@@ -43,7 +47,10 @@ const Home = ({
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://www.malanghub.com/" />
-        <meta property="og:title" content="Malanghub - Berita dan Informasi Terkini Malang Raya" />
+        <meta
+          property="og:title"
+          content="Malanghub - Berita dan Informasi Terkini Malang Raya"
+        />
         <meta
           property="og:description"
           content="Berita, opini, dan informasi terkini seputar Malang Raya: Kota Malang, Kabupaten Malang, dan Kota Batu. Ditulis oleh warga, mahasiswa, dan komunitas lokal."
@@ -57,7 +64,10 @@ const Home = ({
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content="https://www.malanghub.com/" />
-        <meta property="twitter:title" content="Malanghub - Berita dan Informasi Terkini Malang Raya" />
+        <meta
+          property="twitter:title"
+          content="Malanghub - Berita dan Informasi Terkini Malang Raya"
+        />
         <meta
           property="twitter:description"
           content="Berita, opini, dan informasi terkini seputar Malang Raya: Kota Malang, Kabupaten Malang, dan Kota Batu. Ditulis oleh warga, mahasiswa, dan komunitas lokal."
@@ -153,25 +163,17 @@ export async function getServerSideProps() {
       let dataTrending = {};
 
       try {
-        const [responseRecent, responseTrending] = await Promise.all([
-          fetch(configRecentUrl),
-          fetch(configTrendingUrl),
+        const [recentNewsJson, trendingNewsJson] = await Promise.all([
+          fetchJson(configRecentUrl),
+          fetchJson(configTrendingUrl),
         ]);
-
-        if (!responseRecent.ok || !responseTrending.ok) {
-          throw new Error("Failed to fetch data");
-        }
-
-        const recentNewsJson = await responseRecent.json();
-        const trendingNewsJson = await responseTrending.json();
 
         dataRecent = recentNewsJson.data;
         dataTrending = trendingNewsJson.data;
       } catch (e) {
+        // The homepage always exists: let an API failure surface as a 5xx.
         Sentry.captureException(e);
-        return {
-          notFound: true,
-        };
+        throw e;
       }
 
       return { props: { recentNews: dataRecent, trendingNews: dataTrending } };

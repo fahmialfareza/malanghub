@@ -11,10 +11,12 @@ import * as Sentry from "@sentry/nextjs";
 import { GetServerSidePropsContext } from "next";
 import { News, NewsTag as NewsTg } from "../../models/news";
 import {
+  ApiNotFoundError,
   fetchJson,
   fetchNewsPage,
   firstPageRedirect,
   isPageOutOfRange,
+  notFoundOrThrow,
   pageCountOf,
   parsePage,
 } from "../../utils/pagination";
@@ -147,7 +149,7 @@ export async function getServerSideProps({
           tagPromise,
           tagPromise.then((json) => {
             const id = json?.data?.tag?.id;
-            if (!id) throw new Error("News tag not found");
+            if (!id) throw new ApiNotFoundError("News tag not found");
             return fetchNewsPage(
               `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&tags=${id}`,
             );
@@ -169,9 +171,7 @@ export async function getServerSideProps({
         };
       } catch (e) {
         Sentry.captureException(e);
-        return {
-          notFound: true as const,
-        };
+        return notFoundOrThrow(e);
       }
     },
   );

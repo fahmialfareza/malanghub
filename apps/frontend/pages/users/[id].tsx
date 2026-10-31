@@ -29,6 +29,7 @@ import {
   fetchNewsPage,
   firstPageRedirect,
   isPageOutOfRange,
+  notFoundOrThrow,
   pageCountOf,
   parsePage,
 } from "../../utils/pagination";
@@ -454,9 +455,7 @@ export async function getServerSideProps({
         };
       } catch (e) {
         Sentry.captureException(e);
-        return {
-          notFound: true as const,
-        };
+        return notFoundOrThrow(e);
       }
     },
   );

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import Head from "next/head";
-import { excerpt, plainText } from "../../utils/seo";
+import { excerpt, fetchWithRetry, plainText } from "../../utils/seo";
+import { ApiNotFoundError, notFoundOrThrow } from "../../utils/pagination";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -543,12 +544,17 @@ export async function getServerSideProps({
 
       try {
         // Fetch the current news item based on the slug
-        const currentNewsResponse = await fetch(
+        const currentNewsResponse = await fetchWithRetry(
           `${process.env.API_ADDRESS}/api/news/${rawSlug}`,
         );
 
+        if (currentNewsResponse.status === 404) {
+          throw new ApiNotFoundError("News not found");
+        }
         if (!currentNewsResponse.ok) {
-          throw new Error("Failed to fetch current news");
+          throw new Error(
+            `Failed to fetch current news (${currentNewsResponse.status})`,
+          );
         }
 
         const currentNewsJson = await currentNewsResponse.json();
@@ -558,7 +564,7 @@ export async function getServerSideProps({
         // One extra item so the current article can be dropped here; the URL
         // stays the same for every article in the category, so it is cached.
         const relatedNewsUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=5&category=${data[0].category._id}&excerpt=1`;
-        const relatedNewsResponse = await fetch(relatedNewsUrl);
+        const relatedNewsResponse = await fetchWithRetry(relatedNewsUrl);
 
         if (relatedNewsResponse.ok) {
           const relatedNewsJson = await relatedNewsResponse.json();
@@ -576,10 +582,10 @@ export async function getServerSideProps({
         if (data.length > 0) {
           // Return the current news with null related news if fetching related news fails
           return { props: { currentNews: data[0], relatedNews: null } };
-        } else {
-          // If fetching the current news fails, return a 404 page
-          return { notFound: true };
         }
+        // 404 only when the article is really gone; an API outage must not
+        // tell Google to drop the page.
+        return notFoundOrThrow(e);
       }
 
       // Return the current news and related news as props

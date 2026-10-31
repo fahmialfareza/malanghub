@@ -10,10 +10,12 @@ import * as Sentry from "@sentry/nextjs";
 import { GetServerSidePropsContext } from "next";
 import { News, NewsCategoryFull as NewsCtg } from "../../models/news";
 import {
+  ApiNotFoundError,
   fetchJson,
   fetchNewsPage,
   firstPageRedirect,
   isPageOutOfRange,
+  notFoundOrThrow,
   pageCountOf,
   parsePage,
 } from "../../utils/pagination";
@@ -139,7 +141,7 @@ export async function getServerSideProps({
           categoryPromise,
           categoryPromise.then((json) => {
             const id = json?.data?.category?.id;
-            if (!id) throw new Error("News category not found");
+            if (!id) throw new ApiNotFoundError("News category not found");
             return fetchNewsPage(
               `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&category=${id}&excerpt=1`,
             );
@@ -161,9 +163,7 @@ export async function getServerSideProps({
         };
       } catch (e) {
         Sentry.captureException(e);
-        return {
-          notFound: true as const,
-        };
+        return notFoundOrThrow(e);
       }
     },
   );
