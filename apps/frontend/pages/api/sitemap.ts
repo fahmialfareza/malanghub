@@ -11,7 +11,9 @@ interface SitemapEntry {
   priority?: string;
 }
 
-async function fetchAllNewsSlugs(): Promise<SitemapEntry[]> {
+// Returns null if any page fails: a partial list would tell crawlers the
+// missing articles are gone.
+async function fetchAllNewsSlugs(): Promise<SitemapEntry[] | null> {
   const entries: SitemapEntry[] = [];
   let page = 1;
   let totalPages = 1;
@@ -21,7 +23,7 @@ async function fetchAllNewsSlugs(): Promise<SitemapEntry[]> {
       const res = await fetch(
         `${API_ADDRESS}/api/news?page=${page}&limit=100&sort=-updated_at&select=slug,updated_at`
       );
-      if (!res.ok) break;
+      if (!res.ok) return null;
       const json = await res.json();
 
       const items: any[] = json.data || [];
@@ -43,7 +45,7 @@ async function fetchAllNewsSlugs(): Promise<SitemapEntry[]> {
       totalPages = Math.ceil(total / limit);
       page++;
     } catch {
-      break;
+      return null;
     }
   } while (page <= totalPages);
 
@@ -116,6 +118,13 @@ export default async function handler(
     fetchCategoryEntries(),
     fetchTagEntries(),
   ]);
+
+  if (!newsEntries || newsEntries.length === 0) {
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Retry-After", "600");
+    res.status(503).send("Sitemap temporarily unavailable");
+    return;
+  }
 
   const allEntries = [
     ...staticEntries,

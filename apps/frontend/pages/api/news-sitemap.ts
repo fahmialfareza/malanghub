@@ -6,9 +6,9 @@ const API_ADDRESS = process.env.API_ADDRESS;
 const PUBLICATION_NAME = "Malanghub";
 const PUBLICATION_LANGUAGE = "id";
 
-// Google News sitemap covers articles from the last 2 days; falls back to last 20 if none
+// Google News only accepts articles from the last 2 days; older entries are
+// reported as errors, so the sitemap is left empty on quiet days.
 const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
-const FALLBACK_LIMIT = 20;
 
 interface NewsEntry {
   slug: string;
@@ -16,37 +16,34 @@ interface NewsEntry {
   created_at: string;
 }
 
-async function fetchRecentNews(): Promise<NewsEntry[]> {
-  const cutoff = new Date(Date.now() - TWO_DAYS_MS).toISOString();
+// Returns null when the API is unavailable, so the handler can answer 503
+// instead of publishing an empty sitemap.
+async function fetchRecentNews(): Promise<NewsEntry[] | null> {
+  const cutoff = Date.now() - TWO_DAYS_MS;
   const recent: NewsEntry[] = [];
-  const fallback: NewsEntry[] = [];
 
   try {
     const res = await fetch(
       `${API_ADDRESS}/api/news?page=1&limit=100&sort=-created_at&select=slug,title,created_at`
     );
-    if (!res.ok) return [];
+    if (!res.ok) return null;
     const json = await res.json();
     const items: any[] = json.data || [];
 
     for (const item of items) {
       if (!item.slug || !item.title || !item.created_at) continue;
-      const entry: NewsEntry = {
+      if (new Date(item.created_at).getTime() < cutoff) continue;
+      recent.push({
         slug: item.slug.replace(/-+$/, ""),
         title: item.title,
         created_at: item.created_at,
-      };
-      if (item.created_at >= cutoff) {
-        recent.push(entry);
-      } else if (fallback.length < FALLBACK_LIMIT) {
-        fallback.push(entry);
-      }
+      });
     }
   } catch {
-    return [];
+    return null;
   }
 
-  return recent.length > 0 ? recent : fallback;
+  return recent;
 }
 
 function buildNewsXml(entries: NewsEntry[]): string {
@@ -75,6 +72,12 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const entries = await fetchRecentNews();
+  if (!entries) {
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Retry-After", "600");
+    res.status(503).send("Sitemap temporarily unavailable");
+    return;
+  }
   const xml = buildNewsXml(entries);
 
   // Cache for 1 hour — Google crawls news sitemaps frequently
