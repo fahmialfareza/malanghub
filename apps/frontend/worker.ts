@@ -17,6 +17,12 @@ interface Ctx {
   waitUntil(promise: Promise<unknown>): void;
 }
 
+// Pages has no version_metadata binding, so the Pages build
+// (scripts/build-pages.mjs) injects the Next.js build id here instead.
+declare const __PAGES_BUILD_ID__: string | undefined;
+const pagesBuildId =
+  typeof __PAGES_BUILD_ID__ === "string" ? __PAGES_BUILD_ID__ : undefined;
+
 // Article HTML and the JSON Next.js fetches for client-side navigation.
 const CACHEABLE_PATHS = [
   /^\/news\/[^/]+\/?$/,
@@ -36,7 +42,7 @@ export default {
 
     // The deployment id is part of the key, so a new deploy never serves
     // HTML that points at the previous build's (deleted) JS chunks.
-    const version = env.CF_VERSION_METADATA?.id ?? "dev";
+    const version = env.CF_VERSION_METADATA?.id ?? pagesBuildId ?? "dev";
     const keyUrl = new URL(url.toString());
     keyUrl.searchParams.set("__v", version);
     const cacheKey = new Request(keyUrl.toString(), { method: "GET" });

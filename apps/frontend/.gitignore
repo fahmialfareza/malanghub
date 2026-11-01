@@ -46,3 +46,6 @@ mongo-volume
 /tmp
 # Sentry Auth Token
 .sentryclirc
+
+# cloudflare pages build output
+/cloudflare-pages/dist

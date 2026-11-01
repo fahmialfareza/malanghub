@@ -47,3 +47,21 @@ Notes:
 - `patches/@opennextjs__cloudflare@*.patch` patches OpenNext in two places; drop them once upstream releases fixes:
   - inlines Next.js 16.4's `preview-props.json` ([opennextjs-cloudflare#1355](https://github.com/opennextjs/opennextjs-cloudflare/issues/1355)); without it every SSR page 500s.
   - keeps the pages-router context redirect (`*.shared-runtime` → `pages/vendored/contexts`) on Next ≥ 15.3, like Next's Node require-hook. Without it `next-redux-wrapper` throws "NextRouter was not mounted" on every server-rendered page.
+
+## Deploy on Cloudflare Pages
+
+The same OpenNext build can also run on Cloudflare Pages in advanced mode (`_worker.js`). `scripts/build-pages.mjs` bundles `worker.ts` and writes the result, along with the static assets and a generated `_routes.json`, to `cloudflare-pages/dist`. The Pages config is `cloudflare-pages/wrangler.jsonc`, project `malanghub`.
+
+```bash
+pnpm pages:build    # OpenNext build, then package for Pages (add `-- --skip-build` to reuse .open-next)
+pnpm pages:preview  # build, then serve locally with `wrangler pages dev` (http://localhost:8788)
+pnpm pages:deploy   # build and deploy to Pages (needs `wrangler login`)
+```
+
+Notes:
+
+- Pages Functions share the Workers request quota and CPU limits, so moving from Workers to Pages doesn't raise those limits. Static files listed in `_routes.json` are served without invoking the Function.
+- Set `API_ADDRESS`, `INDEXNOW_KEY` and `SENTRY_DSN` as Pages **secrets** (`wrangler pages secret put <NAME> --project-name malanghub`). Plain-text vars are owned by the config file. Build variables are the same as for Workers.
+- For local previews, put a `.dev.vars` file in `cloudflare-pages/`.
+- `cloudflare-pages/package.json` keeps wrangler from also reading `../wrangler.jsonc`; don't remove it.
+- Pages has no `version_metadata` binding, so the edge cache in `worker.ts` is keyed by the Next.js build id instead.
