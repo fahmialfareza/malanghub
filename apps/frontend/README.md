@@ -58,10 +58,13 @@ pnpm pages:preview  # build, then serve locally with `wrangler pages dev` (http:
 pnpm pages:deploy   # build and deploy to Pages (needs `wrangler login`)
 ```
 
+Production deploys run from `.github/workflows/frontend-pages.yml` on push to `main`. Pages' own Git builds must stay off: they re-bundle `_worker.js` with wrangler 3, which makes every SSR route 500, and they ignore dashboard build variables because the project has a wrangler config.
+
 Notes:
 
 - Pages Functions share the Workers request quota and CPU limits, so moving from Workers to Pages doesn't raise those limits. Static files listed in `_routes.json` are served without invoking the Function.
-- Set `API_ADDRESS`, `INDEXNOW_KEY` and `SENTRY_DSN` as Pages **secrets** (`wrangler pages secret put <NAME> --project-name malanghub`). Plain-text vars are owned by the config file. Build variables are the same as for Workers.
+- Set `API_ADDRESS`, `INDEXNOW_KEY` and `SENTRY_DSN` as Pages **secrets** (`wrangler pages secret put <NAME> --project-name malanghub`). Plain-text vars are owned by the config file.
+- Build variables (`NEXT_PUBLIC_*`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT`), `CLOUDFLARE_API_TOKEN` (Cloudflare Pages: Edit) and `CLOUDFLARE_ACCOUNT_ID` are GitHub Actions secrets.
 - For local previews, put a `.dev.vars` file in `cloudflare-pages/`.
 - `cloudflare-pages/package.json` keeps wrangler from also reading `../wrangler.jsonc`; don't remove it.
 - Pages has no `version_metadata` binding, so the edge cache in `worker.ts` is keyed by the Next.js build id instead.

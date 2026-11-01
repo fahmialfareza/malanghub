@@ -8,9 +8,11 @@
   // Build with `pnpm pages:build`, deploy with `pnpm pages:deploy`.
   "name": "malanghub",
   "pages_build_output_dir": "./dist",
-  // _worker.js is already bundled by scripts/build-pages.mjs. Re-bundling it
-  // (Pages CI does this by default) breaks Next's external module loading:
-  // "Failed to load external module ... reading 'require'".
+  // _worker.js is already bundled by scripts/build-pages.mjs, so upload it
+  // as-is. Re-bundling with wrangler 3 (what Pages' own Git builds use, and
+  // they ignore this flag) breaks Next's external module loading: "Failed to
+  // load external module ... reading 'require'". Deploy with
+  // .github/workflows/frontend-pages.yml instead of Pages Git builds.
   "no_bundle": true,
   // Keep in sync with ../wrangler.jsonc.
   "compatibility_date": "2026-10-01",
