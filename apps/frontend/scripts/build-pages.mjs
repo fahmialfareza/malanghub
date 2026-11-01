@@ -2,7 +2,9 @@
 //
 // Output (cloudflare-pages/dist):
 //   - every static asset from .open-next/assets
-//   - _worker.js: worker.ts + the OpenNext server, bundled by wrangler
+//   - _worker.js/index.js: worker.ts + the OpenNext server, bundled by
+//     wrangler. A directory, so it can be uploaded as-is (no_bundle) with
+//     its node: imports intact
 //   - _routes.json: sends static assets straight to the CDN so they never
 //     invoke (or count against) Pages Functions
 //
@@ -60,7 +62,7 @@ try {
 
   rmSync(outDir, { recursive: true, force: true });
   cpSync(assetsDir, outDir, { recursive: true });
-  cpSync(join(bundleDir, "worker.js"), join(outDir, "_worker.js"));
+  cpSync(join(bundleDir, "worker.js"), join(outDir, "_worker.js/index.js"));
 } finally {
   rmSync(bundleDir, { recursive: true, force: true });
 }

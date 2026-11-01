@@ -8,6 +8,10 @@
   // Build with `pnpm pages:build`, deploy with `pnpm pages:deploy`.
   "name": "malanghub",
   "pages_build_output_dir": "./dist",
+  // _worker.js is already bundled by scripts/build-pages.mjs. Re-bundling it
+  // (Pages CI does this by default) breaks Next's external module loading:
+  // "Failed to load external module ... reading 'require'".
+  "no_bundle": true,
   // Keep in sync with ../wrangler.jsonc.
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"]
