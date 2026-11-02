@@ -40,6 +40,11 @@ Shared:
 | `VITE_TINY_API_KEY`             | TinyMCE API key                                               |
 | `VITE_SENTRY_DSN`               | Optional Sentry DSN                                           |
 
+Every `VITE_GOOGLE_*_CLIENT_ID` above must also be accepted by the backend
+(listed in its `GOOGLE_ALLOWED_CLIENT_IDS`, or set as `GOOGLE_IOS_CLIENT_ID` /
+`GOOGLE_ANDROID_CLIENT_ID`). Otherwise Google login fails with
+"google access token audience is not allowed".
+
 Store identifiers:
 
 - Android Play Store package: `com.malanghub.native`
