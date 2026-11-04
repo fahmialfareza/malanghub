@@ -64,17 +64,25 @@ export function excerpt(text: string, length = 155): string {
 }
 
 // Build-time fetches (pages, sitemaps, feed, llms.txt) retry transient
-// failures so one blip doesn't fail the whole build.
+// failures so one blip doesn't fail the whole build. The body is read inside
+// the retry loop: a connection dropped mid-response must be retried too.
 export async function fetchWithRetry(
   url: string,
-  attempts = 3,
+  attempts = 4,
 ): Promise<Response> {
   let lastError: unknown;
   for (let i = 0; i < attempts; i++) {
-    if (i > 0) await new Promise((r) => setTimeout(r, 400 * i));
+    if (i > 0) await new Promise((r) => setTimeout(r, 500 * 2 ** (i - 1)));
     try {
       const res = await fetch(url);
-      if (res.status < 500) return res;
+      if (res.status < 500) {
+        const body = await res.arrayBuffer();
+        return new Response(body, {
+          status: res.status,
+          statusText: res.statusText,
+          headers: res.headers,
+        });
+      }
       lastError = new Error(`HTTP ${res.status}`);
     } catch (e) {
       lastError = e;
