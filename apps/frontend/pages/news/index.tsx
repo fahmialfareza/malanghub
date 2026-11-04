@@ -6,37 +6,35 @@ import NewsListingLayout, {
 } from "../../components/news/NewsListingLayout";
 import { NewsGrid } from "../../components/news/NewsCard";
 import ListingSeo from "../../components/seo/ListingSeo";
-import * as Sentry from "@sentry/nextjs";
-import { GetServerSidePropsContext } from "next";
 import { News as NewsInterface } from "../../models/news";
 import {
   fetchJson,
   fetchNewsPage,
-  firstPageRedirect,
-  isPageOutOfRange,
-  notFoundOrThrow,
   pageCountOf,
-  parsePage,
 } from "../../utils/pagination";
+import { usePagedNews } from "../../utils/usePagedNews";
+import { LoadingBlock } from "@malanghub/ui";
 
 const BASE_PATH = "/news";
 const LIMIT = 5;
 
+const listPath = (page: number) =>
+  `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&excerpt=1`;
+
 interface NewsProps {
   trendingNews: NewsInterface[];
   news: NewsInterface[];
-  page: number;
   pageCount: number;
   setActiveLink: (link: string) => void;
 }
 
-const News = ({
-  trendingNews,
-  news,
-  page,
-  pageCount,
-  setActiveLink,
-}: NewsProps) => {
+const News = ({ trendingNews, setActiveLink, ...firstPage }: NewsProps) => {
+  const { page, news, pageCount, loading, notFound } = usePagedNews(
+    BASE_PATH,
+    firstPage,
+    listPath,
+  );
+
   useEffect(() => {
     setActiveLink("news");
   }, []);
@@ -53,6 +51,7 @@ const News = ({
         pageCount={pageCount}
         limit={LIMIT}
         news={news}
+        noindex={notFound}
       />
 
       <NewsListingLayout
@@ -63,7 +62,11 @@ const News = ({
         title="Semua Berita"
         trendingNews={trendingNews}
       >
-        {news.length > 0 ? (
+        {loading ? (
+          <LoadingBlock />
+        ) : notFound ? (
+          <EmptyNews>Halaman Tidak Ditemukan</EmptyNews>
+        ) : news.length > 0 ? (
           <NewsGrid
             news={news}
             page={page}
@@ -78,47 +81,22 @@ const News = ({
   );
 };
 
-export async function getServerSideProps({ query }: GetServerSidePropsContext) {
-  const page = parsePage(query.page);
-  if (page === null) return firstPageRedirect(BASE_PATH);
+// Page 1 is prerendered; later pages load in the browser (usePagedNews).
+export async function getStaticProps() {
+  const [trendingJson, list] = await Promise.all([
+    fetchJson(
+      `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&excerpt=1`,
+    ),
+    fetchNewsPage(listPath(1)),
+  ]);
 
-  const result = await Sentry.startSpan(
-    {
-      name: "news.index.getServerSideProps",
+  return {
+    props: {
+      trendingNews: trendingJson.data,
+      news: list.data,
+      pageCount: pageCountOf(list.meta),
     },
-    async () => {
-      const trendingNewsUrl = `${
-        process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
-
-      try {
-        const [trendingJson, list] = await Promise.all([
-          fetchJson(trendingNewsUrl),
-          fetchNewsPage(
-            `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&excerpt=1`,
-          ),
-        ]);
-
-        if (isPageOutOfRange(page, list.meta)) {
-          return { notFound: true as const };
-        }
-
-        return {
-          props: {
-            trendingNews: trendingJson.data,
-            news: list.data,
-            page,
-            pageCount: pageCountOf(list.meta),
-          },
-        };
-      } catch (e) {
-        Sentry.captureException(e);
-        return notFoundOrThrow(e);
-      }
-    },
-  );
-
-  return result;
+  };
 }
 
 export default connect(null, { setActiveLink })(News);

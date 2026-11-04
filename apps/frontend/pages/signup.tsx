@@ -9,8 +9,6 @@ import { useGoogleLogin } from "@react-oauth/google";
 import * as Sentry from "@sentry/nextjs";
 import { Breadcrumbs, Button, Card, Input } from "@malanghub/ui";
 import { RootState } from "../redux/store";
-import { GetServerSidePropsContext } from "next";
-import * as cookie from "cookie";
 import { UserReducerState } from "../redux/types";
 import { GoogleLoginRequest, SignUpRequest } from "../redux/actions/types/user";
 
@@ -227,48 +225,6 @@ const SignUp = ({
     </>
   );
 };
-
-export async function getServerSideProps({ req }: GetServerSidePropsContext) {
-  const result = await Sentry.startSpan(
-    { name: "signup.getServerSideProps" },
-    async () => {
-      try {
-        if (!req.headers.cookie) {
-          return { props: {} };
-        }
-
-        const { token } = cookie.parse(req.headers.cookie);
-
-        if (!token) {
-          return { props: {} };
-        }
-
-        const response = await fetch(`${process.env.API_ADDRESS}/api/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          return {
-            redirect: {
-              permanent: false,
-              destination: "/users",
-            },
-            props: {},
-          };
-        } else {
-          return { props: {} };
-        }
-      } catch (e) {
-        Sentry.captureException(e);
-        return { props: {} };
-      }
-    },
-  );
-
-  return result;
-}
 
 const mapStateToProps = (state: RootState) => ({
   user: state.user,

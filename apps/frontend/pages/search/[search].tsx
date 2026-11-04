@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 import { connect } from "react-redux";
 import { setActiveLink } from "../../redux/actions/layoutActions";
 import NewsListingLayout, {
@@ -6,15 +7,13 @@ import NewsListingLayout, {
 } from "../../components/news/NewsListingLayout";
 import { NewsGrid } from "../../components/news/NewsCard";
 import ListingSeo from "../../components/seo/ListingSeo";
-import * as Sentry from "@sentry/nextjs";
-import { GetServerSidePropsContext } from "next";
+import { LoadingBlock } from "@malanghub/ui";
 import { News } from "../../models/news";
 import {
   fetchJson,
-  fetchNewsPage,
-  firstPageRedirect,
-  isPageOutOfRange,
   pageCountOf,
+  PageMeta,
+  pageHref,
   parsePage,
 } from "../../utils/pagination";
 
@@ -24,25 +23,81 @@ const searchBasePath = (search: string) =>
   `/search/${encodeURIComponent(search)}`;
 
 interface SearchNewsProps {
-  trendingNews: News[];
-  search: string;
-  news: News[];
-  page: number;
-  pageCount: number;
   setActiveLink: (link: string) => void;
 }
 
-const SearchNews = ({
-  trendingNews,
-  search,
-  news,
-  page,
-  pageCount,
-  setActiveLink,
-}: SearchNewsProps) => {
+interface SearchState {
+  trendingNews: News[];
+  news: News[];
+  page: number;
+  pageCount: number;
+  loading: boolean;
+}
+
+const API_ADDRESS = process.env.NEXT_PUBLIC_API_ADDRESS;
+
+// Search terms are unbounded, so this page is a static shell (noindex) that
+// loads its results in the browser; public/_redirects serves it for every
+// /search/* URL.
+const SearchNews = ({ setActiveLink }: SearchNewsProps) => {
+  const router = useRouter();
+  const search =
+    router.isReady && typeof router.query.search === "string"
+      ? router.query.search
+      : "";
+  const rawPage = router.isReady ? router.query.page : undefined;
+
+  const [{ trendingNews, news, page, pageCount, loading }, setState] =
+    useState<SearchState>({
+      trendingNews: [],
+      news: [],
+      page: 1,
+      pageCount: 0,
+      loading: true,
+    });
+
   useEffect(() => {
     setActiveLink("news");
   }, []);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const page = parsePage(rawPage);
+    if (page === null) {
+      router.replace(pageHref(searchBasePath(search), 1));
+      return;
+    }
+
+    let cancelled = false;
+    setState((prev) => ({ ...prev, page, loading: true }));
+
+    // A failing request degrades to an empty section.
+    Promise.all([
+      fetchJson<{ data?: News[] }>(
+        `${API_ADDRESS}/api/news?page=1&sort=-views&limit=4&excerpt=1`,
+      )
+        .then((json) => json.data ?? [])
+        .catch(() => [] as News[]),
+      fetchJson<{ meta?: PageMeta; data?: News[] }>(
+        `${API_ADDRESS}/api/news/search?page=${page}&sort=-views&limit=${LIMIT}&search=${encodeURIComponent(search)}&excerpt=1`,
+      ).catch(() => ({ meta: undefined, data: [] as News[] })),
+    ]).then(([trendingNews, list]) => {
+      if (cancelled) return;
+      setState({
+        trendingNews,
+        news: list.data ?? [],
+        page,
+        pageCount: pageCountOf(list.meta),
+        loading: false,
+      });
+    });
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.isReady, search, rawPage]);
 
   const basePath = searchBasePath(search);
   const title = `Malanghub - Cari Berita - ${search}`;
@@ -70,7 +125,9 @@ const SearchNews = ({
         title={`Pencarian "${search}"`}
         trendingNews={trendingNews}
       >
-        {news.length > 0 ? (
+        {loading ? (
+          <LoadingBlock />
+        ) : news.length > 0 ? (
           <NewsGrid
             news={news}
             page={page}
@@ -84,57 +141,5 @@ const SearchNews = ({
     </>
   );
 };
-
-export async function getServerSideProps({
-  params,
-  query,
-}: GetServerSidePropsContext<{ search: string }>) {
-  const search = params?.search ?? "";
-  const page = parsePage(query.page);
-  if (page === null) return firstPageRedirect(searchBasePath(search));
-
-  const result = await Sentry.startSpan(
-    {
-      name: "search.[search].getServerSideProps",
-    },
-    async () => {
-      const trendingNewsUrl = `${
-        process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
-
-      // A failing request degrades to an empty section instead of a 404.
-      const [trendingNews, list] = await Promise.all([
-        fetchJson(trendingNewsUrl)
-          .then((json) => json.data ?? [])
-          .catch((e) => {
-            Sentry.captureException(e);
-            return [];
-          }),
-        fetchNewsPage(
-          `/api/news/search?page=${page}&sort=-views&limit=${LIMIT}&search=${encodeURIComponent(search)}&excerpt=1`,
-        ).catch((e) => {
-          Sentry.captureException(e);
-          return { meta: null, data: [] as News[] };
-        }),
-      ]);
-
-      if (isPageOutOfRange(page, list.meta)) {
-        return { notFound: true as const };
-      }
-
-      return {
-        props: {
-          trendingNews,
-          search,
-          news: list.data,
-          page,
-          pageCount: pageCountOf(list.meta),
-        },
-      };
-    },
-  );
-
-  return result;
-}
 
 export default connect(null, { setActiveLink })(SearchNews);

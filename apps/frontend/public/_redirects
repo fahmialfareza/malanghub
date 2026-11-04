@@ -1,0 +1,4 @@
+# Search results and draft previews load in the browser, so one static shell
+# serves every URL (see pages/search/[search].tsx, pages/users/newsDrafts/[slug].tsx).
+/search/*            /search/[search]            200
+/users/newsDrafts/*  /users/newsDrafts/[slug]    200

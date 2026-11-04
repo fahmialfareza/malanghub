@@ -63,8 +63,8 @@ export function excerpt(text: string, length = 155): string {
   return trimmed.replace(/[\s,.;:!?-]+$/, "") + "...";
 }
 
-// Crawler-facing routes (sitemaps, feed, llms.txt) call the API from the
-// Worker; retry transient failures so one blip doesn't fail the whole fetch.
+// Build-time fetches (pages, sitemaps, feed, llms.txt) retry transient
+// failures so one blip doesn't fail the whole build.
 export async function fetchWithRetry(
   url: string,
   attempts = 3,

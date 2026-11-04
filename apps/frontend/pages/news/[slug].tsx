@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import Head from "next/head";
-import { excerpt, fetchWithRetry, plainText } from "../../utils/seo";
-import { ApiNotFoundError, notFoundOrThrow } from "../../utils/pagination";
+import { excerpt, plainText } from "../../utils/seo";
+import { fetchJson } from "../../utils/pagination";
+import { fetchAllNews } from "../../utils/apiList";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import Image from "next/image";
 import { connect } from "react-redux";
 import Moment from "react-moment";
@@ -23,9 +23,8 @@ import {
   cx,
   sanitizeHtml,
 } from "@malanghub/ui";
-import * as Sentry from "@sentry/nextjs";
 import { RootState } from "../../redux/store";
-import { GetServerSidePropsContext } from "next";
+import { GetStaticPropsContext } from "next";
 import { UserReducerState } from "../../redux/types";
 import { News, NewsCategory, NewsTag } from "../../models/news";
 import { User } from "../../models/user";
@@ -63,8 +62,7 @@ const SingleNews = ({
   relatedNews,
   setActiveLink,
 }: SingleNewsProps) => {
-  const router = useRouter();
-  const { slug } = router.query;
+  const slug = currentNews?.slug;
 
   const contentRef = useRef<HTMLDivElement | null>(null);
 
@@ -520,91 +518,39 @@ const SingleNews = ({
   );
 };
 
-// Article HTML is the same for every visitor (the session loads client-side),
-// so worker.ts may keep it at the edge for this long.
-const EDGE_CACHE_SECONDS = 3600;
+// Every published article is prerendered; the site is rebuilt when one is
+// published, edited or deleted, so unknown slugs get the static 404 page.
+export async function getStaticPaths() {
+  const items = await fetchAllNews<{ slug?: string }>("select=slug");
+  return {
+    paths: items
+      .filter((item) => item.slug)
+      .map((item) => ({ params: { slug: item.slug! } })),
+    fallback: false,
+  };
+}
 
-export async function getServerSideProps({
+export async function getStaticProps({
   params,
-  res,
-}: GetServerSidePropsContext<{ slug: string }>) {
-  const rawSlug = params?.slug;
-  const cleanSlug = rawSlug?.replace(/-+$/, "");
+}: GetStaticPropsContext<{ slug: string }>) {
+  const currentNewsJson = await fetchJson(
+    `${process.env.API_ADDRESS}/api/news/${encodeURIComponent(params!.slug)}`,
+  );
+  const currentNews: News = currentNewsJson.data;
 
-  if (cleanSlug && cleanSlug !== rawSlug) {
-    return {
-      redirect: {
-        destination: `/news/${cleanSlug}`,
-        permanent: true,
-      },
-    };
+  // One extra item so the current article can be dropped here; the URL
+  // stays the same for every article in the category, so it is cached.
+  let relatedNews: News[] | null = null;
+  if (currentNews.category?._id) {
+    const relatedNewsJson = await fetchJson(
+      `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=5&category=${currentNews.category._id}&excerpt=1`,
+    );
+    relatedNews = (relatedNewsJson.data || [])
+      .filter((item: News) => item._id !== currentNews._id)
+      .slice(0, 4);
   }
 
-  const result = await Sentry.startSpan(
-    {
-      name: "news.[slug].getServerSideProps",
-    },
-    async () => {
-      let data = [];
-
-      try {
-        // Fetch the current news item based on the slug
-        const currentNewsResponse = await fetchWithRetry(
-          `${process.env.API_ADDRESS}/api/news/${rawSlug}`,
-        );
-
-        if (currentNewsResponse.status === 404) {
-          throw new ApiNotFoundError("News not found");
-        }
-        if (!currentNewsResponse.ok) {
-          throw new Error(
-            `Failed to fetch current news (${currentNewsResponse.status})`,
-          );
-        }
-
-        const currentNewsJson = await currentNewsResponse.json();
-        data.push(currentNewsJson.data);
-
-        // Fetch related news items
-        // One extra item so the current article can be dropped here; the URL
-        // stays the same for every article in the category, so it is cached.
-        const relatedNewsUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=5&category=${data[0].category._id}&excerpt=1`;
-        const relatedNewsResponse = await fetchWithRetry(relatedNewsUrl);
-
-        if (relatedNewsResponse.ok) {
-          const relatedNewsJson = await relatedNewsResponse.json();
-          data.push(
-            (relatedNewsJson.data || [])
-              .filter((item: { _id: string }) => item._id !== data[0]._id)
-              .slice(0, 4),
-          );
-        } else {
-          throw new Error("Failed to fetch related news");
-        }
-      } catch (e) {
-        Sentry.captureException(e);
-
-        if (data.length > 0) {
-          // Return the current news with null related news if fetching related news fails
-          return { props: { currentNews: data[0], relatedNews: null } };
-        }
-        // 404 only when the article is really gone; an API outage must not
-        // tell Google to drop the page.
-        return notFoundOrThrow(e);
-      }
-
-      // Only a complete page is shared-cacheable; browsers always revalidate.
-      res.setHeader(
-        "Cache-Control",
-        `public, max-age=0, s-maxage=${EDGE_CACHE_SECONDS}`,
-      );
-
-      // Return the current news and related news as props
-      return { props: { currentNews: data[0], relatedNews: data[1] } };
-    },
-  );
-
-  return result;
+  return { props: { currentNews, relatedNews } };
 }
 
 const mapStateToProps = (state: RootState) => ({

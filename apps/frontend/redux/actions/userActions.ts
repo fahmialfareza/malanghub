@@ -16,7 +16,6 @@ import {
   SET_LOADING,
 } from "./types";
 import { request, setAuthToken } from "../../utils/axiosCreate";
-import { requestNextApi } from "../../utils/axiosNextApi";
 import { AxiosError } from "axios";
 import { Response } from "../../models/axios";
 import { UserProfile } from "../../models/user";
@@ -174,12 +173,12 @@ export const signUp =
 
       const config = {
         method: "post",
-        url: "/api/signup",
+        url: "/api/users/signup",
         data: formData,
       };
 
       try {
-        const res = await requestNextApi<AuthResponse>(config);
+        const res = await request<AuthResponse>(config);
 
         localStorage.setItem("token", res.data.token);
 
@@ -218,12 +217,12 @@ export const signIn =
 
       const config = {
         method: "post",
-        url: "/api/signin",
+        url: "/api/users/signin",
         data: formData,
       };
 
       try {
-        const res = await requestNextApi<AuthResponse>(config);
+        const res = await request<AuthResponse>(config);
 
         localStorage.setItem("token", res.data.token);
 
@@ -262,12 +261,12 @@ export const googleLogin =
 
       const config = {
         method: "post",
-        url: "/api/google",
+        url: "/api/users/google",
         data: formData,
       };
 
       try {
-        const res = await requestNextApi<AuthResponse>(config);
+        const res = await request<AuthResponse>(config);
 
         localStorage.setItem("token", res.data.token);
 
@@ -302,15 +301,9 @@ export const googleLogin =
 export const logout = () => async (dispatch: Dispatch) => {
   Sentry.startSpan({ name: "userActions.logout" }, async () => {
     try {
+      // The session is only the token in localStorage (the backend issues
+      // stateless JWTs), so signing out is local.
       localStorage.removeItem("token");
-
-      var config = {
-        method: "post",
-        url: "/api/signout",
-        headers: {},
-      };
-
-      await requestNextApi<Response<any>>(config);
 
       dispatch({ type: USER_LOGOUT });
     } catch (e) {

@@ -9,7 +9,6 @@ import {
   TrendingPanel,
 } from "../components/news/NewsListingLayout";
 import NewsItem from "../components/news/NewsItem";
-import * as Sentry from "@sentry/nextjs";
 import { fetchJson } from "../utils/pagination";
 import { RootState } from "../redux/store";
 import { News } from "../models/news";
@@ -150,37 +149,25 @@ const Home = ({
   );
 };
 
-export async function getServerSideProps() {
-  const result = await Sentry.startSpan(
-    { name: "index.getServerSideProps" },
-    async () => {
-      const configTrendingUrl = `${
-        process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
-      const configRecentUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4&excerpt=1`;
+// Prerendered at build time; the site is rebuilt whenever content changes.
+// An API failure fails the build, so a broken homepage is never deployed.
+export async function getStaticProps() {
+  const configTrendingUrl = `${
+    process.env.API_ADDRESS
+  }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
+  const configRecentUrl = `${process.env.API_ADDRESS}/api/news?page=1&sort=-created_at&limit=4&excerpt=1`;
 
-      let dataRecent = {};
-      let dataTrending = {};
+  const [recentNewsJson, trendingNewsJson] = await Promise.all([
+    fetchJson(configRecentUrl),
+    fetchJson(configTrendingUrl),
+  ]);
 
-      try {
-        const [recentNewsJson, trendingNewsJson] = await Promise.all([
-          fetchJson(configRecentUrl),
-          fetchJson(configTrendingUrl),
-        ]);
-
-        dataRecent = recentNewsJson.data;
-        dataTrending = trendingNewsJson.data;
-      } catch (e) {
-        // The homepage always exists: let an API failure surface as a 5xx.
-        Sentry.captureException(e);
-        throw e;
-      }
-
-      return { props: { recentNews: dataRecent, trendingNews: dataTrending } };
+  return {
+    props: {
+      recentNews: recentNewsJson.data,
+      trendingNews: trendingNewsJson.data,
     },
-  );
-
-  return result;
+  };
 }
 
 const mapStateToProps = (state: RootState) => ({

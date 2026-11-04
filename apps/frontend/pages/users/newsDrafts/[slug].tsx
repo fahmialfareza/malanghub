@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -6,10 +6,9 @@ import Image from "next/image";
 import { connect } from "react-redux";
 import Moment from "react-moment";
 import parse from "html-react-parser";
-import * as cookie from "cookie";
+import { request } from "../../../utils/axiosCreate";
 import { loadUser } from "../../../redux/actions/userActions";
 import { setActiveLink } from "../../../redux/actions/layoutActions";
-import * as Sentry from "@sentry/nextjs";
 import {
   Badge,
   Breadcrumbs,
@@ -22,7 +21,6 @@ import {
   sanitizeHtml,
 } from "@malanghub/ui";
 import { RootState } from "../../../redux/store";
-import { GetServerSidePropsContext } from "next";
 import { NewsDraftReducerState, UserReducerState } from "../../../redux/types";
 import { News } from "../../../models/news";
 
@@ -33,7 +31,6 @@ interface NewsDraftProps {
   user: UserReducerState;
   loadUser: () => void;
   setActiveLink: (link: string) => void;
-  currentNewsDraft: News;
   newsDraft: NewsDraftReducerState;
 }
 
@@ -41,10 +38,15 @@ const NewsDraft = ({
   user: { user },
   loadUser,
   setActiveLink,
-  currentNewsDraft,
-  newsDraft: { loading: newsDraftLoading },
+  newsDraft: { loading: newsDraftStoreLoading },
 }: NewsDraftProps) => {
   const router = useRouter();
+
+  // Drafts are private, so they load in the browser with the stored token;
+  // public/_redirects serves this one shell for every draft URL.
+  const [currentNewsDraft, setCurrentNewsDraft] = useState<News | undefined>();
+  const [draftLoading, setDraftLoading] = useState(true);
+  const newsDraftLoading = newsDraftStoreLoading || draftLoading;
 
   const contentRef = useRef<HTMLDivElement | null>(null);
 
@@ -73,6 +75,39 @@ const NewsDraft = ({
 
     setActiveLink("");
   }, [router.isReady]); // Only depend on router.isReady, not user or loadUser
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const token = localStorage.getItem("token");
+    const slug = router.query.slug;
+    if (!token || typeof slug !== "string") return;
+
+    let cancelled = false;
+    setDraftLoading(true);
+    request
+      .get<{ data: News }>(`/api/newsDrafts/${encodeURIComponent(slug)}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      .then((res) => {
+        if (!cancelled) setCurrentNewsDraft(res.data.data);
+      })
+      .catch((e) => {
+        if (cancelled) return;
+        if (e?.response?.status === 401) {
+          router.push("/signin");
+          return;
+        }
+        setCurrentNewsDraft(undefined);
+      })
+      .finally(() => {
+        if (!cancelled) setDraftLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router.isReady, router.query.slug]);
 
   useEffect(() => {
     if (contentRef.current) {
@@ -174,6 +209,10 @@ const NewsDraft = ({
             <article className="min-w-0 lg:col-span-2">
               {newsDraftLoading ? (
                 <LoadingBlock />
+              ) : !currentNewsDraft ? (
+                <p className="m-0 text-center text-muted">
+                  Antrian berita tidak ditemukan.
+                </p>
               ) : (
                 <>
                   <header className="mb-8 text-center">
@@ -463,81 +502,6 @@ const NewsDraft = ({
     </>
   );
 };
-
-export async function getServerSideProps({
-  req,
-  params,
-}: GetServerSidePropsContext<{ slug: string }>) {
-  const result = await Sentry.startSpan(
-    {
-      name: "newsDrafts.[slug].getServerSideProps",
-    },
-    async () => {
-      if (!req.headers.cookie) {
-        return {
-          redirect: {
-            permanent: false,
-            destination: "/signin",
-          },
-          props: {},
-        };
-      }
-
-      const { token } = cookie.parse(req.headers.cookie);
-
-      // Fetch user information using the token
-      const userUrl = `${process.env.API_ADDRESS}/api/users`;
-      try {
-        const userResponse = await fetch(userUrl, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!userResponse.ok) {
-          throw new Error("Failed to fetch user data");
-        }
-
-        // If user is authenticated, fetch the news draft
-        const newsDraftUrl = `${process.env.API_ADDRESS}/api/newsDrafts/${encodeURIComponent(String(params?.slug ?? ""))}`;
-        let data = {};
-
-        try {
-          const draftResponse = await fetch(newsDraftUrl, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-
-          if (!draftResponse.ok) {
-            throw new Error("Failed to fetch news draft");
-          }
-
-          const draftJson = await draftResponse.json();
-          data = draftJson.data;
-        } catch (e) {
-          Sentry.captureException(e);
-          return {
-            notFound: true,
-          };
-        }
-
-        return { props: { currentNewsDraft: data } };
-      } catch (e) {
-        Sentry.captureException(e);
-        return {
-          redirect: {
-            permanent: false,
-            destination: "/signin",
-          },
-          props: {},
-        };
-      }
-    },
-  );
-
-  return result;
-}
 
 const mapStateToProps = (state: RootState) => ({
   newsDraft: state.newsDraft,

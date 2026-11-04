@@ -18,32 +18,11 @@ export const parsePage = (
   return Number.isSafeInteger(page) && page >= 2 ? page : null;
 };
 
-/** 308 to the canonical page-1 URL (no query string). */
-export const firstPageRedirect = (basePath: string) => ({
-  redirect: { destination: pageHref(basePath, 1), permanent: true as const },
-});
-
 export const pageCountOf = (meta?: PageMeta | null) =>
   meta && meta.limit > 0 ? Math.ceil((meta.total || 0) / meta.limit) : 0;
 
-/** True when a page past the last one was requested (page 1 is always valid). */
-export const isPageOutOfRange = (page: number, meta?: PageMeta | null) =>
-  page > Math.max(pageCountOf(meta), 1);
-
-/** The API answered 404: the only failure that should render a 404 page. */
+/** The API answered 404. */
 export class ApiNotFoundError extends Error {}
-
-export const isApiNotFound = (e: unknown) => e instanceof ApiNotFoundError;
-
-/**
- * For getServerSideProps catch blocks: a missing resource becomes a 404,
- * anything else (API down, timeout) is rethrown so the page answers 5xx and
- * crawlers retry instead of dropping the URL.
- */
-export const notFoundOrThrow = (e: unknown) => {
-  if (isApiNotFound(e)) return { notFound: true as const };
-  throw e;
-};
 
 /**
  * GET a URL and return its JSON body. Retries transient failures; throws

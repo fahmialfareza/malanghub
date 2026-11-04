@@ -4,60 +4,16 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   disable: process.env.NODE_ENV === "development",
 });
 const { withSentryConfig } = require("@sentry/nextjs");
-const { initOpenNextCloudflareForDev } = require("@opennextjs/cloudflare");
 
-// Exposes Cloudflare bindings (getCloudflareContext) during `next dev`.
-initOpenNextCloudflareForDev();
-
-const securityHeaders = [
-  { key: "X-Content-Type-Options", value: "nosniff" },
-  { key: "X-Frame-Options", value: "SAMEORIGIN" },
-  { key: "X-XSS-Protection", value: "1; mode=block" },
-  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-];
-
+// Static export served as plain files by Cloudflare Pages (no Worker).
+// Headers and rewrites live in public/_headers and public/_redirects; the
+// apex → www redirect is a Cloudflare Redirect Rule; sitemap, feed and
+// llms.txt are written by scripts/generate-seo-files.mts.
 const baseConfig = {
+  output: "export",
   transpilePackages: ["@malanghub/core", "@malanghub/ui"],
-  async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
-  },
-  async redirects() {
-    return [
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "malanghub.com" }],
-        destination: "https://www.malanghub.com/:path*",
-        permanent: true,
-      },
-    ];
-  },
-  async rewrites() {
-    return [
-      {
-        source: "/sitemap.xml",
-        destination: "/api/sitemap",
-      },
-      {
-        source: "/news-sitemap.xml",
-        destination: "/api/news-sitemap",
-      },
-      {
-        source: "/feed.xml",
-        destination: "/api/feed",
-      },
-      {
-        source: "/llms.txt",
-        destination: "/api/llms",
-      },
-      {
-        source: "/:key([0-9a-f]{32,}).txt",
-        destination: "/api/indexnow-key",
-      },
-    ];
-  },
   images: {
-    // Cloudflare Workers has no built-in image optimizer; Cloudinary resizes instead.
+    // Static export has no image optimizer; Cloudinary resizes instead.
     // remotePatterns is not enforced with a custom loader but documents allowed hosts.
     loader: "custom",
     loaderFile: "./utils/imageLoader.ts",
@@ -85,7 +41,6 @@ const sentryWrappedConfig = withSentryConfig(baseConfig, {
   project: process.env.SENTRY_PROJECT,
   authToken: process.env.SENTRY_AUTH_TOKEN,
   widenClientFileUpload: true,
-  tunnelRoute: "/monitoring",
   reactComponentAnnotation: {
     enabled: true,
   },

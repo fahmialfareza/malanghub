@@ -11,6 +11,7 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
+    "allowImportingTsExtensions": true,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "Bundler",
@@ -26,6 +27,6 @@
   ],
   "exclude": [
     "node_modules",
-    "worker.ts"
+    "out"
   ]
 }

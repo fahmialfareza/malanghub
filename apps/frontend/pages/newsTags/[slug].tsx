@@ -7,28 +7,31 @@ import NewsListingLayout, {
 } from "../../components/news/NewsListingLayout";
 import { NewsGrid } from "../../components/news/NewsCard";
 import ListingSeo from "../../components/seo/ListingSeo";
-import * as Sentry from "@sentry/nextjs";
-import { GetServerSidePropsContext } from "next";
+import { GetStaticPropsContext } from "next";
 import { News, NewsTag as NewsTg } from "../../models/news";
 import {
-  ApiNotFoundError,
   fetchJson,
   fetchNewsPage,
-  firstPageRedirect,
-  isPageOutOfRange,
-  notFoundOrThrow,
   pageCountOf,
-  parsePage,
 } from "../../utils/pagination";
+import { fetchList } from "../../utils/apiList";
+import { usePagedNews } from "../../utils/usePagedNews";
+import { LoadingBlock } from "@malanghub/ui";
 import { SITE_URL } from "../../utils/seo";
 
 const LIMIT = 5;
+
+const listPath = (tagId: string) => (page: number) =>
+  `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&tags=${tagId}`;
+
+// One cutoff for the whole build, so every tag page shares one cached
+// trending request.
+const TRENDING_SINCE = moment().subtract(1, "months").toISOString();
 
 interface NewsTagProps {
   trendingNews: News[];
   oneNewsTag: { tag: NewsTg };
   news: News[];
-  page: number;
   pageCount: number;
   setActiveLink: (link: string) => void;
 }
@@ -36,10 +39,8 @@ interface NewsTagProps {
 const NewsTag = ({
   trendingNews,
   oneNewsTag,
-  news,
-  page,
-  pageCount,
   setActiveLink,
+  ...firstPage
 }: NewsTagProps) => {
   useEffect(() => {
     setActiveLink("news");
@@ -47,6 +48,11 @@ const NewsTag = ({
 
   const tag = oneNewsTag?.tag;
   const basePath = `/newsTags/${tag?.slug}`;
+  const { page, news, pageCount, loading, notFound } = usePagedNews(
+    basePath,
+    firstPage,
+    listPath(tag?.id ?? ""),
+  );
   const title = `Malanghub - Tag Berita - ${tag?.name}`;
 
   return (
@@ -61,6 +67,7 @@ const NewsTag = ({
         pageCount={pageCount}
         limit={LIMIT}
         news={news}
+        noindex={notFound}
         jsonLd={[
           {
             "@context": "https://schema.org",
@@ -103,7 +110,11 @@ const NewsTag = ({
         }
         trendingNews={trendingNews}
       >
-        {news.length > 0 ? (
+        {loading ? (
+          <LoadingBlock />
+        ) : notFound ? (
+          <EmptyNews>Halaman Tidak Ditemukan</EmptyNews>
+        ) : news.length > 0 ? (
           <NewsGrid
             news={news}
             page={page}
@@ -118,65 +129,39 @@ const NewsTag = ({
   );
 };
 
-export async function getServerSideProps({
+export async function getStaticPaths() {
+  const tags = await fetchList<{ slug?: string }>("/api/newsTags");
+  return {
+    paths: tags
+      .filter((tag) => tag.slug)
+      .map((tag) => ({ params: { slug: tag.slug! } })),
+    fallback: false,
+  };
+}
+
+// Page 1 is prerendered; later pages load in the browser (usePagedNews).
+export async function getStaticProps({
   params,
-  query,
-}: GetServerSidePropsContext<{ slug: string }>) {
-  const slug = params?.slug ?? "";
-  const page = parsePage(query.page);
-  if (page === null) {
-    return firstPageRedirect(`/newsTags/${encodeURIComponent(slug)}`);
-  }
+}: GetStaticPropsContext<{ slug: string }>) {
+  const slug = params!.slug;
+  const [trendingNewsJson, newsTagJson] = await Promise.all([
+    fetchJson(
+      `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&created_at[gte]=${TRENDING_SINCE}`,
+    ),
+    fetchJson(
+      `${process.env.API_ADDRESS}/api/newsTags/${encodeURIComponent(slug)}`,
+    ),
+  ]);
+  const list = await fetchNewsPage(listPath(newsTagJson.data.tag.id)(1));
 
-  const result = await Sentry.startSpan(
-    {
-      name: "newsTags.[slug].getServerSideProps",
+  return {
+    props: {
+      trendingNews: trendingNewsJson.data,
+      oneNewsTag: newsTagJson.data,
+      news: list.data,
+      pageCount: pageCountOf(list.meta),
     },
-    async () => {
-      const trendingNewsUrl = `${
-        process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&created_at[gte]=${moment()
-        .subtract(1, "months")
-        .toISOString()}`;
-      const newsTagUrl = `${process.env.API_ADDRESS}/api/newsTags/${encodeURIComponent(slug)}`;
-
-      try {
-        // Trending and the tag load concurrently; the list starts as soon
-        // as the tag id is known.
-        const tagPromise = fetchJson(newsTagUrl);
-        const [trendingNewsJson, newsTagJson, list] = await Promise.all([
-          fetchJson(trendingNewsUrl),
-          tagPromise,
-          tagPromise.then((json) => {
-            const id = json?.data?.tag?.id;
-            if (!id) throw new ApiNotFoundError("News tag not found");
-            return fetchNewsPage(
-              `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&tags=${id}`,
-            );
-          }),
-        ]);
-
-        if (isPageOutOfRange(page, list.meta)) {
-          return { notFound: true as const };
-        }
-
-        return {
-          props: {
-            trendingNews: trendingNewsJson.data,
-            oneNewsTag: newsTagJson.data,
-            news: list.data,
-            page,
-            pageCount: pageCountOf(list.meta),
-          },
-        };
-      } catch (e) {
-        Sentry.captureException(e);
-        return notFoundOrThrow(e);
-      }
-    },
-  );
-
-  return result;
+  };
 }
 
 export default connect(null, { setActiveLink })(NewsTag);

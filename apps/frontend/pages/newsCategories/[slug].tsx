@@ -6,28 +6,27 @@ import NewsListingLayout, {
 } from "../../components/news/NewsListingLayout";
 import { NewsGrid } from "../../components/news/NewsCard";
 import ListingSeo from "../../components/seo/ListingSeo";
-import * as Sentry from "@sentry/nextjs";
-import { GetServerSidePropsContext } from "next";
+import { GetStaticPropsContext } from "next";
 import { News, NewsCategoryFull as NewsCtg } from "../../models/news";
 import {
-  ApiNotFoundError,
   fetchJson,
   fetchNewsPage,
-  firstPageRedirect,
-  isPageOutOfRange,
-  notFoundOrThrow,
   pageCountOf,
-  parsePage,
 } from "../../utils/pagination";
+import { fetchList } from "../../utils/apiList";
+import { usePagedNews } from "../../utils/usePagedNews";
+import { LoadingBlock } from "@malanghub/ui";
 import { SITE_URL } from "../../utils/seo";
 
 const LIMIT = 5;
+
+const listPath = (categoryId: string) => (page: number) =>
+  `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&category=${categoryId}&excerpt=1`;
 
 interface NewsCategoryProps {
   trendingNews: News[];
   oneNewsCategory: { category: NewsCtg };
   news: News[];
-  page: number;
   pageCount: number;
   setActiveLink: (link: string) => void;
 }
@@ -35,10 +34,8 @@ interface NewsCategoryProps {
 const NewsCategory = ({
   trendingNews,
   oneNewsCategory,
-  news,
-  page,
-  pageCount,
   setActiveLink,
+  ...firstPage
 }: NewsCategoryProps) => {
   useEffect(() => {
     setActiveLink("news");
@@ -46,6 +43,11 @@ const NewsCategory = ({
 
   const category = oneNewsCategory?.category;
   const basePath = `/newsCategories/${category?.slug}`;
+  const { page, news, pageCount, loading, notFound } = usePagedNews(
+    basePath,
+    firstPage,
+    listPath(category?.id ?? ""),
+  );
   const title = `Malanghub - Kategori Berita - ${category?.name}`;
 
   return (
@@ -60,6 +62,7 @@ const NewsCategory = ({
         pageCount={pageCount}
         limit={LIMIT}
         news={news}
+        noindex={notFound}
         jsonLd={[
           {
             "@context": "https://schema.org",
@@ -97,7 +100,11 @@ const NewsCategory = ({
         title={category?.name}
         trendingNews={trendingNews}
       >
-        {news.length > 0 ? (
+        {loading ? (
+          <LoadingBlock />
+        ) : notFound ? (
+          <EmptyNews>Halaman Tidak Ditemukan</EmptyNews>
+        ) : news.length > 0 ? (
           <NewsGrid
             news={news}
             page={page}
@@ -112,63 +119,41 @@ const NewsCategory = ({
   );
 };
 
-export async function getServerSideProps({
+export async function getStaticPaths() {
+  const categories = await fetchList<{ slug?: string }>("/api/newsCategories");
+  return {
+    paths: categories
+      .filter((category) => category.slug)
+      .map((category) => ({ params: { slug: category.slug! } })),
+    fallback: false,
+  };
+}
+
+// Page 1 is prerendered; later pages load in the browser (usePagedNews).
+export async function getStaticProps({
   params,
-  query,
-}: GetServerSidePropsContext<{ slug: string }>) {
-  const slug = params?.slug ?? "";
-  const page = parsePage(query.page);
-  if (page === null) {
-    return firstPageRedirect(`/newsCategories/${encodeURIComponent(slug)}`);
-  }
-
-  const result = await Sentry.startSpan(
-    {
-      name: "newsCategories.[slug].getServerSideProps",
-    },
-    async () => {
-      const trendingNewsUrl = `${
-        process.env.API_ADDRESS
-      }/api/news?page=1&sort=-views&limit=4&excerpt=1`;
-      const newsCategoryUrl = `${process.env.API_ADDRESS}/api/newsCategories/${encodeURIComponent(slug)}`;
-
-      try {
-        // Trending and the category load concurrently; the list starts as
-        // soon as the category id is known.
-        const categoryPromise = fetchJson(newsCategoryUrl);
-        const [trendingNewsJson, newsCategoryJson, list] = await Promise.all([
-          fetchJson(trendingNewsUrl),
-          categoryPromise,
-          categoryPromise.then((json) => {
-            const id = json?.data?.category?.id;
-            if (!id) throw new ApiNotFoundError("News category not found");
-            return fetchNewsPage(
-              `/api/news?page=${page}&sort=-created_at&limit=${LIMIT}&category=${id}&excerpt=1`,
-            );
-          }),
-        ]);
-
-        if (isPageOutOfRange(page, list.meta)) {
-          return { notFound: true as const };
-        }
-
-        return {
-          props: {
-            trendingNews: trendingNewsJson.data,
-            oneNewsCategory: newsCategoryJson.data,
-            news: list.data,
-            page,
-            pageCount: pageCountOf(list.meta),
-          },
-        };
-      } catch (e) {
-        Sentry.captureException(e);
-        return notFoundOrThrow(e);
-      }
-    },
+}: GetStaticPropsContext<{ slug: string }>) {
+  const slug = params!.slug;
+  const [trendingNewsJson, newsCategoryJson] = await Promise.all([
+    fetchJson(
+      `${process.env.API_ADDRESS}/api/news?page=1&sort=-views&limit=4&excerpt=1`,
+    ),
+    fetchJson(
+      `${process.env.API_ADDRESS}/api/newsCategories/${encodeURIComponent(slug)}`,
+    ),
+  ]);
+  const list = await fetchNewsPage(
+    listPath(newsCategoryJson.data.category.id)(1),
   );
 
-  return result;
+  return {
+    props: {
+      trendingNews: trendingNewsJson.data,
+      oneNewsCategory: newsCategoryJson.data,
+      news: list.data,
+      pageCount: pageCountOf(list.meta),
+    },
+  };
 }
 
 export default connect(null, { setActiveLink })(NewsCategory);

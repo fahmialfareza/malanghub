@@ -1,9 +1,9 @@
 name: Deploy Frontend to Cloudflare Pages
 
-# Builds and deploys here instead of in Pages' own Git builds: Pages CI
-# re-bundles _worker.js with its built-in wrangler 3, which breaks Next's
-# module loading, and it ignores dashboard build variables when the project
-# has a wrangler config.
+# The site is a static export (no Worker), so content only changes when it
+# is rebuilt: on push, when the backend publishes or edits content
+# (repository_dispatch from apps/backend/pkg/sitebuild), and every 6 hours to
+# refresh trending lists and the Google News sitemap window.
 
 on:
   push:
@@ -11,16 +11,21 @@ on:
     paths:
       - "apps/frontend/**"
       - "packages/**"
-      - "patches/**"
       - "pnpm-lock.yaml"
       - ".github/workflows/frontend-pages.yml"
+  repository_dispatch:
+    types: [content-changed]
+  schedule:
+    - cron: "17 */6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# One build at a time; GitHub keeps only the newest pending run, so a burst
+# of content changes collapses into one more build.
 concurrency:
-  group: frontend-pages-${{ github.ref }}
+  group: frontend-pages
   cancel-in-progress: false
 
 jobs:
@@ -29,7 +34,8 @@ jobs:
     env:
       # Inlined into the client bundle at build time.
       NEXT_PUBLIC_API_ADDRESS: ${{ secrets['NEXT_PUBLIC_API_ADDRESS'] }}
-      NEXT_PUBLIC_NEXT_API_ADDRESS: ${{ secrets['NEXT_PUBLIC_NEXT_API_ADDRESS'] }}
+      # Build-time data source for getStaticProps and the SEO files.
+      API_ADDRESS: ${{ secrets['NEXT_PUBLIC_API_ADDRESS'] }}
       NEXT_PUBLIC_GOOGLE_CLIENT_ID: ${{ secrets['NEXT_PUBLIC_GOOGLE_CLIENT_ID'] }}
       NEXT_PUBLIC_FACEBOOK_APP_ID: ${{ secrets['NEXT_PUBLIC_FACEBOOK_APP_ID'] }}
       NEXT_PUBLIC_TINY_API_KEY: ${{ secrets['NEXT_PUBLIC_TINY_API_KEY'] }}
@@ -59,12 +65,21 @@ jobs:
       - name: Build for Cloudflare Pages
         run: pnpm --filter client pages:build
 
-      # Runtime values (API_ADDRESS, INDEXNOW_KEY, SENTRY_DSN) are Pages
-      # secrets, set once with `wrangler pages secret put`.
+      # Taken before deploying, to find which URLs this deploy changes.
+      - name: Save the live sitemap
+        run: curl -fsS https://www.malanghub.com/sitemap.xml -o "$RUNNER_TEMP/live-sitemap.xml" || true
+
+      # Repository dispatches and cron runs check out the default branch,
+      # so they always deploy to production.
       - name: Deploy to Cloudflare Pages
-        working-directory: apps/frontend/cloudflare-pages
+        working-directory: apps/frontend
         run: >-
-          ../node_modules/.bin/wrangler pages deploy
-          --branch "${GITHUB_REF_NAME}"
+          node_modules/.bin/wrangler pages deploy out
+          --project-name malanghub
+          --branch main
           --commit-hash "${GITHUB_SHA}"
           --commit-message "$(git log -1 --pretty=%s)"
+
+      - name: Ping IndexNow for changed URLs
+        working-directory: apps/frontend
+        run: node scripts/submit-indexnow.mts "$RUNNER_TEMP/live-sitemap.xml"

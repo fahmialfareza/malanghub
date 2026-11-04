@@ -7,7 +7,7 @@ This file is the shared source of truth for AI coding agents working in this rep
 - Monorepo for `Malanghub`.
 - Primary apps:
   - `apps/backend`: Go backend using Gin Gonic.
-  - `apps/frontend`: Next.js frontend using `pnpm`, deployed to Cloudflare Workers via OpenNext (`pnpm --filter client run preview` / `run deploy`); can also be packaged for Cloudflare Pages (`run pages:build` / `run pages:deploy`, see `apps/frontend/README.md`).
+  - `apps/frontend`: Next.js (pages router) frontend using `pnpm`, built as a static export (`output: "export"`) and served by Cloudflare Pages with no Worker (`pnpm --filter client run pages:build` / `run pages:preview`). Content pages use `getStaticProps`/`getStaticPaths`; the backend triggers a rebuild when content changes (see `apps/frontend/README.md`).
   - `apps/native`: Tauri v2 app (macOS, Windows, Linux, iOS, Android) built from the shared packages.
   - `apps/server`:
 - Shared packages:
