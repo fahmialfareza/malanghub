@@ -1,11 +1,9 @@
 package controllers
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -21,40 +19,8 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
+	"github.com/fahmialfareza/malanghub/backend/pkg/sitebuild"
 )
-
-// submitIndexNow notifies Bing/Yandex via IndexNow when a news article is published.
-// Runs in a goroutine — fire and forget, never blocks the request.
-func submitIndexNow(newsSlug string) {
-	key := os.Getenv("INDEXNOW_KEY")
-	siteURL := os.Getenv("SITE_URL")
-	if key == "" || siteURL == "" {
-		return
-	}
-
-	articleURL := siteURL + "/news/" + newsSlug
-	payload := map[string]interface{}{
-		"host":        "www.malanghub.com",
-		"key":         key,
-		"keyLocation": siteURL + "/" + key + ".txt",
-		"urlList":     []string{articleURL},
-	}
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		return
-	}
-
-	resp, err := http.Post(
-		"https://api.indexnow.org/indexnow",
-		"application/json",
-		bytes.NewReader(body),
-	)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-}
 
 // ListNews returns approved news with simple pagination
 func ListNews(c *gin.Context) {
@@ -232,7 +198,7 @@ func CreateNews(c *gin.Context) {
 		_ = cache.DeleteByPattern(c, "category:slug:*")
 		_ = cache.DeleteByPattern(c, "tag:slug:*")
 		_ = cache.DeleteByPattern(c, "news:list:*")
-		go submitIndexNow(payload.Slug)
+		sitebuild.Trigger("news created: " + payload.Slug)
 		ai.IndexNewsAsync(payload.ID)
 	}
 
@@ -339,7 +305,7 @@ func UpdateNews(c *gin.Context) {
 	_ = cache.DeleteByPattern(c, "tag:slug:*")
 	_ = cache.DeleteByPattern(c, "news:list:*")
 	if approved {
-		go submitIndexNow(updated.Slug)
+		sitebuild.Trigger("news approved: " + updated.Slug)
 	}
 	ai.IndexNewsAsync(updated.ID)
 
@@ -391,6 +357,7 @@ func DeleteNews(c *gin.Context) {
 		return
 	}
 	ai.IndexNewsAsync(id)
+	sitebuild.Trigger("news deleted: " + id)
 
 	c.JSON(http.StatusOK, gin.H{"data": map[string]interface{}{}})
 }

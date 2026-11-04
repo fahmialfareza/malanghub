@@ -13,6 +13,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
+	"github.com/fahmialfareza/malanghub/backend/pkg/sitebuild"
 )
 
 func GetAllTags(c *gin.Context) {
@@ -123,6 +124,7 @@ func CreateTag(c *gin.Context) {
 	}
 
 	_ = cache.Delete(c, "tags:all")
+	sitebuild.Trigger("tag created: " + payload.Slug)
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
 
@@ -186,6 +188,7 @@ func UpdateTag(c *gin.Context) {
 
 	_ = cache.Delete(c, "tags:all")
 	_ = cache.DeleteByPattern(c, "tag:slug:*")
+	sitebuild.Trigger("tag updated: " + updated.Slug)
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
 
@@ -217,5 +220,6 @@ func DeleteTag(c *gin.Context) {
 	}
 
 	_ = cache.Delete(c, "tags:all", "tag:slug:"+existing.Slug)
+	sitebuild.Trigger("tag deleted: " + existing.Slug)
 	c.JSON(http.StatusOK, gin.H{"data": map[string]interface{}{}})
 }

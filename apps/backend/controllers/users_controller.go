@@ -18,6 +18,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	"github.com/fahmialfareza/malanghub/backend/pkg/middleware"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
+	"github.com/fahmialfareza/malanghub/backend/pkg/sitebuild"
 )
 
 // CreateUser (admin only) creates a regular user. Like Signup, it binds only
@@ -193,6 +194,7 @@ func UpdateProfile(c *gin.Context) {
 		return
 	}
 
+	rebuildIfAuthor(c, id, "profile updated: "+id)
 	c.JSON(http.StatusOK, gin.H{"data": u})
 }
 
@@ -242,7 +244,20 @@ func DeleteAccount(c *gin.Context) {
 		return
 	}
 
+	rebuildIfAuthor(c, id, "account deleted: "+id)
+
 	c.JSON(http.StatusOK, gin.H{"message": "account deleted"})
+}
+
+// rebuildIfAuthor rebuilds the website when the user has published news:
+// their name and photo are baked into those article and profile pages.
+func rebuildIfAuthor(c *gin.Context, userID, reason string) {
+	var published int64
+	err := db.DB().WithContext(c).Model(&models.News{}).Scopes(db.Published).
+		Where("user_id = ?", userID).Limit(1).Count(&published).Error
+	if err == nil && published > 0 {
+		sitebuild.Trigger(reason)
+	}
 }
 
 // GetUser returns a user by id (public view)

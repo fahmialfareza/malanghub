@@ -13,6 +13,7 @@ import (
 	"github.com/fahmialfareza/malanghub/backend/pkg/cache"
 	"github.com/fahmialfareza/malanghub/backend/pkg/db"
 	newrelicpkg "github.com/fahmialfareza/malanghub/backend/pkg/newrelic"
+	"github.com/fahmialfareza/malanghub/backend/pkg/sitebuild"
 )
 
 // GetAllCategories returns categories populated with approved news (lightweight)
@@ -124,6 +125,7 @@ func CreateCategory(c *gin.Context) {
 	}
 
 	_ = cache.Delete(c, "categories:all")
+	sitebuild.Trigger("category created: " + payload.Slug)
 	c.JSON(http.StatusCreated, gin.H{"data": payload})
 }
 
@@ -187,6 +189,7 @@ func UpdateCategory(c *gin.Context) {
 
 	_ = cache.Delete(c, "categories:all")
 	_ = cache.DeleteByPattern(c, "category:slug:*")
+	sitebuild.Trigger("category updated: " + updated.Slug)
 	c.JSON(http.StatusCreated, gin.H{"data": updated})
 }
 
@@ -218,5 +221,6 @@ func DeleteCategory(c *gin.Context) {
 	}
 
 	_ = cache.Delete(c, "categories:all", "category:slug:"+existing.Slug)
+	sitebuild.Trigger("category deleted: " + existing.Slug)
 	c.JSON(http.StatusOK, gin.H{"data": map[string]interface{}{}})
 }
