@@ -1,8 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow: /api/
-Disallow: /signin
-Disallow: /signup
+# /signin and /signup stay crawlable so Google sees their noindex and drops them.
 
 Sitemap: https://www.malanghub.com/sitemap.xml
 Sitemap: https://www.malanghub.com/news-sitemap.xml

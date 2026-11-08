@@ -4,7 +4,7 @@
 //
 // Imports use the `.ts` extension so Node can run this file directly.
 import { fetchAllNews, fetchList } from "./apiList.ts";
-import { SITE_URL, cdata, escapeXml, excerpt } from "./seo.ts";
+import { SITE_URL, articleSummary, cdata, escapeXml, excerpt } from "./seo.ts";
 
 // ---------------------------------------------------------------- sitemap
 
@@ -140,7 +140,9 @@ export async function buildFeed(): Promise<string> {
     .map((item) => {
       const link = escapeXml(`${SITE_URL}/news/${item.slug}`);
       const title = escapeXml(item.title || "");
-      const description = escapeXml(excerpt(item.content || "", 300));
+      const description = escapeXml(
+        articleSummary(item.content || "", item.title, 300),
+      );
       const itemPubDate = item.created_at
         ? new Date(item.created_at).toUTCString()
         : pubDate;

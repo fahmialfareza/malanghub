@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import Head from "next/head";
-import { excerpt, plainText } from "../../utils/seo";
+import { articleSummary, plainText } from "../../utils/seo";
 import { fetchJson } from "../../utils/pagination";
 import { fetchAllNews } from "../../utils/apiList";
 import Link from "next/link";
@@ -83,7 +83,10 @@ const SingleNews = ({
   // <title> must get a single string child: mixed text + expression renders
   // an empty title under React 19.
   const seoTitle = `${currentNews?.title} | Malanghub`;
-  const description = excerpt(currentNews?.content || "", 155);
+  const description = articleSummary(
+    currentNews?.content || "",
+    currentNews?.title,
+  );
   const plainContent = currentNews?.content
     ? plainText(currentNews.content)
     : "";
