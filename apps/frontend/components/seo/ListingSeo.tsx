@@ -25,6 +25,8 @@ interface ListingSeoProps {
   noindex?: boolean;
   /** Extra JSON-LD objects (breadcrumbs, Person, ...). */
   jsonLd?: object[];
+  /** Page URL builder; defaults to `?page=N` (see utils/pagination.ts). */
+  hrefFor?: (page: number) => string;
 }
 
 /**
@@ -44,12 +46,12 @@ const ListingSeo = ({
   collectionDescription,
   noindex,
   jsonLd = [],
+  hrefFor = (target) => pageHref(basePath, target),
 }: ListingSeoProps) => {
   const pageTitle = page > 1 ? `${title} - Halaman ${page}` : title;
-  const canonical = `${SITE_URL}${pageHref(basePath, page)}`;
-  const prev = page > 1 ? `${SITE_URL}${pageHref(basePath, page - 1)}` : null;
-  const next =
-    page < pageCount ? `${SITE_URL}${pageHref(basePath, page + 1)}` : null;
+  const canonical = `${SITE_URL}${hrefFor(page)}`;
+  const prev = page > 1 ? `${SITE_URL}${hrefFor(page - 1)}` : null;
+  const next = page < pageCount ? `${SITE_URL}${hrefFor(page + 1)}` : null;
   const shareImage = image || DEFAULT_IMAGE;
 
   const collectionPage = {

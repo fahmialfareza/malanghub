@@ -18,6 +18,13 @@ export const parsePage = (
   return Number.isSafeInteger(page) && page >= 2 ? page : null;
 };
 
+/**
+ * Static listing URL: `/news` for page 1, `/news/page/2` after that. A static
+ * export can't vary by query string, so every listing page is its own file.
+ */
+export const listingHref = (basePath: string, page: number) =>
+  page > 1 ? `${basePath}/page/${page}` : basePath;
+
 export const pageCountOf = (meta?: PageMeta | null) =>
   meta && meta.limit > 0 ? Math.ceil((meta.total || 0) / meta.limit) : 0;
 

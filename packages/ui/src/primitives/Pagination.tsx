@@ -52,21 +52,24 @@ const itemDisabled =
   "pointer-events-none border-line bg-surface text-muted opacity-50";
 
 /**
- * Crawlable pagination: every page is a real link (`?page=N`), so search
- * engines and AI crawlers can reach all pages without running JavaScript.
- * `renderLink` lets each app supply its router link.
+ * Crawlable pagination: every page is a real link (`?page=N` by default), so
+ * search engines and AI crawlers can reach all pages without running
+ * JavaScript. `renderLink` lets each app supply its router link; `hrefFor`
+ * overrides the page URLs (the static web build uses `/news/page/N`).
  */
 export const Pagination = ({
   page,
   pageCount,
   basePath,
   renderLink,
+  hrefFor = (target) => pageHref(basePath, target),
   className,
 }: {
   page: number;
   pageCount: number;
   basePath: string;
   renderLink: (props: PageLinkProps) => React.ReactElement;
+  hrefFor?: (page: number) => string;
   className?: string;
 }) => {
   if (pageCount <= 1) return null;
@@ -84,7 +87,7 @@ export const Pagination = ({
       </span>
     ) : (
       renderLink({
-        href: pageHref(basePath, target),
+        href: hrefFor(target),
         rel,
         "aria-label": label,
         className: cx(itemBase, itemIdle),
@@ -106,7 +109,7 @@ export const Pagination = ({
               </span>
             ) : (
               renderLink({
-                href: pageHref(basePath, p),
+                href: hrefFor(p),
                 "aria-label": `Halaman ${p}`,
                 "aria-current": p === page ? "page" : undefined,
                 rel: p === page - 1 ? "prev" : p === page + 1 ? "next" : undefined,

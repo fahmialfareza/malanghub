@@ -247,16 +247,21 @@ const renderPageLink = ({ children, ...props }: PageLinkProps) => (
   <Link {...props}>{children}</Link>
 );
 
-/** Crawlable `?page=N` pagination rendered with next/link. */
+/**
+ * Crawlable pagination rendered with next/link: `?page=N` by default, or the
+ * URLs from `hrefFor` (static listings use `/news/page/N`).
+ */
 export const NewsPagination = ({
   page,
   pageCount,
   basePath,
+  hrefFor,
   className,
 }: {
   page: number;
   pageCount: number;
   basePath: string;
+  hrefFor?: (page: number) => string;
   className?: string;
 }) => (
   <Pagination
@@ -264,6 +269,7 @@ export const NewsPagination = ({
     pageCount={pageCount}
     basePath={basePath}
     renderLink={renderPageLink}
+    hrefFor={hrefFor}
     className={className}
   />
 );
@@ -274,11 +280,13 @@ export const NewsGrid = ({
   page,
   pageCount,
   basePath,
+  hrefFor,
 }: {
   news: News[];
   page: number;
   pageCount: number;
   basePath: string;
+  hrefFor?: (page: number) => string;
 }) => {
   const [first, ...rest] = news;
   return (
@@ -293,7 +301,12 @@ export const NewsGrid = ({
           ))}
         </div>
       )}
-      <NewsPagination page={page} pageCount={pageCount} basePath={basePath} />
+      <NewsPagination
+        page={page}
+        pageCount={pageCount}
+        basePath={basePath}
+        hrefFor={hrefFor}
+      />
     </div>
   );
 };
