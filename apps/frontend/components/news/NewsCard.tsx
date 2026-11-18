@@ -148,8 +148,10 @@ export const NewsCard = ({
         </Link>
         <div className="flex min-w-0 flex-col gap-1.5">
           <CategoryBadge news={news} className="self-start" />
-          <Heading className="m-0 text-base leading-snug line-clamp-2">
-            <Link href={href} className={titleLinkClass}>
+          {/* Clamp the link, not the heading, so its hit area ends with the
+              visible text instead of overlapping the meta row below. */}
+          <Heading className="m-0 text-base leading-snug">
+            <Link href={href} className={cx(titleLinkClass, "line-clamp-2")}>
               {news.title}
             </Link>
           </Heading>
@@ -195,10 +197,13 @@ export const NewsCard = ({
             "m-0 leading-tight",
             featured
               ? "text-2xl md:text-[1.75rem] lg:text-3xl"
-              : "text-lg line-clamp-3",
+              : "text-lg",
           )}
         >
-          <Link href={href} className={titleLinkClass}>
+          <Link
+            href={href}
+            className={cx(titleLinkClass, !featured && "line-clamp-3")}
+          >
             {news.title}
           </Link>
         </Heading>
