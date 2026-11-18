@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import Head from "next/head";
+import Script from "next/script";
 import { articleSummary, plainText } from "../../utils/seo";
 import { fetchJson } from "../../utils/pagination";
 import { fetchAllNews } from "../../utils/apiList";
@@ -264,6 +265,23 @@ const SingleNews = ({
           }}
         />
       </Head>
+      {/* Reader Revenue Manager is configured for NewsArticle, so it loads only on
+          articles, and only once the page is idle. */}
+      <Script
+        id="swg-basic"
+        src="https://news.google.com/swg/js/v1/swg-basic.js"
+        strategy="lazyOnload"
+      />
+      <Script id="swg-basic-init" strategy="lazyOnload">
+        {`(self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
+          basicSubscriptions.init({
+            type: "NewsArticle",
+            isPartOfType: ["Product"],
+            isPartOfProductId: "CAow2L3GDA:openaccess",
+            clientOptions: { theme: "light", lang: "id" },
+          });
+        });`}
+      </Script>
 
       <Breadcrumbs
         items={[

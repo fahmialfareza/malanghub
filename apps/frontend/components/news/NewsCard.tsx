@@ -195,9 +195,7 @@ export const NewsCard = ({
         <Heading
           className={cx(
             "m-0 leading-tight",
-            featured
-              ? "text-2xl md:text-[1.75rem] lg:text-3xl"
-              : "text-lg",
+            featured ? "text-2xl md:text-[1.75rem] lg:text-3xl" : "text-lg",
           )}
         >
           <Link
