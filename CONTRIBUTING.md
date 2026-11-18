@@ -44,6 +44,5 @@ Each task should describe scope, constraints, a checklist, and validation.
 
 - `apps/backend` is the primary Go backend.
 - `apps/frontend` is the primary Next.js frontend.
-- `apps/server` is deprecated and should only receive changes when explicitly requested.
 - Use `pnpm` for JavaScript and TypeScript dependency changes.
 - Do not commit secrets, API keys, or embedded credentials.

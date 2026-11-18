@@ -12,7 +12,6 @@ This repository supports coding agents that look for a root `AGENTS.md`, includi
 
 - `apps/backend/**/*.go`: follow `.github/instructions/backend.instructions.md`.
 - `apps/frontend/**/*.{ts,tsx,js,jsx}`: follow `.github/instructions/frontend.instructions.md`.
-- `apps/server/**/*.ts`: only touch this deprecated app when the user explicitly asks, and follow `.github/instructions/server.instructions.md`.
 
 ## Repo Expectations
 

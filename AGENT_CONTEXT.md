@@ -9,11 +9,10 @@ This file is the shared source of truth for AI coding agents working in this rep
   - `apps/backend`: Go backend using Gin Gonic.
   - `apps/frontend`: Next.js (pages router) frontend using `pnpm`, built as a static export (`output: "export"`) and served by Cloudflare Pages with no Worker (`pnpm --filter client run pages:build` / `run pages:preview`). Content pages use `getStaticProps`/`getStaticPaths`; the backend triggers a rebuild when content changes (see `apps/frontend/README.md`).
   - `apps/native`: Tauri v2 app (macOS, Windows, Linux, iOS, Android) built from the shared packages.
-  - `apps/server`:
 - Shared packages:
   - `packages/core`: API client, types, and React Query hooks.
   - `packages/ui`: shared pages, shell, primitives, and Tailwind design tokens (`src/tailwind.css`).
-- UI is styled with Tailwind v4 utilities and the shared `--mh-*` tokens; do not add Bootstrap or new CSS modules. Features meant for every platform should live in the shared packages so web and native stay in sync. older Express server that is being phased out. Avoid new work here unless explicitly requested.
+- UI is styled with Tailwind v4 utilities and the shared `--mh-*` tokens; do not add Bootstrap or new CSS modules. Features meant for every platform should live in the shared packages so web and native stay in sync.
 
 ## Working Rules
 
@@ -30,7 +29,6 @@ This file is the shared source of truth for AI coding agents working in this rep
 
 - Backend Go conventions live in `.github/instructions/backend.instructions.md`.
 - Frontend conventions live in `.github/instructions/frontend.instructions.md`.
-- Deprecated server conventions live in `.github/instructions/server.instructions.md`.
 - Shared task prompts live in `.github/prompts/`.
 - When implementing work from `.github/tasks/features/*.feature.md`, `.github/tasks/fixes/*.fix.md`, or `.github/tasks/chores/`, update the task checklist as you complete items.
 - Task templates and working specs live under `.github/tasks/`.
@@ -47,7 +45,6 @@ From the repo root:
 
 - `pnpm run dev:backend`
 - `pnpm run dev:frontend`
-- `pnpm run dev:server`
 - `pnpm run format:all`
 
 Backend development can also use the VS Code debugger when configured.

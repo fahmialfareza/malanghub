@@ -6,13 +6,11 @@ Malanghub is a monorepo for the backend and frontend applications that power the
 
 - `apps/backend`: Go backend built with Gin Gonic.
 - `apps/frontend`: Next.js frontend managed with `pnpm`.
-- `apps/server`: legacy Express server that is being phased out.
 
 ## Common Commands
 
 - `pnpm run dev:backend`
 - `pnpm run dev:frontend`
-- `pnpm run dev:server`
 - `pnpm run format:all`
 
 ## AI Agents
