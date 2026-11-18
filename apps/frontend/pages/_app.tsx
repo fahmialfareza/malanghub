@@ -1,6 +1,6 @@
 import Head from "next/head";
+import Script from "next/script";
 import { Provider } from "react-redux";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import { MalanghubProviders, AppDownloadBanner } from "@malanghub/ui";
 import type { AppProps } from "next/app";
 
@@ -27,16 +27,30 @@ function MyApp({ Component, ...rest }: AppProps) {
           <title>Malanghub</title>
           <meta
             name="viewport"
-            content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"
+            content="width=device-width,initial-scale=1"
           />
         </Head>
+        {/* Reader Revenue Manager, loaded after the page is idle so it stays off the critical path. */}
+        <Script
+          id="swg-basic"
+          src="https://news.google.com/swg/js/v1/swg-basic.js"
+          strategy="lazyOnload"
+        />
+        <Script id="swg-basic-init" strategy="lazyOnload">
+          {`(self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
+            basicSubscriptions.init({
+              type: "NewsArticle",
+              isPartOfType: ["Product"],
+              isPartOfProductId: "CAow2L3GDA:openaccess",
+              clientOptions: { theme: "light", lang: "id" },
+            });
+          });`}
+        </Script>
         <AppDownloadBanner links={downloadLinks} />
         <Header />
         <Alert />
 
-        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
-          <Component {...pageProps} />
-        </GoogleOAuthProvider>
+        <Component {...pageProps} />
         <Footer />
       </Provider>
     </MalanghubProviders>

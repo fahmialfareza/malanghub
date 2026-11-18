@@ -75,31 +75,31 @@ const GetUserProfile = ({
         userProfile.facebook && {
           key: "facebook",
           label: "Facebook",
-          icon: "fab fa-facebook",
+          icon: "fa fa-facebook",
           href: getSocialHref("facebook", userProfile.facebook),
         },
         userProfile.twitter && {
           key: "twitter",
           label: "Twitter",
-          icon: "fab fa-twitter",
+          icon: "fa fa-twitter",
           href: getSocialHref("twitter", userProfile.twitter),
         },
         userProfile.instagram && {
           key: "instagram",
           label: "Instagram",
-          icon: "fab fa-instagram",
+          icon: "fa fa-instagram",
           href: getSocialHref("instagram", userProfile.instagram),
         },
         userProfile.linkedin && {
           key: "linkedin",
           label: "Linkedin",
-          icon: "fab fa-linkedin",
+          icon: "fa fa-linkedin",
           href: getSocialHref("linkedin", userProfile.linkedin),
         },
         userProfile.tiktok && {
           key: "tiktok",
           label: "Tiktok",
-          icon: "fab fa-tiktok",
+          icon: "fa fa-tiktok",
           href: getSocialHref("tiktok", userProfile.tiktok),
         },
       ].filter(

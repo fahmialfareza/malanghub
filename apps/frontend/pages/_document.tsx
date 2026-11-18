@@ -150,35 +150,11 @@ class MyDocument extends Document {
             src="https://static.cloudflareinsights.com/beacon.min.js"
             data-cf-beacon='{"token": "0fd44994b4f045188c4df4091265f8a6"}'
           ></script>
-
-          {/* Reader Revenue Manager */}
-          <script
-            async
-            type="application/javascript"
-            src="https://news.google.com/swg/js/v1/swg-basic.js"
-          ></script>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `(self.SWG_BASIC = self.SWG_BASIC || []).push(basicSubscriptions => {
-                basicSubscriptions.init({
-                  type: "NewsArticle",
-                  isPartOfType: ["Product"],
-                  isPartOfProductId: "CAow2L3GDA:openaccess",
-                  clientOptions: { theme: "light", lang: "id" },
-                });
-              });`,
-            }}
-          />
         </Head>
 
         <body>
           <Main />
           <NextScript />
-
-          <script
-            src="https://kit.fontawesome.com/855574462f.js"
-            crossOrigin="anonymous"
-          ></script>
         </body>
       </Html>
     );

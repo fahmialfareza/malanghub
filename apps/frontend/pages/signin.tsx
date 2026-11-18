@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { signIn, googleLogin } from "../redux/actions/userActions";
 import { setActiveLink, setAlert } from "../redux/actions/layoutActions";
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import * as Sentry from "@sentry/nextjs";
 import { Breadcrumbs, Button, Card, Input } from "@malanghub/ui";
 import { RootState } from "../redux/store";
@@ -202,9 +202,18 @@ const mapStateToProps = (state: RootState) => ({
   user: state.user,
 });
 
-export default connect(mapStateToProps, {
+const ConnectedSignIn = connect(mapStateToProps, {
   signIn,
   googleLogin,
   setActiveLink,
   setAlert,
 })(SignIn);
+
+// Scoped to the auth pages so Google's sign-in script only loads where it is used.
+const SignInPage = () => (
+  <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+    <ConnectedSignIn />
+  </GoogleOAuthProvider>
+);
+
+export default SignInPage;

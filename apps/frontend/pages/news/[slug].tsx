@@ -335,7 +335,8 @@ const SingleNews = ({
                 className="object-cover"
                 alt={currentNews.title}
                 sizes="(min-width: 1024px) 896px, 100vw"
-                priority
+                preload
+                fetchPriority="high"
                 fill
               />
             </figure>
@@ -422,7 +423,7 @@ const SingleNews = ({
                         href={currentNews?.user?.facebook}
                       >
                         <span
-                          className="fab fa-facebook"
+                          className="fa fa-facebook"
                           aria-hidden="true"
                         ></span>
                       </a>
@@ -438,7 +439,7 @@ const SingleNews = ({
                         href={`https://twitter.com/${currentNews?.user?.twitter}`}
                       >
                         <span
-                          className="fab fa-twitter"
+                          className="fa fa-twitter"
                           aria-hidden="true"
                         ></span>
                       </a>
@@ -454,7 +455,7 @@ const SingleNews = ({
                         href={`https://instagram.com/${currentNews?.user?.instagram}`}
                       >
                         <span
-                          className="fab fa-instagram"
+                          className="fa fa-instagram"
                           aria-hidden="true"
                         ></span>
                       </a>
@@ -470,7 +471,7 @@ const SingleNews = ({
                         href={currentNews?.user?.linkedin}
                       >
                         <span
-                          className="fab fa-linkedin"
+                          className="fa fa-linkedin"
                           aria-hidden="true"
                         ></span>
                       </a>
@@ -486,7 +487,7 @@ const SingleNews = ({
                         href={`https://www.tiktok.com/@${currentNews?.user?.tiktok}`}
                       >
                         <span
-                          className="fab fa-tiktok"
+                          className="fa fa-tiktok"
                           aria-hidden="true"
                         ></span>
                       </a>

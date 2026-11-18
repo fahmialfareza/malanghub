@@ -76,7 +76,7 @@ export const NewsMeta = ({
       {news.user && news.user._id ? (
         <Link
           href={`/users/${news.user._id}`}
-          className="font-semibold text-body no-underline hover:text-brand"
+          className="inline-flex min-h-6 items-center font-semibold text-body no-underline hover:text-brand"
         >
           {news.user.name ?? "Penulis"}
         </Link>
@@ -178,7 +178,8 @@ export const NewsCard = ({
           src={news.mainImage}
           alt={news.title}
           fill
-          priority={priority}
+          preload={priority}
+          fetchPriority={priority ? "high" : undefined}
           sizes={
             featured
               ? "(min-width: 1024px) 760px, 100vw"

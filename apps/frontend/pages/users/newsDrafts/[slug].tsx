@@ -390,7 +390,7 @@ const NewsDraft = ({
                                 href={currentNewsDraft.user.facebook}
                               >
                                 <span
-                                  className="fab fa-facebook"
+                                  className="fa fa-facebook"
                                   aria-hidden="true"
                                 ></span>
                               </a>
@@ -406,7 +406,7 @@ const NewsDraft = ({
                                 href={`https://twitter.com/${currentNewsDraft.user.twitter}`}
                               >
                                 <span
-                                  className="fab fa-twitter"
+                                  className="fa fa-twitter"
                                   aria-hidden="true"
                                 ></span>
                               </a>
@@ -422,7 +422,7 @@ const NewsDraft = ({
                                 href={`https://instagram.com/${currentNewsDraft.user.instagram}`}
                               >
                                 <span
-                                  className="fab fa-instagram"
+                                  className="fa fa-instagram"
                                   aria-hidden="true"
                                 ></span>
                               </a>
@@ -438,7 +438,7 @@ const NewsDraft = ({
                                 href={currentNewsDraft.user.linkedin}
                               >
                                 <span
-                                  className="fab fa-linkedin"
+                                  className="fa fa-linkedin"
                                   aria-hidden="true"
                                 ></span>
                               </a>
@@ -454,7 +454,7 @@ const NewsDraft = ({
                                 href={`https://www.tiktok.com/@${currentNewsDraft.user.tiktok}`}
                               >
                                 <span
-                                  className="fab fa-tiktok"
+                                  className="fa fa-tiktok"
                                   aria-hidden="true"
                                 ></span>
                               </a>

@@ -89,31 +89,31 @@ const DashboardOverview = ({
         user.facebook && {
           key: "facebook",
           label: "Facebook",
-          icon: "fab fa-facebook",
+          icon: "fa fa-facebook",
           href: user.facebook,
         },
         user.twitter && {
           key: "twitter",
           label: "Twitter",
-          icon: "fab fa-twitter",
+          icon: "fa fa-twitter",
           href: `https://twitter.com/${user.twitter}`,
         },
         user.instagram && {
           key: "instagram",
           label: "Instagram",
-          icon: "fab fa-instagram",
+          icon: "fa fa-instagram",
           href: `https://instagram.com/${user.instagram}`,
         },
         user.linkedin && {
           key: "linkedin",
           label: "Linkedin",
-          icon: "fab fa-linkedin",
+          icon: "fa fa-linkedin",
           href: user.linkedin,
         },
         user.tiktok && {
           key: "tiktok",
           label: "Tiktok",
-          icon: "fab fa-tiktok",
+          icon: "fa fa-tiktok",
           href: `https://www.tiktok.com/@${user.tiktok}`,
         },
       ].filter(
