@@ -19,13 +19,17 @@
   },
   "devDependencies": {
     "prettier": "^3.6.2",
-    "turbo": "2.5.6",
+    "turbo": "2.11.12",
     "typescript": "5.9.2"
   },
   "engines": {
     "node": ">=18"
   },
   "pnpm": {
+    "overrides": {
+      "fast-uri@3": "^3.1.9",
+      "serialize-javascript@<7.0.5": "^7.1.4"
+    },
     "onlyBuiltDependencies": [
       "@newrelic/fn-inspect",
       "@newrelic/native-metrics",
