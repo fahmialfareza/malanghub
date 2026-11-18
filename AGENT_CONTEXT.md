@@ -38,6 +38,7 @@ This file is the shared source of truth for AI coding agents working in this rep
 - There is no established unit test framework configured for routine use in this repo, so prefer targeted validation with existing commands and manual verification steps.
 - If you change build, CI, or runtime behavior, mention the relevant verification steps in your summary.
 - Keep validation scoped to the files or app you changed whenever possible.
+- `apps/backend` is checked in CI by `.github/workflows/backend-ci.yml` (gofmt, build, vet, tests, govulncheck) on every backend change and weekly; keep it green.
 
 ## Common Commands
 
