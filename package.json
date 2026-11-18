@@ -27,8 +27,7 @@
   },
   "pnpm": {
     "overrides": {
-      "fast-uri@3": "^3.1.9",
-      "serialize-javascript@<7.0.5": "^7.1.4"
+      "fast-uri@3": "^3.1.9"
     },
     "onlyBuiltDependencies": [
       "@newrelic/fn-inspect",

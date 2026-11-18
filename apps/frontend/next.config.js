@@ -1,8 +1,3 @@
-const withPWA = require("@ducanh2912/next-pwa").default({
-  dest: "public",
-  cacheOnFrontEndNav: true,
-  disable: process.env.NODE_ENV === "development",
-});
 const { withSentryConfig } = require("@sentry/nextjs");
 
 // Static export served as plain files by Cloudflare Pages (no Worker).
@@ -50,4 +45,4 @@ const sentryWrappedConfig = withSentryConfig(baseConfig, {
   },
 });
 
-module.exports = withPWA(sentryWrappedConfig);
+module.exports = sentryWrappedConfig;
