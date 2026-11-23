@@ -13,6 +13,8 @@ interface SitemapEntry {
   lastmod?: string;
   changefreq?: string;
   priority?: string;
+  /** Main image, listed for Google Images (only `image:loc` is read). */
+  image?: string;
 }
 
 function buildUrlset(entries: SitemapEntry[]): string {
@@ -25,17 +27,20 @@ function buildUrlset(entries: SitemapEntry[]): string {
       const priority = e.priority
         ? `\n    <priority>${e.priority}</priority>`
         : "";
-      return `  <url>\n    <loc>${escapeXml(e.url)}</loc>${lastmod}${changefreq}${priority}\n  </url>`;
+      const image = e.image
+        ? `\n    <image:image>\n      <image:loc>${escapeXml(e.image)}</image:loc>\n    </image:image>`
+        : "";
+      return `  <url>\n    <loc>${escapeXml(e.url)}</loc>${lastmod}${changefreq}${priority}${image}\n  </url>`;
     })
     .join("\n");
 
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>`;
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n${urls}\n</urlset>`;
 }
 
 export async function buildSitemap(): Promise<string> {
   const [news, categories, tags] = await Promise.all([
-    fetchAllNews<{ slug?: string; updated_at?: string }>(
-      "sort=-updated_at&select=slug,updated_at",
+    fetchAllNews<{ slug?: string; updated_at?: string; mainImage?: string }>(
+      "sort=-updated_at&select=slug,updated_at,mainImage",
     ),
     fetchList<{ slug?: string }>("/api/newsCategories"),
     fetchList<{ slug?: string }>("/api/newsTags"),
@@ -60,6 +65,9 @@ export async function buildSitemap(): Promise<string> {
           : undefined,
         changefreq: "weekly",
         priority: "0.8",
+        image: /^https?:\/\//.test(item.mainImage ?? "")
+          ? item.mainImage
+          : undefined,
       })),
     ...categories
       .filter((cat) => cat.slug)
