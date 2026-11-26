@@ -40,13 +40,14 @@ func Connect(ctx context.Context, dsn string) error {
 		return fmt.Errorf("parse DATABASE_URL: %w", err)
 	}
 	cfg.Tracer = nrpgx5.NewTracer()
+	cfg.DialFunc = retryOnRefused(cfg.DialFunc, wakeBudget)
 
 	conn := stdlib.OpenDB(*cfg)
 	conn.SetMaxOpenConns(envInt("DB_MAX_OPEN_CONNS", 10))
 	conn.SetMaxIdleConns(envInt("DB_MAX_IDLE_CONNS", 2))
 	conn.SetConnMaxIdleTime(5 * time.Minute)
 
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, wakeBudget+5*time.Second)
 	defer cancel()
 	if err := conn.PingContext(ctx); err != nil {
 		conn.Close()
