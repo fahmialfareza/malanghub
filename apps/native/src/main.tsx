@@ -1481,6 +1481,21 @@ const App = () => (
   </HashRouter>
 );
 
+// Packaged builds load at `tauri://localhost`, so HashRouter produces
+// `tauri://localhost#/route` with no `/` before the hash. TinyMCE derives its
+// document base URL from the raw href on non-http schemes and mis-parses that
+// into `tauri:/`, crashing on load. Normalise to `tauri://localhost/#/route`.
+if (
+  window.location.protocol !== "http:" &&
+  window.location.protocol !== "https:"
+) {
+  const { href, hash } = window.location;
+  const beforeHash = hash ? href.slice(0, -hash.length) : href;
+  if (!beforeHash.endsWith("/")) {
+    window.history.replaceState(window.history.state, "", `/${hash}`);
+  }
+}
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <App />

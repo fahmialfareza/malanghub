@@ -148,6 +148,7 @@ Mac App Review note:
 - The macOS App Store bundle keeps `com.apple.security.network.server` because desktop Google sign-in uses a temporary localhost OAuth callback listener.
 - The flow is implemented in `apps/native/src/main.tsx` via `plugin:oauth|start`, which opens a short-lived loopback port, waits for Google's redirect, then calls `plugin:oauth|cancel` to close it.
 - Reviewers can trigger it from the sign-in or sign-up screen by tapping the Google button. The app does not expose a general-purpose LAN or internet-facing server.
+- The app also serves its own bundled UI from `http://localhost:47815`, bound to `127.0.0.1` only (`apps/native/src-tauri/src/lib.rs`, `tauri-plugin-localhost`). The TinyMCE rich-text editor (Tiny Cloud) validates the page origin, and the default `tauri://` origin cannot be validated. The server only returns the app's own bundled assets and is not reachable from other devices.
 
 Android:
 

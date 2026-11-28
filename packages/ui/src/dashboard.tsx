@@ -147,8 +147,11 @@ const RichTextEditor = ({
   const editorIdRef = useRef(
     `malanghub-richtext-${Math.random().toString(36).slice(2)}`,
   );
+  // Tiny Cloud can fail to load (CSP, unapproved origin such as tauri://localhost,
+  // offline); fall back to the plain textarea instead of leaving a dead editor.
+  const [tinyFailed, setTinyFailed] = useState(false);
 
-  if (isNativeMobileApp() || !adapters.tinyApiKey) {
+  if (!adapters.tinyApiKey || tinyFailed) {
     return (
       <textarea
         aria-label="Konten"
@@ -169,7 +172,8 @@ const RichTextEditor = ({
         value={value}
         init={{
           height: 500,
-          menubar: true,
+          // The menubar wraps badly on phones; the toolbar covers the basics.
+          menubar: !isNativeMobileApp(),
           skin: theme === "dark" ? "oxide-dark" : "oxide",
           content_css: theme === "dark" ? "dark" : "default",
           plugins: [
@@ -202,6 +206,7 @@ const RichTextEditor = ({
               .then((res) => res.location),
         }}
         onEditorChange={(text) => onChange(text)}
+        onScriptsLoadError={() => setTinyFailed(true)}
       />
     </div>
   );
@@ -1424,8 +1429,8 @@ export const DashboardPage = () => {
                 Keluar
               </Button>
               <Button
-                variant="ghost"
-                className="text-danger! hover:bg-danger-soft!"
+                variant="secondary"
+                className="border-danger/50! text-danger! hover:bg-danger-soft! hover:text-danger!"
                 onClick={() => setDeleteModalOpen(true)}
               >
                 <span className="fa fa-trash" aria-hidden="true" />

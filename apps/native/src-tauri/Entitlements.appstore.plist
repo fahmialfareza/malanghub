@@ -13,7 +13,9 @@
     <key>com.apple.security.network.client</key>
     <true/>
     <!-- Required for desktop Google OAuth: the app briefly listens on localhost
-         for the loopback redirect, then closes the port after sign-in completes. -->
+         for the loopback redirect, then closes the port after sign-in completes.
+         Also used to serve the bundled UI from 127.0.0.1:47815 so Tiny Cloud can
+         validate the editor's origin (see src-tauri/src/lib.rs). -->
     <key>com.apple.security.network.server</key>
     <true/>
     <key>com.apple.developer.applesignin</key>
